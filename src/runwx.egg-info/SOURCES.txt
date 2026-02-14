@@ -1,0 +1,9 @@
+pyproject.toml
+setup.cfg
+src/runwx/__init__.py
+src/runwx/main.py
+src/runwx.egg-info/PKG-INFO
+src/runwx.egg-info/SOURCES.txt
+src/runwx.egg-info/dependency_links.txt
+src/runwx.egg-info/top_level.txt
+tests/test_main.py
