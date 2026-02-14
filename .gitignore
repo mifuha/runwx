@@ -1,0 +1,13 @@
+# Python virtual environment
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Test & tool caches
+.pytest_cache/
+.ruff_cache/
+
+# OS junk
+.DS_Store
