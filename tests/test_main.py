@@ -1,6 +1,5 @@
-from runwx.main import greet
+from runwx.utils import add
 
 
-def test_greet():
-    result = greet("Miha")
-    assert result == "Hello, Miha"
+def test_add():
+    assert add(2, 3) == 5

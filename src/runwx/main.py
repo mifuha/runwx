@@ -1,9 +1,8 @@
-def greet(name: str) -> str:
-    return f"Hello, {name}"
+from runwx.utils import add
 
 
 def main() -> None:
-    print(greet("runwx"))
+    print(add(2, 3))
 
 
 if __name__ == "__main__":
