@@ -1,3 +1,5 @@
+import pytest
+from dataclasses import FrozenInstanceError
 from datetime import datetime, timezone
 
 from runwx.enrich import RunWithWeather, attach_weather
@@ -39,8 +41,5 @@ def test_run_with_weather_is_frozen():
 
     enriched = RunWithWeather(run=run, weather=weather)
 
-    try:
-        enriched.run = run  # type: ignore[misc]
-        assert False, "Expected frozen dataclass to prevent assignment"
-    except Exception:
-        assert True
+    with pytest.raises(FrozenInstanceError):
+        enriched.run = run
