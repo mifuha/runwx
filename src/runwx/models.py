@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 @dataclass(frozen=True)
@@ -29,3 +29,7 @@ class WeatherObs:
     def __post_init__(self) -> None:
         if self.observed_at.tzinfo is None:
             raise ValueError("observed_at must be timezone-aware (UTC recommended)")
+        if self.wind_mps < 0:
+            raise ValueError("wind_mps must be non-negative")
+        if self.precipitation_mm < 0:
+            raise ValueError("precipitation_mm must be non-negative")
