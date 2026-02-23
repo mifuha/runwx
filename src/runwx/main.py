@@ -1,4 +1,5 @@
 from __future__ import annotations
+import argparse
 
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -46,18 +47,44 @@ def csv_data(data_dir: Path = Path("data")) -> tuple[list[Run], list[WeatherObs]
     weather = load_weather_csv(data_dir / "sample_weather.csv")
     return runs, weather
 
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(prog="runwx", description="Align runs with weather and optionally persist to SQLite.")
+    p.add_argument(
+        "--csv",
+        action="store_true",
+        help="Load runs/weather from CSV (defaults to data/sample_runs.csv and data/sample_weather.csv).",
+    )
+    p.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data"),
+        help="Directory containing CSV files (default: data/).",
+    )
+    p.add_argument(
+        "--db",
+        type=Path,
+        default=None,
+        help="Path to SQLite db file. If provided, enriched rows are written to this DB.",
+    )
+    p.add_argument(
+        "--max-gap-min",
+        type=int,
+        default=30,
+        help="Maximum allowed gap in minutes between run midpoint and nearest weather observation (default: 30).",
+    )
+    return p.parse_args(argv)
 
-def main() -> None:
-    use_csv = False  # flip to True to use data/sample_runs.csv and data/sample_weather.csv
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
 
-    if use_csv:
-        runs, weather = csv_data()
-        print("Source: CSV files (data/sample_runs.csv, data/sample_weather.csv)")
+    if args.csv:
+        runs, weather = csv_data(args.data_dir)
+        print(f"Source: CSV files ({args.data_dir / 'sample_runs.csv'}, {args.data_dir / 'sample_weather.csv'})")
     else:
         runs, weather = demo_data()
         print("Source: demo data")
 
-    result = enrich_runs(runs, weather, max_gap=timedelta(minutes=30))
+    result = enrich_runs(runs, weather, max_gap=timedelta(minutes=args.max_gap_min))
 
     print(f"\nEnriched: {len(result.enriched)}")
     for item in result.enriched:
@@ -72,14 +99,11 @@ def main() -> None:
     for s in result.skipped:
         print(f"- run @ {s.run.started_at.isoformat()} -> {s.reason}")
 
-    if result.enriched:
-        conn = connect("runwx.db")
+    if args.db is not None:
+        conn = connect(args.db)
         created = write_enriched(conn, result.enriched)
         conn.close()
-        print(f"\nSaved to SQLite: {created} new enriched rows")
-    else:
-        print("\nSaved to SQLite: 0 new enriched rows")
-
+        print(f"\nSaved to SQLite: {created} new enriched rows ({args.db})")
 
 if __name__ == "__main__":
     main()
