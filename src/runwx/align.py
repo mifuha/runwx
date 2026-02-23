@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from typing import Sequence
+
 from datetime import datetime, timedelta
+
 
 from runwx.models import Run, WeatherObs
 
@@ -12,7 +15,7 @@ def run_anchor_time(run: Run) -> datetime:
 
 def nearest_weather(
     run: Run,
-    observations: list[WeatherObs],
+    observations: Sequence[WeatherObs],
     *,
     max_gap: timedelta = timedelta(minutes=30),
 ) -> WeatherObs | None:
