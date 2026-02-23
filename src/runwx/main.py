@@ -9,6 +9,7 @@ from runwx.io_weather import load_weather_csv
 from runwx.models import Run, WeatherObs
 from runwx.pipeline import enrich_runs
 from runwx.storage_sqlite import connect, write_enriched
+from runwx.query_sqlite import fetch_latest_enriched
 
 
 def demo_data() -> tuple[list[Run], list[WeatherObs]]:
@@ -48,35 +49,56 @@ def csv_data(data_dir: Path = Path("data")) -> tuple[list[Run], list[WeatherObs]
     return runs, weather
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(prog="runwx", description="Align runs with weather and optionally persist to SQLite.")
-    p.add_argument(
-        "--csv",
-        action="store_true",
-        help="Load runs/weather from CSV (defaults to data/sample_runs.csv and data/sample_weather.csv).",
-    )
-    p.add_argument(
-        "--data-dir",
-        type=Path,
-        default=Path("data"),
-        help="Directory containing CSV files (default: data/).",
-    )
-    p.add_argument(
-        "--db",
-        type=Path,
-        default=None,
-        help="Path to SQLite db file. If provided, enriched rows are written to this DB.",
-    )
-    p.add_argument(
-        "--max-gap-min",
-        type=int,
-        default=30,
-        help="Maximum allowed gap in minutes between run midpoint and nearest weather observation (default: 30).",
-    )
-    return p.parse_args(argv)
+    p = argparse.ArgumentParser(prog="runwx", description="Align runs with weather and optionally persist/query SQLite.")
+    sub = p.add_subparsers(dest="cmd")
+
+    # run command (default)
+    run_p = sub.add_parser("run", help="Run pipeline (default).")
+    run_p.add_argument("--csv", action="store_true", help="Load runs/weather from CSV sample files.")
+    run_p.add_argument("--data-dir", type=Path, default=Path("data"), help="Directory containing CSV files (default: data/).")
+    run_p.add_argument("--db", type=Path, default=None, help="Path to SQLite db file to write enriched rows.")
+    run_p.add_argument("--max-gap-min", type=int, default=30, help="Maximum allowed gap in minutes (default: 30).")
+
+    # query command
+    q_p = sub.add_parser("query", help="Query latest enriched rows from SQLite.")
+    q_p.add_argument("--db", type=Path, default=Path("runwx.db"), help="SQLite db path (default: runwx.db).")
+    q_p.add_argument("--limit", type=int, default=20, help="Max rows to print (default: 20).")
+
+    args = p.parse_args(argv)
+
+    # Default behavior: if no subcommand given, treat as "run"
+    if args.cmd is None:
+        args.cmd = "run"
+        # provide run defaults if user didn't specify 'run'
+        args.csv = False
+        args.data_dir = Path("data")
+        args.db = None
+        args.max_gap_min = 30
+
+    return args
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
 
+    # --- QUERY MODE ---
+    if args.cmd == "query":
+        conn = connect(args.db)
+        rows = fetch_latest_enriched(conn, limit=args.limit)
+        conn.close()
+
+        print(f"Latest enriched runs (limit={args.limit}) from {args.db}:")
+        if not rows:
+            print("- (no rows found)")
+            return
+
+        for r in rows:
+            print(
+                f"- run {r.started_at} ({r.distance_m}m, {r.duration_s}s)"
+                f" -> weather {r.observed_at} ({r.temp_c}C, wind {r.wind_mps}m/s, rain {r.precipitation_mm}mm)"
+            )
+        return
+
+    # --- RUN MODE ---
     if args.csv:
         runs, weather = csv_data(args.data_dir)
         print(f"Source: CSV files ({args.data_dir / 'sample_runs.csv'}, {args.data_dir / 'sample_weather.csv'})")

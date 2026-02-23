@@ -103,3 +103,16 @@ source .venv/Scripts/activate
 python -m pip install -U pip
 pip install -e .
 pip install pytest
+
+## Usage
+
+Run with demo data:
+
+```bash
+python -m runwx run
+python -m runwx run --csv --db runwx.db
+
+python -m runwx query --db runwx.db --limit 10
+using CSV input:
+
+python -m runwx --csv
