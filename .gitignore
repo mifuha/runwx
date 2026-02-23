@@ -14,3 +14,10 @@ __pycache__/
 
 # packaging metadata
 *.egg-info/
+
+# local data (keep sample_*.csv tracked)
+data/*.csv
+!data/sample_*.csv
+
+# sqlite db files
+*.db
