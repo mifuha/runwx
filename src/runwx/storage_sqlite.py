@@ -1,17 +1,23 @@
 from __future__ import annotations
 
 import sqlite3
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
 from runwx.enrich import RunWithWeather
 from runwx.models import Run, WeatherObs
+from runwx.pipeline import PipelineResult
 
 
 def _iso(dt) -> str:
-    # store as ISO-8601 text
     return dt.isoformat()
+
+
+def connect(db_path: str | Path) -> sqlite3.Connection:
+    path = Path(db_path)
+    conn = sqlite3.connect(path)
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
 
 
 def init_db(conn: sqlite3.Connection) -> None:
@@ -48,6 +54,19 @@ def init_db(conn: sqlite3.Connection) -> None:
             PRIMARY KEY(run_id),
             FOREIGN KEY(run_id) REFERENCES runs(id),
             FOREIGN KEY(weather_id) REFERENCES weather_obs(id)
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS skipped_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            started_at TEXT NOT NULL,
+            duration_s INTEGER NOT NULL,
+            distance_m INTEGER NOT NULL,
+            reason TEXT NOT NULL,
+            UNIQUE(started_at, duration_s, distance_m, reason)
         )
         """
     )
@@ -99,6 +118,7 @@ def write_enriched(conn: sqlite3.Connection, rows: Iterable[RunWithWeather]) -> 
     """
     Persist enriched rows to SQLite.
     Returns number of run_with_weather links created.
+    Assumes init_db(conn) has already been called.
     """
     init_db(conn)
     created = 0
@@ -114,16 +134,31 @@ def write_enriched(conn: sqlite3.Connection, rows: Iterable[RunWithWeather]) -> 
             """,
             (run_id, weather_id),
         )
-        # rowcount is 1 when inserted, 0 when ignored
         created += int(cur.rowcount)
 
     conn.commit()
     return created
 
 
-def connect(db_path: str | Path) -> sqlite3.Connection:
-    path = Path(db_path)
-    conn = sqlite3.connect(path)
-    # sensible defaults
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+def write_pipeline_result(conn: sqlite3.Connection, result: PipelineResult) -> tuple[int, int]:
+    """
+    Persist both enriched and skipped rows to SQLite.
+    Returns (enriched_links_created, skipped_rows_created).
+    """
+    
+
+    enriched_created = write_enriched(conn, result.enriched)
+
+    skipped_created = 0
+    for s in result.skipped:
+        cur = conn.execute(
+            """
+            INSERT OR IGNORE INTO skipped_runs (started_at, duration_s, distance_m, reason)
+            VALUES (?, ?, ?, ?)
+            """,
+            (_iso(s.run.started_at), s.run.duration_s, s.run.distance_m, s.reason),
+        )
+        skipped_created += int(cur.rowcount)
+
+    conn.commit()
+    return enriched_created, skipped_created

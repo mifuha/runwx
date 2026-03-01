@@ -8,6 +8,7 @@ from runwx.io_runs import load_runs_csv
 from runwx.io_weather import load_weather_csv
 from runwx.models import Run, WeatherObs
 from runwx.pipeline import enrich_runs
+from runwx.storage_sqlite import write_pipeline_result
 from runwx.storage_sqlite import connect, write_enriched
 from runwx.query_sqlite import fetch_latest_enriched
 
@@ -123,9 +124,9 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.db is not None:
         conn = connect(args.db)
-        created = write_enriched(conn, result.enriched)
+        enriched_created, skipped_created = write_pipeline_result(conn, result)
+        print(f"\nSaved to SQLite: {enriched_created} enriched + {skipped_created} skipped ({args.db})")
         conn.close()
-        print(f"\nSaved to SQLite: {created} new enriched rows ({args.db})")
 
 if __name__ == "__main__":
     main()
