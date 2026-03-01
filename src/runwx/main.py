@@ -71,13 +71,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     run_p.add_argument("--db", type=Path, default=None, help="Path to SQLite db file to write results.")
     run_p.add_argument("--max-gap-min", type=int, default=30, help="Maximum allowed gap in minutes (default: 30).")
     run_p.add_argument("--log-level", type=str, default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR). Default: INFO.")
-
+    run_p.add_argument(
+    "--quiet",
+    action="store_true",
+    help="Suppress human-readable output (logs only).",
+)
     # query command
     q_p = sub.add_parser("query", help="Query latest enriched rows from SQLite.")
     q_p.add_argument("--db", type=Path, default=Path("runwx.db"), help="SQLite db path (default: runwx.db).")
     q_p.add_argument("--limit", type=int, default=20, help="Max rows to print (default: 20).")
     q_p.add_argument("--log-level", type=str, default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR). Default: INFO.")
-
+    q_p.add_argument(
+    "--quiet",
+    action="store_true",
+    help="Suppress human-readable output (logs only).",
+)
     args = p.parse_args(argv)
 
     # default: if no subcommand, behave like "run"
@@ -96,6 +104,9 @@ def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     configure_logging(args.log_level)
     logger = logging.getLogger("runwx")
+    def out(msg: str) -> None:
+        if not args.quiet:
+            print(msg)
 
     # --- QUERY MODE ---
     if args.cmd == "query":
@@ -105,13 +116,13 @@ def main(argv: list[str] | None = None) -> None:
         rows = fetch_latest_enriched(conn, limit=args.limit)
         conn.close()
 
-        print(f"Latest enriched runs (limit={args.limit}) from {args.db}:")
+        out(f"Latest enriched runs (limit={args.limit}) from {args.db}:")
         if not rows:
-            print("- (no rows found)")
+            out("- (no rows found)")
             return
 
         for r in rows:
-            print(
+            out(
                 f"- run {r.started_at} ({r.distance_m}m, {r.duration_s}s)"
                 f" -> weather {r.observed_at} ({r.temp_c}C, wind {r.wind_mps}m/s, rain {r.precipitation_mm}mm)"
             )
@@ -133,16 +144,16 @@ def main(argv: list[str] | None = None) -> None:
     logger.info("Pipeline completed: enriched=%s skipped=%s", len(result.enriched), len(result.skipped))
 
     # keep prints as the user-facing report
-    print(f"\nEnriched: {len(result.enriched)}")
+    out(f"\nEnriched: {len(result.enriched)}")
     for item in result.enriched:
         r = item.run
         w = item.weather
-        print(
+        out(
             f"- run @ {r.started_at.isoformat()} ({r.distance_m}m, {r.duration_s}s)"
             f" -> weather @ {w.observed_at.isoformat()} ({w.temp_c}C, wind {w.wind_mps}m/s, rain {w.precipitation_mm}mm)"
         )
 
-    print(f"\nSkipped: {len(result.skipped)}")
+    out(f"\nSkipped: {len(result.skipped)}")
     for s in result.skipped:
         print(f"- run @ {s.run.started_at.isoformat()} -> {s.reason}")
 
