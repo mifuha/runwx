@@ -96,6 +96,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         args.db = None
         args.max_gap_min = 30
         args.log_level = "INFO"
+        args.quiet = False
 
     return args
 
@@ -105,7 +106,7 @@ def main(argv: list[str] | None = None) -> None:
     configure_logging(args.log_level)
     logger = logging.getLogger("runwx")
     def out(msg: str) -> None:
-        if not args.quiet:
+        if not getattr(args, "quiet", False):
             print(msg)
 
     # --- QUERY MODE ---
