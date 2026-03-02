@@ -54,7 +54,7 @@ def test_enrich_runs_mixed_results():
     )
     run_bad = Run(
         started_at=datetime(2026, 2, 1, 13, 0, tzinfo=timezone.utc),
-        duration_s=3600,   # midpoint 13:30 (far)
+        duration_s=3600,   # midpoint 13:30
         distance_m=5_000,
     )
 
@@ -77,3 +77,40 @@ def test_enrich_runs_mixed_results():
     assert len(result.skipped) == 1
     assert result.enriched[0].run == run_ok
     assert result.skipped[0].run == run_bad
+
+
+def test_enrich_runs_still_works_with_indexed_weather_lookup():
+    runs = [
+        Run(
+            started_at=datetime(2026, 2, 1, 10, 0, tzinfo=timezone.utc),
+            duration_s=3600,   # midpoint 10:30
+            distance_m=10_000,
+        ),
+        Run(
+            started_at=datetime(2026, 2, 1, 15, 0, tzinfo=timezone.utc),
+            duration_s=2400,   # midpoint 15:20
+            distance_m=7_000,
+        ),
+    ]
+
+    weather = [
+        WeatherObs(
+            observed_at=datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc),
+            temp_c=6.5,
+            wind_mps=4.2,
+            precipitation_mm=0.0,
+        ),
+        WeatherObs(
+            observed_at=datetime(2026, 2, 1, 16, 30, tzinfo=timezone.utc),
+            temp_c=5.9,
+            wind_mps=5.1,
+            precipitation_mm=0.0,
+        ),
+    ]
+
+    result = enrich_runs(runs, weather, max_gap=timedelta(minutes=30))
+
+    assert len(result.enriched) == 1
+    assert len(result.skipped) == 1
+    assert result.enriched[0].run == runs[0]
+    assert result.skipped[0].run == runs[1]
