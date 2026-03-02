@@ -7,6 +7,7 @@ from typing import Sequence, Tuple, List
 from runwx.align import nearest_weather
 from runwx.enrich import RunWithWeather, attach_weather
 from runwx.models import Run, WeatherObs
+from runwx.align import build_weather_index, nearest_weather
 
 
 @dataclass(frozen=True)
