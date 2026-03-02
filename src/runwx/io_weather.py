@@ -3,8 +3,10 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from runwx.io_common import parse_datetime_iso, parse_float
+from pydantic import ValidationError
+
 from runwx.models import WeatherObs
+from runwx.schemas import WeatherObsIn
 
 
 def load_weather_csv(path: str | Path) -> list[WeatherObs]:
@@ -25,14 +27,9 @@ def load_weather_csv(path: str | Path) -> list[WeatherObs]:
 
         for row_num, row in enumerate(reader, start=2):
             try:
-                obs = WeatherObs(
-                    observed_at=parse_datetime_iso(row["observed_at"]),
-                    temp_c=parse_float(row["temp_c"]),
-                    wind_mps=parse_float(row["wind_mps"]),
-                    precipitation_mm=parse_float(row["precipitation_mm"]),
-                )
+                obs = WeatherObsIn.model_validate(row).to_domain()
                 observations.append(obs)
-            except Exception as e:
+            except ValidationError as e:
                 raise ValueError(f"Invalid weather CSV row {row_num}: {e}") from e
 
     return observations

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
-from typing import Sequence
 
-from runwx.io_common import parse_datetime_iso, parse_int
+from pydantic import ValidationError
+
 from runwx.models import Run
+from runwx.schemas import RunIn
 
 
 def load_runs_csv(path: str | Path) -> list[Run]:
@@ -24,15 +25,11 @@ def load_runs_csv(path: str | Path) -> list[Run]:
         if missing:
             raise ValueError(f"Missing run CSV columns: {sorted(missing)}")
 
-        for row_num, row in enumerate(reader, start=2):  # row 1 = header
+        for row_num, row in enumerate(reader, start=2):
             try:
-                run = Run(
-                    started_at=parse_datetime_iso(row["started_at"]),
-                    duration_s=parse_int(row["duration_s"]),
-                    distance_m=parse_int(row["distance_m"]),
-                )
+                run = RunIn.model_validate(row).to_domain()
                 runs.append(run)
-            except Exception as e:
+            except ValidationError as e:
                 raise ValueError(f"Invalid runs CSV row {row_num}: {e}") from e
 
     return runs
