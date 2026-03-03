@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Sequence, Tuple, List
+from typing import List, Sequence, Tuple
 
-from runwx.align import nearest_weather
+from runwx.align import build_weather_index, nearest_weather
 from runwx.enrich import RunWithWeather, attach_weather
 from runwx.models import Run, WeatherObs
-from runwx.align import build_weather_index, nearest_weather
 
 
 @dataclass(frozen=True)
@@ -34,14 +33,15 @@ def enrich_runs(
     enriched: List[RunWithWeather] = []
     skipped: List[SkippedRun] = []
 
-    # nearest_weather expects list[WeatherObs] in your code
-    weather_list = list(weather)
+    weather_index = build_weather_index(weather)
 
     for run in runs:
         try:
-            w = nearest_weather(run, weather_list, max_gap=max_gap)
+            w = nearest_weather(run, weather_index, max_gap=max_gap)
             if w is None:
-                skipped.append(SkippedRun(run=run, reason=f"No weather within {max_gap}"))
+                skipped.append(
+                    SkippedRun(run=run, reason=f"No weather within {max_gap}")
+                )
                 continue
 
             enriched.append(attach_weather(run, w))
