@@ -49,11 +49,11 @@ def fetch_latest_enriched(conn: sqlite3.Connection, *, limit: int = 20) -> list[
                 started_at=row[0],
                 duration_s=int(row[1]),
                 distance_m=int(row[2]),
-                    observed_at=row[3],
-                    temp_c=float(row[4]),
-                    wind_mps=float(row[5]),
-                    precipitation_mm=float(row[6]),
-                    humidity_pct=float(row[7]),
+                observed_at=row[3],
+                temp_c=float(row[4]),
+                wind_mps=float(row[5]),
+                precipitation_mm=float(row[6]),
+                humidity_pct=float(row[7]),
             )
         )
     return out
