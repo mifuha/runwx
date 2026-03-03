@@ -12,7 +12,7 @@ from runwx.schemas import WeatherObsIn
 def load_weather_csv(path: str | Path) -> list[WeatherObs]:
     """
     Load weather observations from a CSV file with columns:
-      observed_at,temp_c,wind_mps,precipitation_mm
+      observed_at,temp_c,wind_mps,precipitation_mm,humidity_pct
     """
     path = Path(path)
     observations: list[WeatherObs] = []
@@ -20,7 +20,7 @@ def load_weather_csv(path: str | Path) -> list[WeatherObs]:
     with path.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
 
-        required = {"observed_at", "temp_c", "wind_mps", "precipitation_mm"}
+        required = {"observed_at", "temp_c", "wind_mps", "precipitation_mm", "humidity_pct"}
         missing = required - set(reader.fieldnames or [])
         if missing:
             raise ValueError(f"Missing weather CSV columns: {sorted(missing)}")

@@ -17,6 +17,7 @@ def test_attach_weather_returns_run_with_weather():
         temp_c=10.0,
         wind_mps=2.0,
         precipitation_mm=0.0,
+        humidity_pct=80.0,
     )
 
     enriched = attach_weather(run, weather)
@@ -37,6 +38,7 @@ def test_run_with_weather_is_frozen():
         temp_c=10.0,
         wind_mps=2.0,
         precipitation_mm=0.0,
+        humidity_pct=80.0,
     )
 
     enriched = RunWithWeather(run=run, weather=weather)

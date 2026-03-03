@@ -15,6 +15,7 @@ class EnrichedRow:
     temp_c: float
     wind_mps: float
     precipitation_mm: float
+    humidity_pct: float
 
 
 def fetch_latest_enriched(conn: sqlite3.Connection, *, limit: int = 20) -> list[EnrichedRow]:
@@ -30,7 +31,8 @@ def fetch_latest_enriched(conn: sqlite3.Connection, *, limit: int = 20) -> list[
             w.observed_at,
             w.temp_c,
             w.wind_mps,
-            w.precipitation_mm
+            w.precipitation_mm,
+            w.humidity_pct
         FROM run_with_weather rw
         JOIN runs r ON r.id = rw.run_id
         JOIN weather_obs w ON w.id = rw.weather_id
@@ -47,10 +49,11 @@ def fetch_latest_enriched(conn: sqlite3.Connection, *, limit: int = 20) -> list[
                 started_at=row[0],
                 duration_s=int(row[1]),
                 distance_m=int(row[2]),
-                observed_at=row[3],
-                temp_c=float(row[4]),
-                wind_mps=float(row[5]),
-                precipitation_mm=float(row[6]),
+                    observed_at=row[3],
+                    temp_c=float(row[4]),
+                    wind_mps=float(row[5]),
+                    precipitation_mm=float(row[6]),
+                    humidity_pct=float(row[7]),
             )
         )
     return out

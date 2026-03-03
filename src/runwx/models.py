@@ -25,6 +25,7 @@ class WeatherObs:
     temp_c: float
     wind_mps: float
     precipitation_mm: float
+    humidity_pct: float  # <-- add
 
     def __post_init__(self) -> None:
         if self.observed_at.tzinfo is None:
@@ -33,3 +34,5 @@ class WeatherObs:
             raise ValueError("wind_mps must be non-negative")
         if self.precipitation_mm < 0:
             raise ValueError("precipitation_mm must be non-negative")
+        if not (0 <= self.humidity_pct <= 100):
+            raise ValueError("humidity_pct must be between 0 and 100")

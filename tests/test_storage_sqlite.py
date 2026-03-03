@@ -20,6 +20,7 @@ def test_write_enriched_creates_tables_and_rows(tmp_path):
         temp_c=6.5,
         wind_mps=4.2,
         precipitation_mm=0.0,
+        humidity_pct=80.0,
     )
 
     enriched = [attach_weather(run, obs)]
@@ -53,6 +54,7 @@ def test_write_enriched_is_idempotent_for_same_row(tmp_path):
         temp_c=6.5,
         wind_mps=4.2,
         precipitation_mm=0.0,
+        humidity_pct=80.0,
     )
 
     enriched = [attach_weather(run, obs)]

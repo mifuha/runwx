@@ -33,12 +33,14 @@ def demo_data() -> tuple[list[Run], list[WeatherObs]]:
             temp_c=6.5,
             wind_mps=4.2,
             precipitation_mm=0.0,
+            humidity_pct=80.0,
         ),
         WeatherObs(
             observed_at=datetime(2026, 2, 1, 11, 50, tzinfo=timezone.utc),
             temp_c=7.1,
             wind_mps=3.8,
             precipitation_mm=0.2,
+            humidity_pct=75.0,
         ),
     ]
     return runs, weather

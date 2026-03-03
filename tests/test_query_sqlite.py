@@ -11,7 +11,13 @@ def test_fetch_latest_enriched(tmp_path):
     conn = connect(db)
 
     run = Run(started_at=datetime(2026, 2, 1, 10, 0, tzinfo=timezone.utc), duration_s=3600, distance_m=10000)
-    obs = WeatherObs(observed_at=datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc), temp_c=6.5, wind_mps=4.2, precipitation_mm=0.0)
+    obs = WeatherObs(
+        observed_at=datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc),
+        temp_c=6.5,
+        wind_mps=4.2,
+        precipitation_mm=0.0,
+        humidity_pct=80.0,
+    )
 
     write_enriched(conn, [attach_weather(run, obs)])
 
@@ -21,3 +27,4 @@ def test_fetch_latest_enriched(tmp_path):
     assert len(rows) == 1
     assert rows[0].distance_m == 10000
     assert rows[0].temp_c == 6.5
+    assert rows[0].humidity_pct == 80.0

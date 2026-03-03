@@ -15,6 +15,7 @@ def test_enrich_runs_enriches_when_weather_within_gap():
         temp_c=6.5,
         wind_mps=4.2,
         precipitation_mm=0.0,
+        humidity_pct=80.0,
     )
 
     result = enrich_runs([run], [obs], max_gap=timedelta(minutes=30))
@@ -36,6 +37,7 @@ def test_enrich_runs_skips_when_no_weather_within_gap():
         temp_c=6.5,
         wind_mps=4.2,
         precipitation_mm=0.0,
+        humidity_pct=60.0,
     )
 
     result = enrich_runs([run], [far_obs], max_gap=timedelta(minutes=30))
@@ -63,12 +65,14 @@ def test_enrich_runs_mixed_results():
         temp_c=7.0,
         wind_mps=3.0,
         precipitation_mm=0.0,
+        humidity_pct=80.0,
     )
     obs_far = WeatherObs(
         observed_at=datetime(2026, 2, 1, 12, 0, tzinfo=timezone.utc),
         temp_c=9.0,
         wind_mps=2.0,
         precipitation_mm=0.0,
+        humidity_pct=60.0,
     )
 
     result = enrich_runs([run_ok, run_bad], [obs_ok, obs_far], max_gap=timedelta(minutes=20))
@@ -99,12 +103,14 @@ def test_enrich_runs_still_works_with_indexed_weather_lookup():
             temp_c=6.5,
             wind_mps=4.2,
             precipitation_mm=0.0,
+            humidity_pct=80.0,
         ),
         WeatherObs(
             observed_at=datetime(2026, 2, 1, 16, 30, tzinfo=timezone.utc),
             temp_c=5.9,
             wind_mps=5.1,
             precipitation_mm=0.0,
+            humidity_pct=60.0,
         ),
     ]
 

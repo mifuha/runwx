@@ -41,7 +41,8 @@ def init_db(conn: sqlite3.Connection) -> None:
             temp_c REAL NOT NULL,
             wind_mps REAL NOT NULL,
             precipitation_mm REAL NOT NULL,
-            UNIQUE(observed_at, temp_c, wind_mps, precipitation_mm)
+            humidity_pct REAL NOT NULL,
+            UNIQUE(observed_at, temp_c, wind_mps, precipitation_mm, humidity_pct)
         )
         """
     )
@@ -97,17 +98,17 @@ def _get_or_create_run_id(conn: sqlite3.Connection, run: Run) -> int:
 def _get_or_create_weather_id(conn: sqlite3.Connection, obs: WeatherObs) -> int:
     conn.execute(
         """
-        INSERT OR IGNORE INTO weather_obs (observed_at, temp_c, wind_mps, precipitation_mm)
-        VALUES (?, ?, ?, ?)
+        INSERT OR IGNORE INTO weather_obs (observed_at, temp_c, wind_mps, precipitation_mm, humidity_pct)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (_iso(obs.observed_at), obs.temp_c, obs.wind_mps, obs.precipitation_mm),
+        (_iso(obs.observed_at), obs.temp_c, obs.wind_mps, obs.precipitation_mm, obs.humidity_pct),
     )
     row = conn.execute(
         """
         SELECT id FROM weather_obs
-        WHERE observed_at = ? AND temp_c = ? AND wind_mps = ? AND precipitation_mm = ?
+        WHERE observed_at = ? AND temp_c = ? AND wind_mps = ? AND precipitation_mm = ? AND humidity_pct = ?
         """,
-        (_iso(obs.observed_at), obs.temp_c, obs.wind_mps, obs.precipitation_mm),
+        (_iso(obs.observed_at), obs.temp_c, obs.wind_mps, obs.precipitation_mm, obs.humidity_pct),
     ).fetchone()
     if row is None:
         raise RuntimeError("Failed to read back weather id after insert")

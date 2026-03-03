@@ -15,8 +15,8 @@ def test_write_pipeline_result_persists_skipped(tmp_path):
     ]
 
     weather = [
-        WeatherObs(observed_at=datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc), temp_c=6.5, wind_mps=4.2, precipitation_mm=0.0),
-        WeatherObs(observed_at=datetime(2026, 2, 1, 16, 30, tzinfo=timezone.utc), temp_c=5.9, wind_mps=5.1, precipitation_mm=0.0),
+        WeatherObs(observed_at=datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc), temp_c=6.5, wind_mps=4.2, precipitation_mm=0.0, humidity_pct=80.0),
+        WeatherObs(observed_at=datetime(2026, 2, 1, 16, 30, tzinfo=timezone.utc), temp_c=5.9, wind_mps=5.1, precipitation_mm=0.0, humidity_pct=60.0),
     ]
 
     result = enrich_runs(runs, weather, max_gap=timedelta(minutes=30))
@@ -40,7 +40,7 @@ def test_write_pipeline_result_idempotent(tmp_path):
     conn = connect(db)
 
     runs = [Run(started_at=datetime(2026, 2, 1, 15, 0, tzinfo=timezone.utc), duration_s=2400, distance_m=7000)]
-    weather = [WeatherObs(observed_at=datetime(2026, 2, 1, 16, 30, tzinfo=timezone.utc), temp_c=5.9, wind_mps=5.1, precipitation_mm=0.0)]
+    weather = [WeatherObs(observed_at=datetime(2026, 2, 1, 16, 30, tzinfo=timezone.utc), temp_c=5.9, wind_mps=5.1, precipitation_mm=0.0, humidity_pct=60.0)]
 
     result = enrich_runs(runs, weather, max_gap=timedelta(minutes=30))
 

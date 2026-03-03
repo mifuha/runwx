@@ -39,7 +39,7 @@ Most of the work usually involves:
 ### Domain models (validated + immutable)
 
 - `Run(started_at, duration_s, distance_m)`
-- `WeatherObs(observed_at, temp_c, wind_mps, precipitation_mm)`
+- `WeatherObs(observed_at, temp_c, wind_mps, precipitation_mm, humidity_pct)`
 - `RunWithWeather(run, weather)`
 
 Validation rules:

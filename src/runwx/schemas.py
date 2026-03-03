@@ -47,6 +47,7 @@ class WeatherObsIn(BaseModel):
     temp_c: float
     wind_mps: float = Field(ge=0)
     precipitation_mm: float = Field(ge=0)
+    humidity_pct: float = Field(ge=0, le=100)
 
     @field_validator("observed_at", mode="before")
     @classmethod
@@ -66,4 +67,5 @@ class WeatherObsIn(BaseModel):
             temp_c=self.temp_c,
             wind_mps=self.wind_mps,
             precipitation_mm=self.precipitation_mm,
+            humidity_pct=self.humidity_pct,
         )

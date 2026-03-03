@@ -27,6 +27,7 @@ def test_weather_obs_in_rejects_naive_datetime():
         "temp_c": "6.5",
         "wind_mps": "4.2",
         "precipitation_mm": "0.0",
+        "humidity_pct": "50.0",
     }
 
     with pytest.raises(ValidationError):
@@ -39,6 +40,7 @@ def test_weather_obs_in_rejects_negative_wind():
         "temp_c": "6.5",
         "wind_mps": "-1.0",
         "precipitation_mm": "0.0",
+        "humidity_pct": "50.0",
     }
 
     with pytest.raises(ValidationError):

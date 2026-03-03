@@ -49,7 +49,13 @@ def test_run_is_frozen():
 
 def test_weather_obs_valid():
     observed_at = datetime(2026, 1, 15, 12, 0, tzinfo=timezone.utc)
-    obs = WeatherObs(observed_at=observed_at, temp_c=15.5, wind_mps=5.2, precipitation_mm=0.0)
+    obs = WeatherObs(
+        observed_at=observed_at,
+        temp_c=15.5,
+        wind_mps=5.2,
+        precipitation_mm=0.0,
+        humidity_pct=75.0,
+    )
     assert obs.observed_at == observed_at
     assert obs.temp_c == 15.5
     assert obs.wind_mps == 5.2
@@ -59,30 +65,82 @@ def test_weather_obs_valid():
 def test_weather_obs_requires_timezone_aware_datetime():
     observed_at = datetime(2026, 1, 15, 12, 0)  # naive
     with pytest.raises(ValueError, match="observed_at must be timezone-aware"):
-        WeatherObs(observed_at=observed_at, temp_c=15.5, wind_mps=5.2, precipitation_mm=0.0)
+        WeatherObs(
+            observed_at=observed_at,
+            temp_c=15.5,
+            wind_mps=5.2,
+            precipitation_mm=0.0,
+            humidity_pct=75.0,
+        )
 
 
 def test_weather_obs_negative_temp_allowed():
     observed_at = datetime(2026, 1, 15, 12, 0, tzinfo=timezone.utc)
-    obs = WeatherObs(observed_at=observed_at, temp_c=-10.0, wind_mps=0.0, precipitation_mm=0.0)
+    obs = WeatherObs(
+        observed_at=observed_at,
+        temp_c=-10.0,
+        wind_mps=0.0,
+        precipitation_mm=0.0,
+        humidity_pct=50.0,
+    )
     assert obs.temp_c == -10.0
 
 
 def test_weather_obs_wind_must_be_non_negative():
     observed_at = datetime(2026, 1, 15, 12, 0, tzinfo=timezone.utc)
     with pytest.raises(ValueError, match="wind_mps must be non-negative"):
-        WeatherObs(observed_at=observed_at, temp_c=10.0, wind_mps=-0.1, precipitation_mm=0.0)
+        WeatherObs(
+            observed_at=observed_at,
+            temp_c=10.0,
+            wind_mps=-0.1,
+            precipitation_mm=0.0,
+            humidity_pct=50.0,
+        )
 
 
 def test_weather_obs_precipitation_must_be_non_negative():
     observed_at = datetime(2026, 1, 15, 12, 0, tzinfo=timezone.utc)
     with pytest.raises(ValueError, match="precipitation_mm must be non-negative"):
-        WeatherObs(observed_at=observed_at, temp_c=10.0, wind_mps=0.0, precipitation_mm=-0.1)
+        WeatherObs(
+            observed_at=observed_at,
+            temp_c=10.0,
+            wind_mps=0.0,
+            precipitation_mm=-0.1,
+            humidity_pct=50.0,
+        )
 
 
 def test_weather_obs_is_frozen():
     observed_at = datetime(2026, 1, 15, 12, 0, tzinfo=timezone.utc)
-    obs = WeatherObs(observed_at=observed_at, temp_c=15.5, wind_mps=5.2, precipitation_mm=0.0)
+    obs = WeatherObs(
+        observed_at=observed_at,
+        temp_c=15.5,
+        wind_mps=5.2,
+        precipitation_mm=0.0,
+        humidity_pct=75.0,
+    )
 
     with pytest.raises(FrozenInstanceError):
         obs.temp_c = 20.0
+
+
+def test_weather_obs_humidity_must_be_between_0_and_100():
+    observed_at = datetime(2026, 1, 15, 12, 0, tzinfo=timezone.utc)
+
+    with pytest.raises(ValueError, match="humidity_pct must be between 0 and 100"):
+        WeatherObs(
+            observed_at=observed_at,
+            temp_c=10.0,
+            wind_mps=0.0,
+            precipitation_mm=0.0,
+            humidity_pct=-1.0,
+        )
+
+    with pytest.raises(ValueError, match="humidity_pct must be between 0 and 100"):
+        WeatherObs(
+            observed_at=observed_at,
+            temp_c=10.0,
+            wind_mps=0.0,
+            precipitation_mm=0.0,
+            humidity_pct=101.0,
+        )
