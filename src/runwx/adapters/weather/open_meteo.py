@@ -7,6 +7,8 @@ from typing import Final
 import httpx
 
 from runwx.adapters.weather.schemas import OpenMeteoArchiveResponse
+from runwx.adapters.weather.translate import to_weather_obs
+from runwx.models import WeatherObs
 
 BASE_URL: Final = "https://archive-api.open-meteo.com/v1/archive"
 HOURLY_FIELDS: Final[list[str]] = [
@@ -44,3 +46,19 @@ class OpenMeteoClient:
             payload = response.json()
 
         return OpenMeteoArchiveResponse.model_validate(payload)
+
+    def fetch_weather_obs(
+        self,
+        *,
+        latitude: float,
+        longitude: float,
+        start_date: date,
+        end_date: date,
+    ) -> list[WeatherObs]:
+        resp = self.fetch_hourly(
+            latitude=latitude,
+            longitude=longitude,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        return to_weather_obs(resp)
