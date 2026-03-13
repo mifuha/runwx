@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+"""
+Compatibility alias for enrichment utilities.
 
-from runwx.models import Run, WeatherObs
+Canonical module: ``runwx.domain.enrich``.
+"""
 
+from runwx.domain.enrich import RunWithWeather, attach_weather
 
-@dataclass(frozen=True)
-class RunWithWeather:
-    run: Run
-    weather: WeatherObs
+__all__ = ["RunWithWeather", "attach_weather"]
 
-
-def attach_weather(run: Run, weather: WeatherObs) -> RunWithWeather:
-    """Combine a Run and WeatherObs into a single record for downstream analysis."""
-    return RunWithWeather(run=run, weather=weather)

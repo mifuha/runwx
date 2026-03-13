@@ -5,12 +5,12 @@ import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from runwx.io_runs import load_runs_csv
-from runwx.io_weather import load_weather_csv
-from runwx.models import Run, WeatherObs
-from runwx.pipeline import enrich_runs
-from runwx.query_sqlite import fetch_latest_enriched
-from runwx.storage_sqlite import connect, write_pipeline_result
+from runwx.adapters.csv.io_runs import load_runs_csv
+from runwx.adapters.csv.io_weather import load_weather_csv
+from runwx.adapters.sqlite.query_sqlite import fetch_latest_enriched
+from runwx.adapters.sqlite.storage_sqlite import connect, write_pipeline_result
+from runwx.domain.models import Run, WeatherObs
+from runwx.services.pipeline import enrich_runs
 
 
 def demo_data() -> tuple[list[Run], list[WeatherObs]]:
@@ -158,7 +158,7 @@ def main(argv: list[str] | None = None) -> None:
 
     out(f"\nSkipped: {len(result.skipped)}")
     for s in result.skipped:
-        print(f"- run @ {s.run.started_at.isoformat()} -> {s.reason}")
+        out(f"- run @ {s.run.started_at.isoformat()} -> {s.reason}")
 
     if args.db is not None:
         conn = connect(args.db)

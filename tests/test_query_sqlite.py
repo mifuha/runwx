@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 
-from runwx.enrich import attach_weather
-from runwx.models import Run, WeatherObs
-from runwx.storage_sqlite import connect, write_enriched
-from runwx.query_sqlite import fetch_latest_enriched
+from runwx.adapters.sqlite.query_sqlite import fetch_latest_enriched
+from runwx.adapters.sqlite.storage_sqlite import connect, write_enriched
+from runwx.domain.enrich import attach_weather
+from runwx.domain.models import Run, WeatherObs
 
 
 def test_fetch_latest_enriched(tmp_path):

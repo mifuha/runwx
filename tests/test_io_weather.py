@@ -1,4 +1,4 @@
-from runwx.io_weather import load_weather_csv
+from runwx.adapters.csv.io_weather import load_weather_csv
 
 
 def test_load_weather_csv_happy_path(tmp_path):

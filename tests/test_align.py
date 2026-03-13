@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from runwx.align import build_weather_index, nearest_weather
-from runwx.models import Run, WeatherObs
+from runwx.domain.align import build_weather_index, nearest_weather
+from runwx.domain.models import Run, WeatherObs
 
 
 def test_nearest_weather_empty_list_returns_none():

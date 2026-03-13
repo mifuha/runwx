@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-from runwx.models import Run, WeatherObs
-from runwx.pipeline import enrich_runs
-from runwx.storage_sqlite import connect, write_pipeline_result
+from runwx.adapters.sqlite.storage_sqlite import connect, write_pipeline_result
+from runwx.domain.models import Run, WeatherObs
+from runwx.services.pipeline import enrich_runs
 
 
 def test_write_pipeline_result_persists_skipped(tmp_path):
