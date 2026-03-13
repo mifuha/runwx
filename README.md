@@ -86,6 +86,47 @@ CSV rows are parsed and converted into typed domain objects before entering the 
 
 ---
 
+## Package structure
+
+Canonical architecture is layered, and these modules are the source of truth:
+
+- `runwx.domain`  
+  Core domain types and pure logic.
+- `runwx.services`  
+  Orchestration/use-case flows built on domain logic.
+- `runwx.adapters`  
+  External I/O boundaries (CSV, SQLite, APIs, format translation).
+- `runwx.main` / `runwx.__main__`  
+  CLI entrypoints (`python -m runwx`).
+
+---
+
+## API stability
+
+- Stable entrypoint
+  - `python -m runwx`
+- Canonical code API (for contributors/internal code)
+  - Prefer imports from `runwx.domain.*`, `runwx.services.*`, and `runwx.adapters.*`.
+- Backward-compatibility aliases (top-level modules)
+  - Top-level `runwx.*` alias modules are kept to avoid breaking older imports.
+  - They are compatibility paths, not the primary architecture surface.
+
+---
+
+## Contributor guidance
+
+When adding or changing code:
+
+- add business rules/entities in `runwx.domain`
+- add orchestration in `runwx.services`
+- add persistence/integration code in `runwx.adapters`
+- keep `runwx.main` focused on CLI wiring
+
+Internal code should import canonical layered modules directly.  
+Compatibility aliases remain for external users and older integrations.
+
+---
+
 ## Requirements
 
 - Python 3.10+ (tested locally on Python 3.13)  
@@ -103,6 +144,7 @@ source .venv/Scripts/activate
 python -m pip install -U pip
 pip install -e .
 pip install pytest
+```
 
 ## Usage
 
@@ -116,3 +158,4 @@ python -m runwx query --db runwx.db --limit 10
 using CSV input:
 
 python -m runwx --csv
+```
