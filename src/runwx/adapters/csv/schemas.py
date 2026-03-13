@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from runwx.models import Run, WeatherObs
+from runwx.domain.models import Run, WeatherObs
 
 
 def _normalize_z_suffix(value):

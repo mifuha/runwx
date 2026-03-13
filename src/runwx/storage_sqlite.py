@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 """
-Backward-compatible re-exports for SQLite storage helpers.
+Compatibility alias for SQLite storage helpers.
 
-Tests import from ``runwx.storage_sqlite``; the implementations now live in
-``runwx.adapters.sqlite.storage_sqlite``.
+Canonical module: ``runwx.adapters.sqlite.storage_sqlite``.
 """
 
 from runwx.adapters.sqlite.storage_sqlite import (

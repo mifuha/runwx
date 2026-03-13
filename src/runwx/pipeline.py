@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 """
-Backward-compatible re-exports for the enrichment pipeline.
+Compatibility alias for the enrichment pipeline.
 
-Tests and callers import ``runwx.pipeline.enrich_runs`` and related types.
-The implementations now live in ``runwx.services.pipeline``.
+Canonical module: ``runwx.services.pipeline``.
 """
 
 from runwx.services.pipeline import PipelineResult, SkippedRun, enrich_runs

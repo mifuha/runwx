@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from runwx.models import Run, WeatherObs
-from runwx.pipeline import enrich_runs
+from runwx.domain.models import Run, WeatherObs
+from runwx.services.pipeline import enrich_runs
 
 
 def test_enrich_runs_enriches_when_weather_within_gap():

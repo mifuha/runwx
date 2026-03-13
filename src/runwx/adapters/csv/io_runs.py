@@ -5,8 +5,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from runwx.models import Run
-from runwx.schemas import RunIn
+from runwx.adapters.csv.schemas import RunIn
+from runwx.domain.models import Run
 
 
 def load_runs_csv(path: str | Path) -> list[Run]:

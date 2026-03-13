@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Sequence
 
-from runwx.models import Run, WeatherObs
+from runwx.domain.models import Run, WeatherObs
 
 
 @dataclass(frozen=True)

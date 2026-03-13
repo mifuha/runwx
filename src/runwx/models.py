@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 """
-Backward-compatible re-exports for domain models.
+Compatibility alias for domain models.
 
-Tests and other code import from ``runwx.models``; the implementations live
-in ``runwx.domain.models``.
+Canonical module: ``runwx.domain.models``.
 """
 
 from runwx.domain.models import Run, WeatherObs

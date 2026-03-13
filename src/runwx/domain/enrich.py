@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from runwx.models import Run, WeatherObs
+from runwx.domain.models import Run, WeatherObs
 
 
 @dataclass(frozen=True)

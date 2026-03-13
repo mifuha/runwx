@@ -4,9 +4,9 @@ import sqlite3
 from pathlib import Path
 from typing import Iterable
 
-from runwx.enrich import RunWithWeather
-from runwx.models import Run, WeatherObs
-from runwx.pipeline import PipelineResult
+from runwx.domain.enrich import RunWithWeather
+from runwx.domain.models import Run, WeatherObs
+from runwx.services.pipeline import PipelineResult
 
 
 def _iso(dt) -> str:

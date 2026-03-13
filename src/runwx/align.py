@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 """
-Backward-compatible re-exports for weather alignment utilities.
+Compatibility alias for weather alignment utilities.
 
-Tests and older code import from ``runwx.align``; the implementations now live
-in ``runwx.domain.align``.
+Canonical module: ``runwx.domain.align``.
 """
 
 from runwx.domain.align import (

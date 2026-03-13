@@ -5,8 +5,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from runwx.models import WeatherObs
-from runwx.schemas import WeatherObsIn
+from runwx.adapters.csv.schemas import WeatherObsIn
+from runwx.domain.models import WeatherObs
 
 
 def load_weather_csv(path: str | Path) -> list[WeatherObs]:

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
 
-from runwx.models import Run, WeatherObs
-from runwx.pipeline_open_meteo import enrich_runs_with_open_meteo
+from runwx.domain.models import Run, WeatherObs
+from runwx.services.pipeline_open_meteo import enrich_runs_with_open_meteo
 
 
 class DummyClient:

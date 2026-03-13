@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from runwx.models import WeatherObs
+from runwx.domain.models import WeatherObs
 from runwx.adapters.weather.schemas import OpenMeteoArchiveResponse
 
 

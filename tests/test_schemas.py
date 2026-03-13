@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from runwx.schemas import RunIn, WeatherObsIn
+from runwx.adapters.csv.schemas import RunIn, WeatherObsIn
 
 
 def test_run_in_parses_string_fields_and_converts_to_domain():

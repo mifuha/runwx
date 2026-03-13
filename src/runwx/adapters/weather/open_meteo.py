@@ -8,7 +8,7 @@ import httpx
 
 from runwx.adapters.weather.schemas import OpenMeteoArchiveResponse
 from runwx.adapters.weather.translate import to_weather_obs
-from runwx.models import WeatherObs
+from runwx.domain.models import WeatherObs
 
 BASE_URL: Final = "https://archive-api.open-meteo.com/v1/archive"
 HOURLY_FIELDS: Final[list[str]] = [

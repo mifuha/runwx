@@ -2,8 +2,8 @@ import pytest
 from dataclasses import FrozenInstanceError
 from datetime import datetime, timezone
 
-from runwx.enrich import RunWithWeather, attach_weather
-from runwx.models import Run, WeatherObs
+from runwx.domain.enrich import RunWithWeather, attach_weather
+from runwx.domain.models import Run, WeatherObs
 
 
 def test_attach_weather_returns_run_with_weather():

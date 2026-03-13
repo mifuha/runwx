@@ -1,4 +1,4 @@
-from runwx.io_runs import load_runs_csv
+from runwx.adapters.csv.io_runs import load_runs_csv
 
 
 def test_load_runs_csv_happy_path(tmp_path):
