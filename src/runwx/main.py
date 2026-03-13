@@ -158,7 +158,7 @@ def main(argv: list[str] | None = None) -> None:
 
     out(f"\nSkipped: {len(result.skipped)}")
     for s in result.skipped:
-        print(f"- run @ {s.run.started_at.isoformat()} -> {s.reason}")
+        out(f"- run @ {s.run.started_at.isoformat()} -> {s.reason}")
 
     if args.db is not None:
         conn = connect(args.db)
