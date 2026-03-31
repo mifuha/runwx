@@ -29,7 +29,10 @@ def summarize_results(
     sorted_results = sorted(results, key=lambda r: r.duration_s)
     durations = [r.duration_s for r in sorted_results]
 
-    top_slice = durations[:top_n]
+    # If `top_n` exceeds the number of results, we treat it as "all results"
+    # (because slicing naturally clamps; this just makes the intent explicit).
+    top_n_effective = min(top_n, len(durations))
+    top_slice = durations[:top_n_effective]
 
     return EventSummary(
         finisher_count=len(durations),
