@@ -55,6 +55,9 @@ def test_analyze_race_event_combines_summary_and_weather_enrichment():
     assert analysis.summary.best_duration_s == 3600
     assert analysis.summary.median_duration_s == 3720
     assert analysis.summary.top_n_median_duration_s == 3660.0
-
+    assert analysis.weather_summary.median_temp_c == 13.0
+    assert analysis.weather_summary.median_wind_mps == 4.0
+    assert analysis.weather_summary.median_humidity_pct == 78.0
+    assert analysis.weather_summary.median_precipitation_mm == 0.0
     assert len(analysis.pipeline_result.enriched) == 3
     assert len(analysis.pipeline_result.skipped) == 0

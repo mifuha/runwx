@@ -6,6 +6,10 @@ from typing import Sequence
 
 from runwx.adapters.weather.open_meteo import OpenMeteoClient
 from runwx.domain.race import RaceEvent, RaceResult
+from runwx.services.event_weather_summary import (
+    EventWeatherSummary,
+    summarize_event_weather,
+)
 from runwx.services.pipeline import PipelineResult
 from runwx.services.race_pipeline import enrich_race_results_with_open_meteo
 from runwx.services.race_summary import EventSummary, summarize_results
@@ -15,6 +19,7 @@ from runwx.services.race_summary import EventSummary, summarize_results
 class RaceAnalysis:
     event: RaceEvent
     summary: EventSummary
+    weather_summary: EventWeatherSummary
     pipeline_result: PipelineResult
 
 
@@ -33,8 +38,11 @@ def analyze_race_event(
         client=client,
         max_gap=max_gap,
     )
+    weather_summary = summarize_event_weather(pipeline_result.enriched)
+
     return RaceAnalysis(
         event=event,
         summary=summary,
+        weather_summary=weather_summary,
         pipeline_result=pipeline_result,
     )
