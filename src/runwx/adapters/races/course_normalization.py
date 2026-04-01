@@ -52,9 +52,11 @@ def normalize_course_id(
     _ = source
     _ = source_event_id
 
-    if raw_course_id:
-        raw_key = _slug(raw_course_id)
-        return _ALIAS_TO_CANONICAL.get(raw_key, raw_key)
+    if raw_course_id is not None:
+        raw_stripped = raw_course_id.strip()
+        if raw_stripped:
+            raw_key = _slug(raw_stripped)
+            return _ALIAS_TO_CANONICAL.get(raw_key, raw_key)
 
     name_key = _slug(name)
     return _ALIAS_TO_CANONICAL.get(name_key)

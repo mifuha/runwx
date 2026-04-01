@@ -36,3 +36,21 @@ def test_normalize_course_id_returns_none_when_no_raw_or_known_name():
         name="Completely Unknown Event",
         raw_course_id=None,
     ) is None
+
+
+def test_normalize_course_id_whitespace_only_raw_falls_back_to_known_event_name():
+    assert normalize_course_id(
+        source="demo",
+        source_event_id="event-1",
+        name="2025 Sample Park 10 km",
+        raw_course_id="   \t",
+    ) == "sample-park-10k"
+
+
+def test_normalize_course_id_whitespace_only_raw_unknown_event_name_returns_none():
+    assert normalize_course_id(
+        source="demo",
+        source_event_id="event-1",
+        name="Completely Unknown Event",
+        raw_course_id="   ",
+    ) is None
