@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from runwx.adapters.csv.schemas import RunIn, WeatherObsIn
-
+from runwx.adapters.races.schemas import RaceEventIn
 
 def test_run_in_parses_string_fields_and_converts_to_domain():
     row = {
@@ -45,3 +45,18 @@ def test_weather_obs_in_rejects_negative_wind():
 
     with pytest.raises(ValidationError):
         WeatherObsIn.model_validate(row)
+def test_race_event_in_to_domain_normalizes_course_id_from_name():
+    event_in = RaceEventIn(
+        source="demo",
+        source_event_id="event-1",
+        name="2025 Sample Park 10K",
+        started_at="2025-05-01T10:00:00Z",
+        distance_m=10000,
+        latitude=46.0,
+        longitude=14.0,
+        course_id=None,
+    )
+
+    event = event_in.to_domain()
+
+    assert event.course_id == "sample-park-10k"

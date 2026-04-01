@@ -5,6 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from runwx.adapters.races.course_normalization import normalize_course_id
 from runwx.domain.race import RaceEvent, RaceResult
 
 
@@ -47,6 +48,13 @@ class RaceEventIn(BaseModel):
         return value
 
     def to_domain(self) -> RaceEvent:
+        normalized_course_id = normalize_course_id(
+            source=self.source,
+            source_event_id=self.source_event_id,
+            name=self.name,
+            raw_course_id=self.course_id,
+        )
+
         return RaceEvent(
             source=self.source,
             source_event_id=self.source_event_id,
@@ -55,7 +63,7 @@ class RaceEventIn(BaseModel):
             distance_m=self.distance_m,
             latitude=self.latitude,
             longitude=self.longitude,
-            course_id=self.course_id,
+            course_id=normalized_course_id,
         )
 
 
