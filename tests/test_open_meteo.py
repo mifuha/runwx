@@ -2,8 +2,50 @@ from __future__ import annotations
 
 from datetime import date, datetime, timezone
 
+import httpx
+
 from runwx.adapters.weather.open_meteo import OpenMeteoClient
 from runwx.adapters.weather.schemas import OpenMeteoArchiveResponse
+
+
+def test_fetch_hourly_requests_wind_speed_in_metres_per_second(monkeypatch):
+    requested_params = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested_params.update(dict(request.url.params))
+        return httpx.Response(
+            200,
+            json={
+                "latitude": 51.5,
+                "longitude": -0.1,
+                "timezone": "UTC",
+                "utc_offset_seconds": 0,
+                "hourly": {
+                    "time": [],
+                    "temperature_2m": [],
+                    "relative_humidity_2m": [],
+                    "precipitation": [],
+                    "wind_speed_10m": [],
+                },
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+    client_class = httpx.Client
+    monkeypatch.setattr(
+        httpx,
+        "Client",
+        lambda **kwargs: client_class(transport=transport, **kwargs),
+    )
+
+    OpenMeteoClient().fetch_hourly(
+        latitude=51.5,
+        longitude=-0.1,
+        start_date=date(2026, 2, 1),
+        end_date=date(2026, 2, 1),
+    )
+
+    assert requested_params["wind_speed_unit"] == "ms"
 
 
 def test_fetch_weather_obs_returns_translated_weather_obs(monkeypatch):

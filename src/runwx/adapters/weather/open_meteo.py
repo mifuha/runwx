@@ -37,6 +37,7 @@ class OpenMeteoClient:
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "hourly": ",".join(HOURLY_FIELDS),
+            "wind_speed_unit": "ms",
             "timezone": "UTC",
         }
 
