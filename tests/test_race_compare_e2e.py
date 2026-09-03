@@ -1,8 +1,35 @@
+from datetime import datetime, time, timezone
 from pathlib import Path
 
 from runwx.adapters.races import load_event_json, load_results_csv
+from runwx.domain.models import WeatherObs
 from runwx.services.race_analysis import analyze_race_event
 from runwx.services.race_compare import compare_race_analyses
+
+
+class FakeOpenMeteoClient:
+    def fetch_weather_obs(
+        self,
+        *,
+        latitude: float,
+        longitude: float,
+        start_date,
+        end_date,
+    ):
+        return [
+            WeatherObs(
+                observed_at=datetime.combine(
+                    start_date,
+                    time(hour=hour),
+                    tzinfo=timezone.utc,
+                ),
+                temp_c=12.0 + hour - 9,
+                wind_mps=3.0,
+                precipitation_mm=0.0,
+                humidity_pct=75.0,
+            )
+            for hour in (9, 10)
+        ]
 
 
 def test_compare_race_analyses_end_to_end_from_sample_files():
@@ -20,8 +47,9 @@ def test_compare_race_analyses_end_to_end_from_sample_files():
         event_id=event_2023.event_id,
     )
 
-    analysis_2024 = analyze_race_event(event_2024, results_2024)
-    analysis_2023 = analyze_race_event(event_2023, results_2023)
+    client = FakeOpenMeteoClient()
+    analysis_2024 = analyze_race_event(event_2024, results_2024, client=client)
+    analysis_2023 = analyze_race_event(event_2023, results_2023, client=client)
 
     rows = compare_race_analyses([analysis_2024, analysis_2023])
 
