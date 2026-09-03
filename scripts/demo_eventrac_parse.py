@@ -6,6 +6,7 @@ def main() -> None:
         "data/raw/eventrac/lydd_half_2022.html",
         course_id="lydd-half-marathon",
         distance_m=21097,
+        timezone_name="Europe/London",
     )
 
     print(event_in)

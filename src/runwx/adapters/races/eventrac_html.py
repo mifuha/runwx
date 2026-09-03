@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
 
@@ -15,12 +16,14 @@ def load_eventrac_results_html(
     *,
     course_id: str,
     distance_m: int,
+    timezone_name: str,
 ) -> tuple[RaceEventIn, list[RaceResultIn]]:
     html = Path(path).read_text(encoding="utf-8")
     return parse_eventrac_results_html(
         html,
         course_id=course_id,
         distance_m=distance_m,
+        timezone_name=timezone_name,
     )
 
 def _parse_duration_to_seconds(value: str) -> int:
@@ -86,6 +89,7 @@ def parse_eventrac_results_html(
     *,
     course_id: str,
     distance_m: int,
+    timezone_name: str,
 ) -> tuple[RaceEventIn, list[RaceResultIn]]:
     soup = BeautifulSoup(html, "html.parser")
 
@@ -100,7 +104,11 @@ def parse_eventrac_results_html(
     results_title = title_node.get_text(" ", strip=True)
     date_text = date_node.get_text(" ", strip=True)
 
-    started_at = datetime.strptime(date_text, "%d/%m/%Y, %H:%M").replace(tzinfo=timezone.utc)
+    started_at = (
+        datetime.strptime(date_text, "%d/%m/%Y, %H:%M")
+        .replace(tzinfo=ZoneInfo(timezone_name))
+        .astimezone(timezone.utc)
+    )
 
     source_event_id = _extract_source_event_id(soup)
     latitude, longitude = _extract_geo_from_jsonld(soup)

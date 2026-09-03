@@ -49,6 +49,7 @@ def test_eventrac_results_can_flow_through_race_analysis():
         html,
         course_id="lydd-half-marathon",
         distance_m=21097,
+        timezone_name="Europe/London",
     )
 
     event = event_in.to_domain()
