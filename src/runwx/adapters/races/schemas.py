@@ -53,6 +53,7 @@ class RaceEventIn(BaseModel):
             source_event_id=self.source_event_id,
             name=self.name,
             raw_course_id=self.course_id,
+            distance_m=self.distance_m,
         )
 
         return RaceEvent(
