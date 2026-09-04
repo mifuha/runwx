@@ -2,14 +2,32 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
 
 from runwx.adapters.races.schemas import RaceEventIn, RaceResultIn
 
-from pathlib import Path
+
+@dataclass(frozen=True)
+class SkippedEventracRow:
+    """A skipped row, numbered from 1 among data rows (excluding headers)."""
+
+    row_number: int
+    reason: str
+
+
+@dataclass(frozen=True)
+class EventracParseResult:
+    """Accepted results and missing-finish-time skips for one Eventrac page."""
+
+    event: RaceEventIn
+    accepted: tuple[RaceResultIn, ...]
+    skipped: tuple[SkippedEventracRow, ...]
+
 
 def load_eventrac_results_html(
     path: str | Path,
@@ -17,7 +35,7 @@ def load_eventrac_results_html(
     course_id: str,
     distance_m: int,
     timezone_name: str,
-) -> tuple[RaceEventIn, list[RaceResultIn]]:
+) -> EventracParseResult:
     html = Path(path).read_text(encoding="utf-8")
     return parse_eventrac_results_html(
         html,
@@ -90,7 +108,11 @@ def parse_eventrac_results_html(
     course_id: str,
     distance_m: int,
     timezone_name: str,
-) -> tuple[RaceEventIn, list[RaceResultIn]]:
+) -> EventracParseResult:
+    """Parse results, reporting rows whose Time cell is blank.
+
+    Malformed durations and pages with no accepted results still raise errors.
+    """
     soup = BeautifulSoup(html, "html.parser")
 
     title_node = soup.select_one("div.box-header h3.box-title")
@@ -152,11 +174,14 @@ def parse_eventrac_results_html(
         raise ValueError(f"missing required columns in Eventrac table headers: {headers}")
 
     results: list[RaceResultIn] = []
+    skipped: list[SkippedEventracRow] = []
+    row_number = 0
 
     for row in table.find_all("tr"):
         cells = row.find_all("td")
         if not cells:
             continue
+        row_number += 1
 
         values = [cell.get_text(" ", strip=True) for cell in cells]
 
@@ -168,7 +193,13 @@ def parse_eventrac_results_html(
         raw_gender = values[gender_idx].strip()
         raw_time = values[time_idx].strip()
 
-        if not raw_place or not raw_time:
+        if not raw_time:
+            skipped.append(
+                SkippedEventracRow(row_number=row_number, reason="missing finish time")
+            )
+            continue
+
+        if not raw_place:
             continue
 
         try:
@@ -187,4 +218,8 @@ def parse_eventrac_results_html(
     if not results:
         raise ValueError("no Eventrac result rows parsed")
 
-    return event_in, results
+    return EventracParseResult(
+        event=event_in,
+        accepted=tuple(results),
+        skipped=tuple(skipped),
+    )
