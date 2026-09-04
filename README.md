@@ -14,6 +14,10 @@ The goal is to practice a real pipeline mindset (validation, alignment, enrichme
 - enriches runs with weather context
 - provides a small orchestration pipeline
 - supports CSV ingestion for runs and weather
+- ingests race events and race results into typed models
+- parses race results from saved Eventrac HTML pages
+- normalizes course IDs and local race times
+- compares editions of the same course, including weather summaries
 - includes pytest coverage across core modules
 
 ---
@@ -148,14 +152,20 @@ pip install pytest
 
 ## Usage
 
-Run with demo data:
-
 ```bash
 python -m runwx run
+python -m runwx run --csv
 python -m runwx run --csv --db runwx.db
-
 python -m runwx query --db runwx.db --limit 10
-using CSV input:
-
-python -m runwx --csv
 ```
+
+### Race ingestion demo
+
+Parse the saved Eventrac fixture deterministically, without requesting the live race page:
+```bash
+python scripts/demo_eventrac_parse.py
+```
+
+The demo reads `data/raw/eventrac/lydd_half_2022.html`, converts its
+Europe/London start time to UTC, and prints the normalized event plus the
+parsed result count.

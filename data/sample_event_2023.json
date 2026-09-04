@@ -1,0 +1,10 @@
+{
+  "source": "sample",
+  "source_event_id": "course-a-5k-2023-10-01",
+  "name": "Sample 5K Course A",
+  "started_at": "2023-10-01T09:00:00+00:00",
+  "distance_m": 5000,
+  "latitude": 51.5074,
+  "longitude": -0.1278,
+  "course_id": "course-a-5k"
+}
