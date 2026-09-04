@@ -47,6 +47,13 @@ def test_compare_race_analyses_end_to_end_from_sample_files():
         event_id=event_2023.event_id,
     )
 
+    assert event_2023.event_id == "sample:course-a-5k-2023-10-01"
+    assert event_2024.event_id == "sample:course-a-5k-2024-06-15"
+    assert (event_2023.latitude, event_2023.longitude) == (
+        event_2024.latitude,
+        event_2024.longitude,
+    )
+
     client = FakeOpenMeteoClient()
     analysis_2024 = analyze_race_event(event_2024, results_2024, client=client)
     analysis_2023 = analyze_race_event(event_2023, results_2023, client=client)
