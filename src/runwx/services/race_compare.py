@@ -46,6 +46,11 @@ def compare_race_analyses(
     if shared_course_id is None:
         raise ValueError("course_id is required for multi-event comparison")
 
+    distances_m = {analysis.event.distance_m for analysis in selected}
+    if len(distances_m) != 1:
+        raise ValueError("analyses must all share the same distance_m")
+    shared_distance_m = next(iter(distances_m))
+
     selected.sort(key=lambda analysis: analysis.event.started_at_utc)
 
     return [
@@ -53,7 +58,7 @@ def compare_race_analyses(
             event_id=analysis.event.event_id,
             started_at=analysis.event.started_at_utc,
             course_id=shared_course_id,
-            distance_m=analysis.event.distance_m,
+            distance_m=shared_distance_m,
             finisher_count=analysis.summary.finisher_count,
             median_duration_s=analysis.summary.median_duration_s,
             top_n_median_duration_s=analysis.summary.top_n_median_duration_s,

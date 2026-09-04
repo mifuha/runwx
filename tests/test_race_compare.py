@@ -21,13 +21,14 @@ def make_analysis(
     median_wind_mps: float,
     median_humidity_pct: float = 75.0,
     median_precipitation_mm: float = 0.0,
+    distance_m: int = 5000,
 ) -> RaceAnalysis:
     event = RaceEvent(
         source="demo",
         source_event_id=source_event_id,
         name="Demo 5K",
         started_at=started_at,
-        distance_m=5000,
+        distance_m=distance_m,
         latitude=51.5,
         longitude=-0.1,
         course_id=course_id,
@@ -130,4 +131,29 @@ def test_compare_race_analyses_rejects_mixed_course_ids():
     )
 
     with pytest.raises(ValueError, match="same course_id"):
+        compare_race_analyses([analysis_a, analysis_b])
+
+
+def test_compare_race_analyses_rejects_mixed_distances():
+    analysis_a = make_analysis(
+        source_event_id="event-a",
+        started_at=datetime(2023, 10, 1, 9, 0, tzinfo=timezone.utc),
+        course_id="brockwell-park-5k",
+        median_duration_s=1540.0,
+        top_n_median_duration_s=1390.0,
+        median_temp_c=17.0,
+        median_wind_mps=5.0,
+    )
+    analysis_b = make_analysis(
+        source_event_id="event-b",
+        started_at=datetime(2024, 10, 6, 9, 0, tzinfo=timezone.utc),
+        course_id="brockwell-park-5k",
+        median_duration_s=1505.0,
+        top_n_median_duration_s=1360.0,
+        median_temp_c=11.0,
+        median_wind_mps=3.0,
+        distance_m=10_000,
+    )
+
+    with pytest.raises(ValueError, match="same distance_m"):
         compare_race_analyses([analysis_a, analysis_b])

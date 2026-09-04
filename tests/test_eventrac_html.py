@@ -3,10 +3,6 @@ from pathlib import Path
 
 from runwx.adapters.races.eventrac_html import parse_eventrac_results_html
 
-from pathlib import Path
-
-from runwx.adapters.races.eventrac_html import parse_eventrac_results_html
-
 
 def test_eventrac_html_parsed_objects_convert_to_domain():
     html = Path("data/raw/eventrac/lydd_half_2022.html").read_text(encoding="utf-8")
@@ -19,12 +15,13 @@ def test_eventrac_html_parsed_objects_convert_to_domain():
     )
 
     event = event_in.to_domain()
-    results = [row.to_domain(event_id=event.source_event_id) for row in results_in]
+    results = [row.to_domain(event_id=event.event_id) for row in results_in]
 
     assert event.course_id == "lydd-half-marathon"
     assert len(results) > 0
-    assert results[0].event_id == event.source_event_id
+    assert results[0].event_id == event.event_id
     assert results[0].duration_s > 0
+
 
 def test_parse_eventrac_results_html_lydd_half_2022():
     html = Path("data/raw/eventrac/lydd_half_2022.html").read_text(encoding="utf-8")
