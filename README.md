@@ -168,4 +168,14 @@ python scripts/demo_eventrac_parse.py
 
 The demo reads `data/raw/eventrac/lydd_half_2022.html`, converts its
 Europe/London start time to UTC, and prints the normalized event plus the
-parsed result count.
+parsed result count and any reported skipped rows.
+
+Both Eventrac parsing entrypoints return an `EventracParseResult` with
+`event`, `accepted`, and `skipped` fields, replacing the earlier
+`(event, results)` pair. Rows with a blank `Time` cell are recorded in
+`skipped` with the reason `missing finish time`. Row numbers start at 1 for
+data rows, excluding the table header; they are not finishing places.
+
+This first reporting step covers blank time cells only. Other existing skip
+rules remain unreported, and malformed durations or pages with no accepted
+results still raise errors.

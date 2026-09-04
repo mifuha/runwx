@@ -45,17 +45,17 @@ class FakeOpenMeteoClient:
 def test_eventrac_results_can_flow_through_race_analysis():
     html = Path("data/raw/eventrac/lydd_half_2022.html").read_text(encoding="utf-8")
 
-    event_in, results_in = parse_eventrac_results_html(
+    outcome = parse_eventrac_results_html(
         html,
         course_id="lydd-half-marathon",
         distance_m=21097,
         timezone_name="Europe/London",
     )
 
-    event = event_in.to_domain()
+    event = outcome.event.to_domain()
     # Domain RaceResult must reference the internal canonical event.event_id,
     # not the raw provider source_event_id.
-    results = [row.to_domain(event_id=event.event_id) for row in results_in]
+    results = [row.to_domain(event_id=event.event_id) for row in outcome.accepted]
 
     analysis = analyze_race_event(
         event,
