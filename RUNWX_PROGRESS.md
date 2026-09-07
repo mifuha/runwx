@@ -2,11 +2,20 @@
 
 Updated: 7 September 2026. Active plan: `RUNWX_PLAN_AND_CODEX_GUIDELINES.md`.
 
-- Checkout: `/home/mihaf/code/runwx`; branch `codex/offline-race-report` based on
-  `0f04828`. The midnight-weather fix was reviewed, committed and pushed on
-  `codex/weather-midnight-coverage`, including only its code, tests and related
-  README/progress notes. No report work was included. Earlier fixes: `7cfc54e`
-  (course ID), `b98ec22` (Eventrac row outcomes). No branches were merged here.
+- Checkout: `/home/mihaf/code/runwx`; branch `codex/offline-race-report` at the
+  committed and pushed report change `0d3e76f`. Earlier fixes: `0f04828`
+  (midnight weather), `7cfc54e` (course ID), `b98ec22` (Eventrac row outcomes).
+  No branches were merged here. Miha approved committing and pushing the
+  documentation pass before starting local container work. Git history records
+  delivery; the container work will remain a separate change.
+- Documentation pass: README now leads with the report, an actual example and
+  setup. Detailed parser/report notes moved to `docs/race-report.md`; domain/API,
+  contributor and CSV/SQLite notes moved to `docs/development.md`. The active
+  plan is unchanged. Implemented local work and planned GCP/dbt work stay separate.
+- Documentation checks: ran the documented report once in the existing WSL/Ubuntu
+  Python 3.12.3 environment; all six example rows match its JSON. Checked 20 relative
+  links, including heading anchors, and whitespace. Fresh installation, other
+  platforms and pytest were not run for this documentation-only pass.
 - Slice A: the three input boundaries and the minimal offline report are
   implemented. Miha authorised finalising, committing and pushing the report as
   a separate change, including the top-N demonstration and a plainer README.
@@ -19,7 +28,7 @@ Updated: 7 September 2026. Active plan: `RUNWX_PLAN_AND_CODEX_GUIDELINES.md`.
   results have null coverage. Rejected-row and unmatched-weather reasons stay
   separate. Each file's exact bytes are read once for both parsing and SHA-256.
   Settings and limitations are included. No new framework, provider calls or DB.
-- Acceptance evidence: the initial report tests failed because the command did
+- Prior application evidence: the initial report tests failed because the command did
   not exist (10 failed in 2.47s). The report/CSV/CLI checks then passed (17 tests).
   Final demonstration command: `.venv/bin/python -m pytest -q
   tests/test_offline_report.py::test_changed_top_n_changes_summary_without_changing_sources_or_coverage`:
