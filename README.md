@@ -66,6 +66,13 @@ For each run:
 - find the nearest weather observation in time  
 - reject if the closest observation is farther than `max_gap` (default: 30 minutes)  
 
+Open-Meteo requests cover UTC dates from the earliest run midpoint minus
+`max_gap` to the latest midpoint plus `max_gap`. Adjacent dates are included
+when this matching window crosses midnight. The same midpoint helper is used
+for fetching and matching. A run with no observation within the permitted gap
+is recorded as skipped with a reason. A negative `max_gap` raises `ValueError`
+before any weather request.
+
 ---
 
 ### Pipeline orchestration
