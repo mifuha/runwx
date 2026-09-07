@@ -55,8 +55,9 @@ def normalize_course_id(
 ) -> str | None:
     """Normalize an explicit course ID, or infer a known alias by name and distance.
 
-    A non-empty raw_course_id wins and is slug-normalized. Otherwise, the event
-    name and distance_m are used to infer a canonical ID from known aliases.
+    A nonblank raw_course_id wins and is slug-normalized. If normalization
+    removes every character, raise ValueError instead of inferring an alias.
+    Missing or blank IDs use the event name and distance_m for alias lookup.
     """
     # source and source_event_id are included because they will likely matter later,
     # even if version 1 does not use them yet.
@@ -66,7 +67,10 @@ def normalize_course_id(
     if raw_course_id is not None:
         raw_stripped = raw_course_id.strip()
         if raw_stripped:
-            return _slug_course_id(raw_stripped)
+            normalized = _slug_course_id(raw_stripped)
+            if not normalized:
+                raise ValueError("explicit course_id normalizes to an empty ID")
+            return normalized
 
     name_key = _normalize_event_name(name)
     return _ALIAS_TO_CANONICAL.get((name_key, distance_m))

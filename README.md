@@ -196,6 +196,15 @@ with `ValueError`. Unexpected programming exceptions propagate. Provider status
 codes such as DNF/DNS have no special interpretation yet: a blank time is skipped,
 and other unparseable values are invalid.
 
+### Course identity
+
+Explicit course IDs take precedence and are normalized to ASCII slugs. A nonblank
+ID that normalizes to an empty string, such as `---`, raises `ValueError` during
+normalization or input-to-domain conversion. It does not fall back to an inferred
+course. Missing or whitespace-only IDs still use curated event-name aliases plus
+distance; an unknown combination returns `None`. Valid explicit route overrides
+remain supported.
+
 ### Active delivery plan
 
 See [RUNWX_PLAN_AND_CODEX_GUIDELINES.md](RUNWX_PLAN_AND_CODEX_GUIDELINES.md) for
