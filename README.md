@@ -1,40 +1,23 @@
 # runwx
 
-A small Python data pipeline that aligns running activities with weather observations and produces a clean, typed `RunWithWeather` record for downstream analysis.
+runwx is a Python project for looking at race results alongside weather data.
+It checks the result rows, matches finishers to weather by time and produces a
+small report.
 
-I built this project to combine two interests: running and clean data processing.  
-The goal is to practice a real pipeline mindset (validation, alignment, enrichment, testing) on a domain I actually care about.
+I'm building it to practise data engineering using something I care about: running.
 
----
+## What works today
 
-## What the project does
+- Read race results from saved Eventrac HTML.
+- Count accepted, skipped and invalid rows, with reasons for rejected rows.
+- Summarise finish times and show how many results have matching weather.
+- Record the input file hashes and settings so the analysis can be repeated.
+- Run the report from saved files without internet access.
+- Load running activities from CSV and save their weather matches in SQLite.
 
-- defines validated, immutable domain models (`Run`, `WeatherObs`)
-- matches runs to the nearest weather observation in time
-- enriches runs with weather context
-- provides a small orchestration pipeline
-- supports CSV ingestion for runs and weather
-- ingests race events and race results into typed models
-- parses race results from saved Eventrac HTML pages
-- normalizes course IDs and local race times
-- compares editions of the same course, including weather summaries
-- includes pytest coverage across core modules
-
----
-
-## Why this project exists
-
-Real-world data work is rarely just analysis.
-
-Most of the work usually involves:
-
-1. ingesting data from different sources  
-2. validating and normalizing it  
-3. joining or aligning it (often by time)  
-4. storing it in a reusable format  
-5. then analyzing or modeling it  
-
-`runwx` is a small project that demonstrates that pipeline mindset in Python.
+The Lydd example has 189 accepted results and 188 weather matches. Its weather
+values are made up for the demo, so the report does not describe the actual
+conditions on race day. Everything runs locally for now; cloud deployment is planned.
 
 ---
 
@@ -164,6 +147,56 @@ python -m runwx run
 python -m runwx run --csv
 python -m runwx run --csv --db runwx.db
 python -m runwx query --db runwx.db --limit 10
+```
+
+### Offline race report
+
+Run this from the repository root:
+
+```bash
+.venv/bin/python -m runwx report \
+  --race-html data/raw/eventrac/lydd_half_2022.html \
+  --weather-csv data/sample_lydd_weather_synthetic.csv \
+  --course-id lydd-half-marathon --distance-m 21097 \
+  --timezone Europe/London --weather-kind synthetic
+```
+
+The command prints a JSON report using only the saved files. The weather is
+**synthetic demo data**, not historical Lydd observations. If you omit
+`--weather-kind`, the report labels its origin as unknown.
+
+The report shows:
+
+- Race details and finish-time statistics in seconds, using all accepted results.
+- Accepted, skipped and invalid row counts, with reasons and row numbers.
+- Weather matches and missing matches, with accepted results as the denominator.
+- Weather medians across matched runners; one observation can match several runners.
+- Full SHA-256 input hashes and the analysis settings, including timezone,
+  `--top-n` (default 20) and `--max-gap-min` (default 30).
+
+For Lydd, the defaults give 189 accepted results, 0 skipped and 0 invalid.
+Weather matches 188 results and misses 1. The best finish is 4267 seconds,
+the median is 6954, and the top-20 median is 4953.5.
+
+The report reuses the existing parsers, summaries and weather matching code.
+Each file is read once; those same bytes are parsed and hashed. Missing weather
+leaves the race statistics intact and gives a `null` weather summary. With no
+accepted results, both summaries and the coverage fraction are `null`.
+Invalid pages, malformed weather or invalid settings fail before a report is printed.
+
+The same files, paths, settings, code and dependencies produce identical JSON.
+Moving a file changes its recorded path. Changing only line endings changes its
+hash but can leave the statistics unchanged. Code and dependency versions are not
+yet recorded, so use the same checkout and environment when repeating a run.
+
+The report flags what we don't know: whether the saved results are complete,
+individual start times, chip/gun timing, and the weather's location and source.
+A time match alone doesn't establish whether the weather represents race conditions.
+
+Tests block network access and check repeated output:
+
+```bash
+.venv/bin/python -m pytest -q tests/test_offline_report.py
 ```
 
 ### Race ingestion demo

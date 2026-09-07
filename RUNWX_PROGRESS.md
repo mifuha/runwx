@@ -2,37 +2,49 @@
 
 Updated: 7 September 2026. Active plan: `RUNWX_PLAN_AND_CODEX_GUIDELINES.md`.
 
-- Checkout: `/home/mihaf/code/runwx`; branch `codex/weather-midnight-coverage`,
-  based on the committed and pushed course-ID fix `7cfc54e`. The weather task is
-  implemented and authorised for commit/push. Earlier Eventrac row outcomes are in
-  `b98ec22`. These feature branches have not been merged by this session.
-- Completed Slice A input boundaries: Eventrac row outcomes, empty normalized
-  explicit course IDs, and weather-request coverage across midnight. The offline
-  report/snapshot contract is still pending, so Slice A is not yet complete.
-- Decision: reuse `run_anchor_time`, convert each midpoint to UTC, and request
-  dates covering earliest midpoint minus `max_gap` through latest midpoint plus
-  `max_gap`. This supports previous/next-day observations and batches with
-  different durations. Matching still determines eligibility and records missing
-  or too-distant observations as skips. A negative gap fails before any fetch.
-- Evidence: `.venv/bin/python -m pytest -q tests/test_weather_date_coverage.py
-  --tb=short` initially produced 10 failures and 1 pass.
-  Focused command: `.venv/bin/python -m pytest -q tests/test_weather_date_coverage.py
-  tests/test_pipeline_open_meteo.py tests/test_align.py tests/test_race_pipeline.py
-  tests/test_eventrac_race_analysis.py`: 21 passed in 0.54s.
-  Full `.venv/bin/python -m pytest -q`: 120 passed in 1.07s.
-  Whitespace review preserves the existing CRLF files and treats CR at end of
-  line as a line ending. Tests use a date-filtered fake and no live requests.
-- Checks not run: separate lint/type/build checks, standalone demos, GitHub CI,
-  live provider calls, container execution, dbt, or GCP integration. No new DST
-  transition semantics were introduced; the existing midpoint helper is reused.
-- Learning objective: the fetch window must cover the observations allowed by
-  the downstream matching rule. Miha explained that both dates cover the whole
-  window before choosing the nearest eligible observation. Independent code
-  practice is pending. Prior practice: Miha correctly predicted that
-  `---Lydd---` survives course-ID normalization.
-- Next task: produce a minimal reproducible offline race/quality report from
-  saved race and weather inputs, with source hashes and quality/coverage totals.
-- Cloud milestones: Slices B-E pending and unexecuted. The course-ID task was
-  committed and pushed as authorised; Miha authorised committing and pushing only
-  this weather fix, with the offline report kept as a separate change. Git history
-  records delivery; no merge or cloud/destructive operation is authorised.
+- Checkout: `/home/mihaf/code/runwx`; branch `codex/offline-race-report` based on
+  `0f04828`. The midnight-weather fix was reviewed, committed and pushed on
+  `codex/weather-midnight-coverage`, including only its code, tests and related
+  README/progress notes. No report work was included. Earlier fixes: `7cfc54e`
+  (course ID), `b98ec22` (Eventrac row outcomes). No branches were merged here.
+- Slice A: the three input boundaries and the minimal offline report are
+  implemented. Miha authorised finalising, committing and pushing the report as
+  a separate change, including the top-N demonstration and a plainer README.
+  Git history records delivery. No merge is included in this authorisation.
+- Delivered: `python -m runwx report` reads one saved Eventrac HTML and one weather
+  CSV, reuses existing parsing/analysis components, and prints deterministic JSON.
+  The saved Lydd demo uses clearly labelled synthetic weather, not historical data.
+- Contract: summaries cover accepted finishers; weather coverage uses accepted
+  results as its denominator. Empty populations have null summaries; zero accepted
+  results have null coverage. Rejected-row and unmatched-weather reasons stay
+  separate. Each file's exact bytes are read once for both parsing and SHA-256.
+  Settings and limitations are included. No new framework, provider calls or DB.
+- Acceptance evidence: the initial report tests failed because the command did
+  not exist (10 failed in 2.47s). The report/CSV/CLI checks then passed (17 tests).
+  Final demonstration command: `.venv/bin/python -m pytest -q
+  tests/test_offline_report.py::test_changed_top_n_changes_summary_without_changing_sources_or_coverage`:
+  1 passed in 0.47s. Full `.venv/bin/python -m pytest -q`: 133 passed in 1.28s.
+- Offline proof: all report tests fail on HTTP/socket access. The final documented
+  Lydd CLI command also succeeded twice under `bwrap --unshare-net`; output was
+  byte-identical. Initial nested sandbox setup was restricted; the same read-only
+  check succeeded with approval to create the isolated namespace.
+- Actual demo: 189 accepted, 0 skipped, 0 invalid; 188 matched and 1 unmatched.
+  Best/median/top-20-median finish times: 4267/6954/4953.5 seconds.
+  Generated report: `/tmp/runwx-offline-report-0f04828/lydd-report.json`.
+- Limits: synthetic weather has no verified location/provider/capture metadata;
+  event completeness, individual starts and chip/gun timing are unverified.
+  Code/dependency versions are not recorded in the report; replay currently
+  assumes the same checkout/environment. Source hashes establish content identity.
+- Checks not run: separate lint/type/build checks, Docker, GitHub CI, live
+  providers, dbt or GCP integration. Final diff reviewed; whitespace checked with
+  existing CRLF line endings recognised. No cloud or destructive operations.
+- Learning: Miha explained why date requests cover the entire matching window.
+  This task demonstrates separating row quality, race statistics and coverage,
+  and distinguishing byte identity from unchanged analytical output.
+- Practice: at Miha's request, Codex demonstrated the top-N test. It runs the
+  same files with top_n 1 and 2: the median changes from 3600 to 5400 seconds,
+  while source hashes and weather coverage stay fixed. This was a demonstration,
+  not an independent exercise. README wording now describes the race report
+  plainly and keeps the synthetic-weather limitation visible.
+- Next bounded task: containerise this same offline command locally and compare
+  its output. Cloud Slices B-E remain unexecuted; deployment needs separate scope.

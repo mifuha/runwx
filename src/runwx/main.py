@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -11,6 +12,7 @@ from runwx.adapters.sqlite.query_sqlite import fetch_latest_enriched
 from runwx.adapters.sqlite.storage_sqlite import connect, write_pipeline_result
 from runwx.domain.models import Run, WeatherObs
 from runwx.services.pipeline import enrich_runs
+from runwx.services.offline_report import build_offline_report
 
 
 def demo_data() -> tuple[list[Run], list[WeatherObs]]:
@@ -88,6 +90,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     action="store_true",
     help="Suppress human-readable output (logs only).",
 )
+    # Saved-input report command; all interpretation settings are explicit.
+    report_p = sub.add_parser("report", help="Report on saved race HTML and weather CSV without network access.")
+    report_p.add_argument("--race-html", type=Path, required=True)
+    report_p.add_argument("--weather-csv", type=Path, required=True)
+    report_p.add_argument("--course-id", required=True)
+    report_p.add_argument("--distance-m", type=int, required=True)
+    report_p.add_argument("--timezone", dest="timezone_name", required=True)
+    report_p.add_argument("--top-n", type=int, default=20)
+    report_p.add_argument("--max-gap-min", type=int, default=30)
+    report_p.add_argument("--weather-kind", choices=("synthetic", "unknown"), default="unknown")
+    report_p.set_defaults(log_level="WARNING")
+
     args = p.parse_args(argv)
 
     # default: if no subcommand, behave like "run"
@@ -110,6 +124,16 @@ def main(argv: list[str] | None = None) -> None:
     def out(msg: str) -> None:
         if not getattr(args, "quiet", False):
             print(msg)
+
+    if args.cmd == "report":
+        report = build_offline_report(
+            args.race_html, args.weather_csv, course_id=args.course_id,
+            distance_m=args.distance_m, timezone_name=args.timezone_name,
+            top_n=args.top_n, max_gap=timedelta(minutes=args.max_gap_min),
+            weather_kind=args.weather_kind,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+        return
 
     # --- QUERY MODE ---
     if args.cmd == "query":
