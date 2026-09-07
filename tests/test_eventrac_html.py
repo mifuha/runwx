@@ -47,11 +47,13 @@ def test_parse_eventrac_results_html_lydd_half_2022():
     assert event_in.longitude == 0.902385
     assert event_in.started_at == datetime(2022, 3, 6, 10, 0, tzinfo=timezone.utc)
 
-    assert len(results_in) > 0
+    assert len(results_in) == 189
     assert results_in[0].place == 1
     assert results_in[0].gender == "Male"
     assert results_in[0].duration_s == 4267
     assert outcome.skipped == ()
+    assert outcome.errors == ()
+    assert outcome.candidate_count == 189
 
 
 def test_parse_eventrac_results_html_converts_british_summer_time_to_utc():

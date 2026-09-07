@@ -168,14 +168,37 @@ python scripts/demo_eventrac_parse.py
 
 The demo reads `data/raw/eventrac/lydd_half_2022.html`, converts its
 Europe/London start time to UTC, and prints the normalized event plus the
-parsed result count and any reported skipped rows.
+candidate, accepted, skipped, and invalid row counts.
 
 Both Eventrac parsing entrypoints return an `EventracParseResult` with
-`event`, `accepted`, and `skipped` fields, replacing the earlier
-`(event, results)` pair. Rows with a blank `Time` cell are recorded in
-`skipped` with the reason `missing finish time`. Row numbers start at 1 for
-data rows, excluding the table header; they are not finishing places.
+`event`, `accepted`, `skipped`, and `errors` fields. `candidate_count` is checked
+against the source row count before returning. Each candidate is a row with
+direct data cells belonging to the results table, excluding header/footer and
+nested-table rows. Row numbers start at 1 in candidate source order, independently
+of finishing places. Equal times or places do not cause deduplication.
 
-This first reporting step covers blank time cells only. Other existing skip
-rules remain unreported, and malformed durations or pages with no accepted
-results still raise errors.
+Each candidate gets one outcome, in this order:
+
+- Misaligned cell counts or spanning cells: invalid, with row number, reason,
+  and stripped cell values. Rows must match the full header width so positional
+  values cannot silently shift; reordered columns are supported.
+- Blank `Time` cell: skipped with the reason `missing finish time`.
+- Missing, non-integer, or non-positive finishing place: invalid.
+- Malformed or non-positive finish time: invalid. Times use `hours:minutes:seconds`
+  with an optional numeric fraction; minutes and seconds must be 0–59. Valid
+  fractional seconds are truncated to the existing whole-second domain unit.
+- Otherwise: accepted as a validated `RaceResultIn`.
+
+The parser returns a quality report even when every candidate is rejected;
+analysis still requires accepted results. A missing results table, missing or
+ambiguous required headers, spanning headers, or no candidate rows fails the page
+with `ValueError`. Unexpected programming exceptions propagate. Provider status
+codes such as DNF/DNS have no special interpretation yet: a blank time is skipped,
+and other unparseable values are invalid.
+
+### Active delivery plan
+
+See [RUNWX_PLAN_AND_CODEX_GUIDELINES.md](RUNWX_PLAN_AND_CODEX_GUIDELINES.md) for
+the current implementation and learning agreement, and
+[RUNWX_PROGRESS.md](RUNWX_PROGRESS.md) for the latest verified progress. The plan
+supersedes conflicting strategy in older planning notes.
