@@ -98,10 +98,10 @@ Snapshot completeness is an explicit caller assertion; this demonstration knows
 the complete synthetic set. Real snapshots need a completeness check before using
 the `complete` declaration. Partial/delta or unverified inputs are refused.
 
-The next warehouse step is to retain candidates by revision ID, attempts by their
-separate IDs, and an event-to-revision selection reference. Only validated
-candidates should become selectable. This maps to BigQuery tables and a selection
-join, but that publication boundary still needs implementation and cloud tests.
+The [warehouse keys and selection query](warehouse-revisions.md) are now prepared
+locally: candidates by revision ID, separate attempts and an event-to-revision
+reference. Only warehouse-validated candidates should become selectable. Durable
+publication and BigQuery execution of the new selector remain pending.
 No cross-revision athlete identity is inferred from a name, place or row number.
 
 Run the [contract tests](../tests/test_revisions.py):

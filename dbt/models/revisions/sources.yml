@@ -1,0 +1,16 @@
+version: 2
+sources:
+  - name: revision_preview
+    database: "{{ target.project }}"
+    schema: runwx_revision_demo
+    config:
+      enabled: "{{ var('enable_revision_preview', false) }}"
+    tables:
+      - name: analysis_revisions
+        description: One logical revision and its expected candidate/quality counts.
+      - name: revision_result_rows
+        description: One candidate per (revision_id, source_row_number), including rejected rows.
+      - name: revision_attempts
+        description: One execution receipt; a local report success is not warehouse validation.
+      - name: event_selections
+        description: One explicitly selected successful revision per event, never latest-by-time.

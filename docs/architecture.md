@@ -71,6 +71,8 @@ The [local revision contract](revisions.md) now separates analysis identity,
 execution attempts and explicit selection. It retains successful candidate reports
 in memory and tests correction, repeat and replay behaviour. Warehouse revision
 storage and publication are still pending; the deployed views are unchanged.
+The [warehouse table contracts and optional selector](warehouse-revisions.md)
+are prepared locally, with native SQL tests awaiting BigQuery execution.
 
 Historical comparison requires the same canonical course identity plus checked
 distance, route and timing comparability. Weather provides context, not a causal
