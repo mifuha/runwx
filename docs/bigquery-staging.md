@@ -1,6 +1,6 @@
 # First BigQuery staging load
 
-Status: local loader and tests implemented; **cloud load and SQL validation pending**.
+Status: **first cloud load and repeat verification passed on 8 September 2026**.
 This step puts the [synthetic result export](result-export.md) into one table.
 It does not yet add dbt models or change the existing Cloud Run report job.
 
@@ -17,6 +17,49 @@ records. Rejected durations and absent weather remain null; schema inference is 
 
 The source-row grain and identity are unchanged. This table accepts one export;
 appending multiple analyses or selecting historical revisions is later work.
+
+## Verified cloud run
+
+Terraform created two resources in project `runwx-learning-mifuha`: the private
+`runwx_staging` dataset and `synthetic_results` table, both in `europe-west1`.
+It changed or deleted no existing resources. A post-deployment plan found no drift.
+
+The first load returned `loaded_verified`. The repeat returned
+`already_present_verified`, submitted no second upload and left the table's
+modification timestamp unchanged. Both checked every field against the local export,
+including source hashes, settings, nulls and weather observations. The BigQuery
+timestamp spelling was normalised before comparison.
+
+| Check | Actual result |
+| --- | --- |
+| Uploaded export | 5,521 bytes; five candidate rows |
+| Accepted / skipped / invalid | 3 / 1 / 1 |
+| Weather matched / accepted | 2 / 3 |
+| Table after repeat | Five rows; 2,688 logical bytes |
+| Verification queries | Three, each with a 100 MiB billed-byte limit |
+| Total query bytes processed / billed | 5,376 / 20,971,520 |
+
+The billed-byte statistic includes BigQuery's query minimum; it is not a confirmed
+currency charge after free allowances or credits. No currency charge was measured.
+The existing Cloud Run job, runtime permissions and billing configuration were unchanged.
+
+Load job:
+
+```text
+runwx_load_304fe491e6b933fd3196f22810e67f5c58a5cee14cbca9c56a07163effb5c418
+```
+
+The [verification record](evidence/bigquery-first-load.json) contains all four job
+IDs, timestamps, usage, hashes, settings and the loader commit/client version.
+The rows read back from BigQuery also reproduced the existing Python summary:
+best 3,600 s, median 7,200 s, mean 8,400 s and top-N median 7,200 s (N requested 20,
+effective 3). Those summary calculations ran in Python; dbt aggregation is still pending.
+**These inputs are entirely synthetic, not historical race evidence.**
+
+Inspect the [table in BigQuery](https://console.cloud.google.com/bigquery?project=runwx-learning-mifuha&p=runwx-learning-mifuha&d=runwx_staging&t=synthetic_results&page=table),
+including its schema and preview. In the same console, use Job history to find the
+recorded load and query IDs. [Billing reports](https://console.cloud.google.com/billing?project=runwx-learning-mifuha)
+show monetary charges when available; job byte statistics are available sooner.
 
 ## Local preview
 
@@ -102,11 +145,18 @@ A query failure stops the load. A failed comparison leaves the candidate table
 available for inspection and does not report success.
 
 The load-job ID is deterministic from destination, region, export hash and schema
-hash. An existing job with that ID is awaited instead of submitting a new attempt.
+hash. Reusing that ID is a **first-load simplification**: it binds one logical load
+to one BigQuery job. An existing job with that ID is awaited instead of submitting
+a new attempt.
 If a successful upload's response was lost, rerunning can verify the saved rows
 without uploading again. A terminally failed job still needs inspection; the loader
 does not invent a fresh attempt ID or promise recovery from every failure.
 This is a sequential first-load contract, not a concurrent revision system.
+
+For later revision/retry work, keep logical load identity (the destination/region
+and exact export/schema) separate from execution attempts (individual submissions,
+job IDs and outcomes). Several attempts may serve one logical load. The current
+deterministic job ID is not the future attempt or revision model.
 
 Verification queries use GoogleSQL, disable cached results and set a 100 MiB
 maximum billed-byte limit per query. The initial load uses two queries; an equal
@@ -127,11 +177,25 @@ python -m pytest -q tests/test_bigquery_load.py
 The tests use real SDK configuration objects and API signatures with a small fake
 warehouse. They block network access and check first load, equal rerun, changed
 data, lost acknowledgement, post-load mismatch and invalid inputs. They do not
-execute SQL or prove that BigQuery accepts the schema; the first real load must
-supply that evidence.
+execute SQL or prove that BigQuery accepts the schema. The separate
+[verified cloud run](#verified-cloud-run) now supplies that evidence for this fixture.
 
-After cloud verification, the next model will select accepted finishers, calculate
-pace in seconds per kilometre and support median/top-N mean pace with coverage
-kept separate. Those dbt models are not implemented here. The eventual historical
-comparison still requires a suitable second edition and checked course, distance
-and timing comparability; weather remains context rather than a performance adjustment.
+Next, build [staging → accepted-results fact → event-summary
+mart](architecture.md#planned-dbt-models). Those dbt models are not implemented here.
+The eventual historical comparison still requires a suitable second edition and
+checked course, distance and timing comparability; weather remains context rather
+than a performance adjustment.
+
+## Metric contract
+
+The existing [Python summary](../src/runwx/services/race_summary.py) sorts accepted
+finish durations ascending, selects `min(top_n, finisher_count)` (default N is 20),
+and calculates their **median**, stored as `top_n_median_duration_s`. With an even
+number of values, median averages the two central values. `mean_duration_s` is a
+separate whole-field statistic; it does not define top-N.
+
+The planned mart preserves this selection and median when expressing pace as
+`duration_s / (distance_m / 1000.0)` in seconds per kilometre. Missing weather must
+not remove accepted results. Use the [existing summary tests](../tests/test_race_summary.py)
+as reference cases: the fastest three durations `[3600, 3720, 3900]` have a median
+of 3720 seconds, not their mean of 3740 seconds.

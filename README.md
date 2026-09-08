@@ -114,9 +114,10 @@ python -m pytest -q tests/test_offline_report.py
 ## Next milestone
 
 The [first GCP run](docs/first-cloud-run.md) is verified with fully synthetic inputs.
-Next: load useful race-result rows into BigQuery and build tested dbt models for
-median and top-N average pace. A [local row export](docs/result-export.md) now keeps
-each source row, its validation outcome and weather match for that next step.
+The [first BigQuery staging load](docs/bigquery-staging.md#verified-cloud-run) also
+passed, including a repeat that kept five rows without uploading twice.
+Next: staging → accepted-results fact → event-summary dbt models for median and
+top-N median pace, with result-quality counts and weather coverage.
 See the [architecture](docs/architecture.md).
 
 ## Developer documentation

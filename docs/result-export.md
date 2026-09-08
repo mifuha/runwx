@@ -83,26 +83,29 @@ Timing basis, source completeness and weather location remain unverified.
 `timing_basis` is null. These labels and hashes do not verify source accuracy.
 Code/dependency versions and the original start-time text are not captured in this
 export. Repeatability assumes the same code and environment; this is not yet a
-warehouse revision/publication contract. No BigQuery load has been tested for it.
+warehouse revision/publication contract. The synthetic export has passed a
+[first BigQuery load and repeat verification](bigquery-staging.md#verified-cloud-run).
 
 ## Where SQLite, BigQuery and dbt fit
 
 - **SQLite** stores the existing [activity workflow](development.md#csv-and-sqlite-workflow)
   in a local database file. This export does not add a second race database there.
-- **BigQuery** is the planned cloud SQL warehouse that will store and query these
-  race rows. Google manages its infrastructure. See the [BigQuery overview](https://docs.cloud.google.com/bigquery/docs/introduction).
+- **BigQuery** stores and queries these synthetic race rows in a private cloud
+  table. Google manages its infrastructure. See the [BigQuery overview](https://docs.cloud.google.com/bigquery/docs/introduction).
 - **dbt** organises SQL models and tests. A model can be a `SELECT` in a `.sql` file;
   dbt has BigQuery execute it to build a view or table. dbt is not where the data is
   stored. See [SQL models](https://docs.getdbt.com/docs/build/sql-models) and
   [data tests](https://docs.getdbt.com/docs/build/data-tests).
 
-For example, a later model can select accepted rows and calculate
-`duration_s / (distance_m / 1000.0)` as seconds per kilometre. A following model
-can calculate median pace and the mean pace of the fastest N finishers. It must
-retain accepted finishers without weather and report coverage separately.
+The planned sequence is staging → accepted-results fact → event-summary mart.
+The fact can calculate `duration_s / (distance_m / 1000.0)` as seconds per kilometre;
+the mart will calculate median pace and the median pace of the fastest N finishers.
+This preserves the existing top-N median definition. Accepted finishers without
+weather stay in the analysis, with coverage reported separately. See the
+[model grains and checks](architecture.md#planned-dbt-models).
 
 The [first staging loader](bigquery-staging.md) prepares this export for an empty
-BigQuery table and verifies equal rows on reruns. Its cloud execution is pending.
+BigQuery table and verifies equal rows on reruns. Its first cloud execution passed.
 The models and their BigQuery execution tests remain part of the
 [next milestone](architecture.md#planned--next-milestone-warehouse-analysis).
 They are not implemented by this local export.
