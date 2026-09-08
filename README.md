@@ -120,6 +120,15 @@ Next: staging → accepted-results fact → event-summary dbt models for median 
 top-N median pace, with result-quality counts and weather coverage.
 See the [architecture](docs/architecture.md).
 
+## Development approach
+
+I develop `runwx` with AI assistance alongside hands-on design, testing and review.
+I remain responsible for the engineering decisions and for understanding the code.
+Expected behaviour and trade-offs are made explicit before consequential changes,
+and generated code is checked through focused tests, regression tests and diff review.
+The project is also a learning exercise: unfamiliar concepts are worked through,
+with small manual changes or tests to reinforce understanding.
+
 ## Developer documentation
 
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
