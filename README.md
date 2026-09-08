@@ -8,8 +8,17 @@ I'm building it to practise data engineering using something I care about: runni
 
 **Current status:** a working local Python command-line tool. The main demo reads
 saved Eventrac HTML and weather CSV and prints a JSON report without network access.
+The same report also runs in a [local container](docs/container.md).
 The secondary [CSV/SQLite activity workflow](docs/development.md#csv-and-sqlite-workflow)
 is also available.
+
+```mermaid
+flowchart LR
+    inputs["Saved race HTML<br/>+ saved weather CSV"] --> parse["Parsing / validation"]
+    parse --> match["Weather matching"]
+    match --> summary["Summaries /<br/>quality counts"]
+    summary --> report["Reproducible<br/>JSON report"]
+```
 
 ## Example result
 
@@ -103,8 +112,9 @@ python -m pytest -q tests/test_offline_report.py
 
 ## Next milestone
 
-Run the same report in a local container and compare its output. GCP execution
-and dbt models are planned; neither is implemented yet.
+The [first GCP run](docs/first-cloud-run.md) is verified with fully synthetic inputs.
+Next: load useful race-result rows into BigQuery and build tested dbt models for
+median and top-N average pace. See the [architecture](docs/architecture.md).
 
 ## Developer documentation
 
