@@ -9,7 +9,8 @@ live in separate [package layers](development.md#package-structure-and-api).
 
 The [local result export](result-export.md) also produces one JSON line per candidate
 row, with snapshot row identity, validation outcome and weather match. This prepares
-the data contract for warehouse loading; it does not yet load BigQuery.
+the data contract for warehouse loading. The [first staging loader](bigquery-staging.md)
+and table schema are tested locally; their BigQuery execution remains pending.
 
 The [deployed cloud path](first-cloud-run.md) reads two synthetic inputs from
 private Cloud Storage, runs the same report in one manual Cloud Run Job and saves

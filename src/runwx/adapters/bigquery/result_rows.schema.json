@@ -1,0 +1,37 @@
+[
+  {"name": "export_schema_version", "type": "INTEGER", "mode": "REQUIRED"},
+  {"name": "source_row_id", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "source_row_number", "type": "INTEGER", "mode": "REQUIRED"},
+  {"name": "event_id", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "source", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "source_event_id", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "course_id", "type": "STRING", "mode": "NULLABLE"},
+  {"name": "started_at_utc", "type": "TIMESTAMP", "mode": "REQUIRED"},
+  {"name": "distance_m", "type": "INTEGER", "mode": "REQUIRED"},
+  {"name": "race_sha256", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "weather_sha256", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "race_kind", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "weather_kind", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "settings", "type": "RECORD", "mode": "REQUIRED", "fields": [
+    {"name": "course_id_input", "type": "STRING", "mode": "REQUIRED"},
+    {"name": "timezone_name", "type": "STRING", "mode": "REQUIRED"},
+    {"name": "max_gap_seconds", "type": "FLOAT", "mode": "REQUIRED"},
+    {"name": "alignment", "type": "STRING", "mode": "REQUIRED"},
+    {"name": "tie_break", "type": "STRING", "mode": "REQUIRED"},
+    {"name": "duration_precision", "type": "STRING", "mode": "REQUIRED"},
+    {"name": "timing_basis", "type": "STRING", "mode": "NULLABLE"}
+  ]},
+  {"name": "validation_status", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "validation_reason", "type": "STRING", "mode": "NULLABLE"},
+  {"name": "place", "type": "INTEGER", "mode": "NULLABLE"},
+  {"name": "duration_s", "type": "INTEGER", "mode": "NULLABLE"},
+  {"name": "weather_match_status", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "weather_match_reason", "type": "STRING", "mode": "NULLABLE"},
+  {"name": "weather", "type": "RECORD", "mode": "NULLABLE", "fields": [
+    {"name": "observed_at_utc", "type": "TIMESTAMP", "mode": "REQUIRED"},
+    {"name": "temp_c", "type": "FLOAT", "mode": "REQUIRED"},
+    {"name": "wind_mps", "type": "FLOAT", "mode": "REQUIRED"},
+    {"name": "precipitation_mm", "type": "FLOAT", "mode": "REQUIRED"},
+    {"name": "humidity_pct", "type": "FLOAT", "mode": "REQUIRED"}
+  ]}
+]

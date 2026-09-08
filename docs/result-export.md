@@ -101,7 +101,9 @@ For example, a later model can select accepted rows and calculate
 can calculate median pace and the mean pace of the fastest N finishers. It must
 retain accepted finishers without weather and report coverage separately.
 
-Those models, warehouse loading and their BigQuery execution tests are the
+The [first staging loader](bigquery-staging.md) prepares this export for an empty
+BigQuery table and verifies equal rows on reruns. Its cloud execution is pending.
+The models and their BigQuery execution tests remain part of the
 [next milestone](architecture.md#planned--next-milestone-warehouse-analysis).
 They are not implemented by this local export.
 

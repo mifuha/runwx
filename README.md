@@ -88,10 +88,11 @@ not tested in this documentation check.
 
 ## Tests
 
-After activation, install pytest if needed, then run the suite:
+After activation, install pytest and the BigQuery extra, then run the full suite.
+The warehouse tests use a fake API; no cloud account is needed:
 
 ```bash
-python -m pip install pytest
+python -m pip install -e '.[bigquery]' pytest
 python -m pytest -q
 ```
 
@@ -122,6 +123,7 @@ See the [architecture](docs/architecture.md).
 
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
 - [Local result-row export and the roles of SQLite, BigQuery and dbt](docs/result-export.md)
+- [First BigQuery staging load: preview, schema and rerun checks](docs/bigquery-staging.md)
 - [Code structure, API, contributing and CSV/SQLite usage](docs/development.md)
 - [Current architecture and next warehouse milestone](docs/architecture.md)
 - [Cloud report contract, runtime permissions and verification](docs/first-cloud-run.md)
