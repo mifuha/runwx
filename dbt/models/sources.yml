@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: runwx
+    database: "{{ target.project }}"
+    schema: runwx_staging
+    tables:
+      - name: synthetic_results
+        description: One complete synthetic export, including rejected candidates.

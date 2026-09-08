@@ -1,0 +1,169 @@
+# SQL inputs provide complete typed rows; expected dictionaries check selected columns.
+version: 2
+unit_tests:
+- name: staging_keeps_every_candidate_and_flattens_weather
+  model: stg_race_results
+  given:
+  - input: source('runwx', 'synthetic_results')
+    format: sql
+    fixture: source_demo
+  expect:
+    rows:
+    - source_row_number: 1
+      validation_status: accepted
+      weather_observed_at_utc: '2022-03-06T10:00:00+00:00'
+      max_gap_seconds: 1800.0
+      timing_basis: null
+    - source_row_number: 2
+      validation_status: accepted
+      weather_observed_at_utc: '2022-03-06T11:00:00+00:00'
+      max_gap_seconds: 1800.0
+      timing_basis: null
+    - source_row_number: 3
+      validation_status: accepted
+      weather_observed_at_utc: null
+      max_gap_seconds: 1800.0
+      timing_basis: null
+    - source_row_number: 4
+      validation_status: skipped
+      weather_observed_at_utc: null
+      max_gap_seconds: 1800.0
+      timing_basis: null
+    - source_row_number: 5
+      validation_status: invalid
+      weather_observed_at_utc: null
+      max_gap_seconds: 1800.0
+      timing_basis: null
+- name: fact_keeps_accepted_finisher_without_weather
+  model: fct_race_results
+  given:
+  - input: ref('stg_race_results')
+    format: sql
+    fixture: staged_demo
+  expect:
+    rows:
+    - source_row_number: 1
+      weather_match_status: matched
+      duration_s: 3600
+      pace_s_per_km: 170.6403754088259
+    - source_row_number: 2
+      weather_match_status: matched
+      duration_s: 7200
+      pace_s_per_km: 341.2807508176518
+    - source_row_number: 3
+      weather_match_status: unmatched
+      duration_s: 14400
+      pace_s_per_km: 682.5615016353036
+- name: fact_keeps_equal_finishers_distinct
+  model: fct_race_results
+  given:
+  - input: ref('stg_race_results')
+    format: sql
+    fixture: equal_finishers
+  expect:
+    rows:
+    - source_row_number: 1
+      place: 1
+      duration_s: 3600
+    - source_row_number: 2
+      place: 1
+      duration_s: 3600
+    - source_row_number: 3
+      place: 1
+      duration_s: 3600
+- name: summary_matches_python_demo_and_clamps_n
+  model: mart_event_summary
+  overrides:
+    vars:
+      top_n: 20
+  given:
+  - input: ref('stg_race_results')
+    format: sql
+    fixture: staged_demo
+  - input: ref('fct_race_results')
+    format: sql
+    fixture: accepted_demo
+  expect:
+    rows:
+    - candidate_count: 5
+      accepted_count: 3
+      skipped_count: 1
+      invalid_count: 1
+      finisher_count: 3
+      best_duration_s: 3600
+      mean_duration_s: 8400.0
+      median_duration_s: 7200.0
+      top_n_median_duration_s: 7200.0
+      median_pace_s_per_km: 341.2807508176518
+      top_n_median_pace_s_per_km: 341.2807508176518
+      top_n_requested: 20
+      top_n_effective: 3
+      weather_matched_count: 2
+      weather_unmatched_count: 1
+      weather_coverage_fraction: 0.6666666666666666
+      weather_coverage_status: partial
+      duration_unit: seconds
+      pace_unit: seconds_per_kilometre
+      race_kind: synthetic
+      weather_kind: synthetic
+      race_sha256: 70095c35dc919ed11506924765def09eb6e5590e3feb95ee7f0e8e9dc6f82182
+      weather_sha256: 835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f
+- name: top_two_uses_even_median_of_fastest_finishers
+  model: mart_event_summary
+  overrides:
+    vars:
+      top_n: 2
+  given:
+  - input: ref('stg_race_results')
+    format: sql
+    fixture: staged_demo
+  - input: ref('fct_race_results')
+    format: sql
+    fixture: accepted_demo
+  expect:
+    rows:
+    - top_n_requested: 2
+      top_n_effective: 2
+      top_n_median_duration_s: 5400.0
+      top_n_median_pace_s_per_km: 255.96056311323883
+      median_duration_s: 7200.0
+      finisher_count: 3
+      weather_coverage_fraction: 0.6666666666666666
+- name: rejected_only_export_has_no_invented_metrics
+  model: mart_event_summary
+  given:
+  - input: ref('stg_race_results')
+    format: sql
+    fixture: rejected_demo
+  - input: ref('fct_race_results')
+    format: sql
+    fixture: empty_accepted
+  expect:
+    rows:
+    - candidate_count: 2
+      accepted_count: 0
+      skipped_count: 1
+      invalid_count: 1
+      finisher_count: 0
+      top_n_effective: 0
+      best_duration_s: null
+      mean_duration_s: null
+      median_duration_s: null
+      top_n_median_duration_s: null
+      median_pace_s_per_km: null
+      top_n_median_pace_s_per_km: null
+      weather_matched_count: 0
+      weather_unmatched_count: 0
+      weather_coverage_fraction: null
+      weather_coverage_status: not_applicable
+- name: mixed_settings_do_not_produce_a_blended_summary
+  model: mart_event_summary
+  given:
+  - input: ref('stg_race_results')
+    format: sql
+    fixture: mixed_settings
+  - input: ref('fct_race_results')
+    format: sql
+    fixture: accepted_demo
+  expect:
+    rows: []

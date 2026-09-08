@@ -18,23 +18,23 @@ private Cloud Storage, runs the same report in one manual Cloud Run Job and save
 JSON back to private Storage. Hash checks reject changed inputs; execution-specific
 names and create-only uploads preserve earlier successful reports.
 
-## Planned / next milestone: warehouse analysis
+<a id="planned--next-milestone-warehouse-analysis"></a>
+## Warehouse path and remaining integration
 
-The full path below is planned. Storage, the report job and a manually loaded
-BigQuery staging table already work. Today the job saves JSON back to private
-Storage; its connection to BigQuery and the dbt stages remain dashed future steps.
+Storage, the report job, a manually loaded BigQuery staging table and the three
+[verified dbt views](dbt-models.md#verified-cloud-run) work today. The report job
+still saves JSON back to private Storage; its connection to warehouse loading
+remains the dashed future step. dbt was triggered from a local container.
 
 ```mermaid
 flowchart LR
     storage[("Cloud Storage")] --> job["Cloud Run Job"]
     job -.-> warehouse[("BigQuery")]
-    warehouse -.-> models["dbt models"]
-    models -.-> output["Analysis /<br/>report output"]
+    warehouse --> models["dbt models"]
+    models --> output["Analysis /<br/>report output"]
 
     classDef current fill:#f3f4f6,stroke:#6b7280,color:#111827
-    classDef planned fill:#fafafa,stroke:#9ca3af,color:#374151,stroke-dasharray:4 3
-    class storage,job,warehouse current
-    class models,output planned
+    class storage,job,warehouse,models,output current
     linkStyle default stroke:#6b7280
 ```
 
@@ -43,16 +43,16 @@ editions of the same course, with weather context. Start with one edition; a
 historical comparison needs a second suitable snapshot and comparability checks.
 Synthetic demonstrations remain separate from real historical evidence.
 
-Result rows are now in BigQuery. The next output is tested dbt models for median
-and top-N median pace, with explicit units, settings, result counts and weather
-coverage. Keep parsing and weather alignment in the existing Python code; use
-SQL/dbt for warehouse relationships, reconciliation and analytical aggregation.
-Reuse existing calculations where appropriate and check shared metrics against
-known results. The first models must execute against BigQuery, not only compile.
+Result rows and tested dbt views now provide median and top-N median pace, with
+units, settings, result counts and weather coverage. Parsing and weather alignment
+remain in Python; SQL/dbt handles warehouse relationships, reconciliation and
+aggregation. The synthetic warehouse output matched the existing Python baseline.
 
-### Planned dbt models
+<a id="planned-dbt-models"></a>
+### dbt models
 
-Build these models in order:
+The verified SQL definitions follow this order. All three are views, which store
+SQL and recompute results when queried:
 
 | Model | What one row represents | Main checks |
 | --- | --- | --- |
@@ -60,10 +60,12 @@ Build these models in order:
 | Accepted-results fact / canonical model | One accepted candidate from that export, with duration in seconds and pace in seconds per kilometre. | Same accepted count as staging; retain finishers without weather. |
 | Event-summary mart | One event for the supplied race/weather hashes, interpretation settings and chosen top-N setting. | Summary agreement; quality counts from staging; weather coverage uses all accepted finishers as its denominator. |
 
-The mart will record requested and effective N. The
+The mart records requested and effective N. The
 [existing top-N metric](bigquery-staging.md#metric-contract) is a median of the
-fastest N finishers. These models are planned; multi-revision selection and
-execution-attempt tracking remain later work.
+fastest N finishers. A complete export must have one input/settings context;
+mixed or empty contexts fail a data test and produce no summary. An all-rejected
+export retains quality counts with null performance metrics. Multi-revision
+selection and execution-attempt tracking remain later work. See [setup and failure behaviour](dbt-models.md).
 
 Historical comparison requires the same canonical course identity plus checked
 distance, route and timing comparability. Weather provides context, not a causal

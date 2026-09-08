@@ -116,8 +116,9 @@ python -m pytest -q tests/test_offline_report.py
 The [first GCP run](docs/first-cloud-run.md) is verified with fully synthetic inputs.
 The [first BigQuery staging load](docs/bigquery-staging.md#verified-cloud-run) also
 passed, including a repeat that kept five rows without uploading twice.
-Next: staging → accepted-results fact → event-summary dbt models for median and
-top-N median pace, with result-quality counts and weather coverage.
+The [three dbt views](docs/dbt-models.md#verified-cloud-run) now pass their tests in
+BigQuery and match the Python baseline for median/top-N median pace, quality counts
+and weather coverage. Revision selection and recovery remain the next milestone.
 See the [architecture](docs/architecture.md).
 
 ## Development approach

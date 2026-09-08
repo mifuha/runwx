@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: stg_race_results
+    description: >-
+      One row per candidate in a single saved export, including skipped and
+      invalid rows. Settings and weather records are exposed as columns;
+      source identity, hashes and synthetic labels remain attached.
+    columns:
+      - name: source_row_id
+        description: Snapshot row identity, not an athlete or execution identifier.
+        data_tests: [not_null, unique]
+      - name: source_row_number
+        description: Original one-based candidate row number, including rejected rows.
+      - name: validation_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [accepted, skipped, invalid]
+      - name: weather_match_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [matched, unmatched, not_applicable]
+      - name: duration_s
+        description: Recorded finish duration in whole seconds; null for rejected rows.
+      - name: weather_observed_at_utc
+        description: Matched observation time; null when weather is absent or not applicable.
+      - name: timing_basis
+        description: Null means the source timing basis has not been established.
+
+  - name: fct_race_results
+    description: >-
+      Every accepted finisher from staging, including finishers without weather.
+      Equal recorded times remain separate source rows. Average pace is duration
+      divided by course distance, expressed in seconds per kilometre.
+    columns:
+      - name: source_row_id
+        data_tests: [not_null, unique]
+      - name: pace_s_per_km
+        description: Average pace over the stated race distance, in seconds per kilometre.
+        data_tests: [not_null]
+
+  - name: mart_event_summary
+    description: >-
+      One event summary for one input export and its settings. Mixed or empty
+      input contexts produce no summary and fail a data test. Accepted finishers
+      contribute to duration and pace metrics whether or not weather matched.
+    columns:
+      - name: median_duration_s
+        description: Exact median recorded finish duration, in seconds.
+      - name: top_n_median_duration_s
+        description: Median duration of the fastest N accepted finishers, in seconds.
+      - name: median_pace_s_per_km
+        description: Exact median average pace across accepted finishers, in seconds per kilometre.
+      - name: top_n_median_pace_s_per_km
+        description: Median average pace of the fastest N finishers, in seconds per kilometre.
+      - name: top_n_effective
+        description: Smaller of requested N and the accepted finisher count.
+      - name: weather_coverage_fraction
+        description: Matched accepted finishers divided by all accepted finishers; null when none exist.

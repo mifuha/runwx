@@ -2,7 +2,8 @@
 
 Status: **first cloud load and repeat verification passed on 8 September 2026**.
 This step puts the [synthetic result export](result-export.md) into one table.
-It does not yet add dbt models or change the existing Cloud Run report job.
+This load step does not add dbt models or change the existing Cloud Run report job;
+the subsequent [dbt validation](dbt-models.md#verified-cloud-run) is recorded separately.
 
 ## Dataset, table and schema
 
@@ -53,7 +54,8 @@ The [verification record](evidence/bigquery-first-load.json) contains all four j
 IDs, timestamps, usage, hashes, settings and the loader commit/client version.
 The rows read back from BigQuery also reproduced the existing Python summary:
 best 3,600 s, median 7,200 s, mean 8,400 s and top-N median 7,200 s (N requested 20,
-effective 3). Those summary calculations ran in Python; dbt aggregation is still pending.
+effective 3). Those load-verification calculations ran in Python; the later
+[dbt validation](dbt-models.md#verified-cloud-run) reproduced them in BigQuery.
 **These inputs are entirely synthetic, not historical race evidence.**
 
 Inspect the [table in BigQuery](https://console.cloud.google.com/bigquery?project=runwx-learning-mifuha&p=runwx-learning-mifuha&d=runwx_staging&t=synthetic_results&page=table),
@@ -180,11 +182,11 @@ data, lost acknowledgement, post-load mismatch and invalid inputs. They do not
 execute SQL or prove that BigQuery accepts the schema. The separate
 [verified cloud run](#verified-cloud-run) now supplies that evidence for this fixture.
 
-Next, build [staging → accepted-results fact → event-summary
-mart](architecture.md#planned-dbt-models). Those dbt models are not implemented here.
-The eventual historical comparison still requires a suitable second edition and
-checked course, distance and timing comparability; weather remains context rather
-than a performance adjustment.
+The [staging → accepted-results fact → event-summary mart](dbt-models.md) SQL
+and tests have now executed in BigQuery and matched the Python baseline.
+Historical comparison still requires a
+suitable second edition and checked course, distance and timing comparability;
+weather remains context rather than a performance adjustment.
 
 ## Metric contract
 
@@ -194,7 +196,7 @@ and calculates their **median**, stored as `top_n_median_duration_s`. With an ev
 number of values, median averages the two central values. `mean_duration_s` is a
 separate whole-field statistic; it does not define top-N.
 
-The planned mart preserves this selection and median when expressing pace as
+The mart preserves this selection and median when expressing pace as
 `duration_s / (distance_m / 1000.0)` in seconds per kilometre. Missing weather must
 not remove accepted results. Use the [existing summary tests](../tests/test_race_summary.py)
 as reference cases: the fastest three durations `[3600, 3720, 3900]` have a median

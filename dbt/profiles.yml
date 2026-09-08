@@ -1,0 +1,24 @@
+runwx:
+  target: local
+  outputs:
+    # Explicit dummy identifiers keep local checks separate from the cloud target.
+    local:
+      type: bigquery
+      method: oauth
+      project: runwx-offline-placeholder
+      dataset: runwx_dbt_demo
+      location: europe-west1
+      threads: 1
+      job_retries: 0
+      job_execution_timeout_seconds: 300
+      maximum_bytes_billed: 104857600
+    cloud:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('RUNWX_DBT_PROJECT', 'runwx-learning-mifuha') }}"
+      dataset: runwx_dbt_demo
+      location: europe-west1
+      threads: 1
+      job_retries: 0
+      job_execution_timeout_seconds: 300
+      maximum_bytes_billed: 104857600
