@@ -178,7 +178,8 @@ view definitions. The raw source stays intact, but some views may already have
 changed. Inspect the failing test and saved artifacts before rerunning.
 The dbt Core and adapter versions are pinned; transitive dependencies are not
 fully locked, so retain the image identifier for execution evidence.
-Revision selection and recovery across execution attempts remain later work.
+The [local revision/attempt/selection contract](revisions.md) is tested in Python.
+Warehouse publication and recovery across execution attempts remain later work.
 
 Historical analysis still needs a suitable second edition and checked course,
 distance and timing comparability. See [architecture](architecture.md).
