@@ -38,6 +38,8 @@ class EventracParseResult:
     accepted: tuple[RaceResultIn, ...]
     skipped: tuple[SkippedEventracRow, ...]
     errors: tuple[InvalidEventracRow, ...] = ()
+    # Source locators in the same order as accepted; never finishing places.
+    accepted_row_numbers: tuple[int, ...] = ()
 
     @property
     def candidate_count(self) -> int:
@@ -199,6 +201,7 @@ def parse_eventrac_results_html(
         raise ValueError(f"missing required columns in Eventrac table headers: {headers}")
 
     results: list[RaceResultIn] = []
+    accepted_row_numbers: list[int] = []
     skipped: list[SkippedEventracRow] = []
     errors: list[InvalidEventracRow] = []
     row_number = 0
@@ -277,6 +280,7 @@ def parse_eventrac_results_html(
             errors.append(InvalidEventracRow(row_number, f"invalid result: {details}", values))
             continue
         results.append(result)
+        accepted_row_numbers.append(row_number)
 
     if row_number == 0:
         raise ValueError("no Eventrac candidate result rows found")
@@ -286,6 +290,7 @@ def parse_eventrac_results_html(
         accepted=tuple(results),
         skipped=tuple(skipped),
         errors=tuple(errors),
+        accepted_row_numbers=tuple(accepted_row_numbers),
     )
     if outcome.candidate_count != row_number:
         raise RuntimeError("Eventrac row outcome counts do not reconcile")

@@ -114,11 +114,14 @@ python -m pytest -q tests/test_offline_report.py
 
 The [first GCP run](docs/first-cloud-run.md) is verified with fully synthetic inputs.
 Next: load useful race-result rows into BigQuery and build tested dbt models for
-median and top-N average pace. See the [architecture](docs/architecture.md).
+median and top-N average pace. A [local row export](docs/result-export.md) now keeps
+each source row, its validation outcome and weather match for that next step.
+See the [architecture](docs/architecture.md).
 
 ## Developer documentation
 
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
+- [Local result-row export and the roles of SQLite, BigQuery and dbt](docs/result-export.md)
 - [Code structure, API, contributing and CSV/SQLite usage](docs/development.md)
 - [Current architecture and next warehouse milestone](docs/architecture.md)
 - [Cloud report contract, runtime permissions and verification](docs/first-cloud-run.md)

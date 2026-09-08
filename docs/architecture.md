@@ -7,6 +7,10 @@ matches observations by time and produces JSON with summaries, quality counts,
 coverage, input hashes and settings. Domain rules, use-case flows and external I/O
 live in separate [package layers](development.md#package-structure-and-api).
 
+The [local result export](result-export.md) also produces one JSON line per candidate
+row, with snapshot row identity, validation outcome and weather match. This prepares
+the data contract for warehouse loading; it does not yet load BigQuery.
+
 The [deployed cloud path](first-cloud-run.md) reads two synthetic inputs from
 private Cloud Storage, runs the same report in one manual Cloud Run Job and saves
 JSON back to private Storage. Hash checks reject changed inputs; execution-specific
