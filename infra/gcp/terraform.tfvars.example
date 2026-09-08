@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars only after choosing the authorised project.
+project_id = "REPLACE-WITH-APPROVED-PROJECT-ID"
+region     = "europe-west1"
+# First apply creates the registry/storage/identity; it does not run a job.
+image_uri = null
+# After publishing the approved image, use its actual registry digest:
+# image_uri = "europe-west1-docker.pkg.dev/PROJECT/runwx/runwx@sha256:DIGEST"
