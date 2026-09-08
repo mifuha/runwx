@@ -96,7 +96,8 @@ This build resolved Pydantic 2.13.5, Beautiful Soup 4.15.0, HTTPX 0.27.2 and tzd
 the saved demo, not for every supported input. The full Python suite was not run
 inside the image. CI, other container platforms and cloud execution were not tested.
 
-See [progress](../RUNWX_PROGRESS.md) for the local evidence files and remaining work.
+See the [cloud report](first-cloud-run.md) for the storage integration and deployed
+verification, and [architecture](architecture.md) for the next warehouse milestone.
 
 References: [Docker build guidance](https://docs.docker.com/build/building/best-practices/),
 [runtime options](https://docs.docker.com/reference/cli/docker/container/run/),

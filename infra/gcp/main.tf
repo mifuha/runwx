@@ -1,5 +1,4 @@
-# Applying this configuration and uploading inputs both require Miha's approval.
-# Enable Service Usage and Cloud Resource Manager first, after that approval.
+# Enable Service Usage and Cloud Resource Manager before applying.
 resource "google_project_service" "required" {
   for_each = toset([
     "run.googleapis.com", "storage.googleapis.com",

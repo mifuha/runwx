@@ -68,10 +68,7 @@ tests deterministic and independent of credentials or live providers. The
 [report tests](../tests/test_offline_report.py) cover repeated output, source hashes,
 changed settings, malformed result rows and missing weather while blocking network access.
 
-## Project guidance
+## Related documentation
 
-- [Active implementation plan and learning agreement](../RUNWX_PLAN_AND_CODEX_GUIDELINES.md)
-- [Progress and recorded checks](../RUNWX_PROGRESS.md)
-- [Repository instructions](../AGENTS.md)
-
-The active plan supersedes conflicting strategy in older planning notes.
+- [Current architecture and next warehouse milestone](architecture.md)
+- [Cloud report contract and deployment checks](first-cloud-run.md)

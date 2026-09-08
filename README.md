@@ -120,5 +120,5 @@ median and top-N average pace. See the [architecture](docs/architecture.md).
 
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
 - [Code structure, API, contributing and CSV/SQLite usage](docs/development.md)
-- [Active implementation plan and learning agreement](RUNWX_PLAN_AND_CODEX_GUIDELINES.md)
-- [Progress and recorded checks](RUNWX_PROGRESS.md)
+- [Current architecture and next warehouse milestone](docs/architecture.md)
+- [Cloud report contract, runtime permissions and verification](docs/first-cloud-run.md)
