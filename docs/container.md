@@ -16,7 +16,8 @@ The commands below use `sudo`; membership of the Docker group is not required.
 sudo docker build --build-arg VCS_REF="$(git rev-parse HEAD)" -t runwx:offline .
 ```
 
-The image installs the package from `setup.cfg` and starts the same CLI. It runs
+The image installs locked dependencies, then the package from `setup.cfg`, and
+starts the same CLI. It runs
 as user `10001:10001`. The build context excludes saved data, `.git`, `.venv`,
 local configuration and the unrelated practice script under `src/`.
 The Python base image is pinned by digest. Updating that digest should be followed
@@ -71,9 +72,45 @@ Keep the image ID and installed versions with your check results. The revision
 label identifies the Git commit supplied at build time; uncommitted edits are
 not described by that label. The image ID identifies the resulting image.
 
-Package versions are resolved from the existing ranges during the build. Reusing
-an image preserves its environment; a rebuild may choose different package
-versions. The report itself still does not record code/dependency versions.
+The [report dependency lock](../requirements/container.lock) and
+[build-tool lock](../requirements/build.lock) fix the installed package versions.
+The package itself builds without network access or dependency resolution.
+`pip check` fails the build if the installed dependencies do not satisfy the
+package metadata. The report itself still does not record code/dependency versions.
+
+## Dependency updates
+
+The image locks target Python 3.12 on Linux/amd64 and include indirect dependencies.
+They were captured from the previously validated report and dbt images; their
+source image IDs are in the files. The report also pins setuptools and wheel
+instead of allowing an isolated build environment to download newer tools.
+The [dbt lock](../dbt/requirements.lock) remains separate because its dependency
+versions differ from the report's. `setup.cfg` keeps the supported package ranges.
+
+For an intentional update, resolve the changed requirements in a disposable
+Python 3.12 Linux environment, run `python -m pip check`, and capture
+`python -m pip freeze --all`. Review the full version diff before replacing the
+appropriate lock. Omit the local `runwx @ file:...` entry from the report lock;
+the Dockerfile builds runwx from this checkout. Keep the two dbt direct pins in
+`dbt/requirements.txt` consistent with its lock. Rebuild both affected images and
+rerun the offline report comparison or both dbt parse modes before publication.
+
+One dbt dependency needs special handling: PyPI's
+[experimental parser 2.0.0rc2](https://pypi.org/project/dbt-core-experimental-parser/2.0.0rc2/)
+source package downloads a wheel from the official dbt GitHub release. The lock
+pins that Linux/amd64 wheel URL and its upstream SHA-256 directly, preserving the
+validated version without running the downloader's build backend. Preserve this
+entry when refreshing the freeze; changing architecture needs the corresponding
+upstream wheel and a separate check.
+
+These are complete version pins, following pip's
+[repeatable-install guidance](https://pip.pypa.io/en/stable/topics/repeatable-installs/).
+`--no-deps` prevents unlisted dependencies being installed; `--only-binary=:all:`
+requires published wheels so dependency builds cannot fetch extra tooling.
+Except for that direct wheel, the locks pin versions rather than artifact hashes.
+They do not promise identical image bytes across platforms. Retain image digests
+as execution evidence; downloads still depend on PyPI and the upstream release
+being available. Only Linux/amd64 is checked in this task.
 
 ## Verification status
 
