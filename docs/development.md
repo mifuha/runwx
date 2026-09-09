@@ -68,6 +68,21 @@ tests deterministic and independent of credentials or live providers. The
 [report tests](../tests/test_offline_report.py) cover repeated output, source hashes,
 changed settings, malformed result rows and missing weather while blocking network access.
 
+## CI checks
+
+The [workflow](../.github/workflows/ci.yml) runs the Python tests, builds the report
+image and checks its CLI, and checks Terraform formatting and configuration.
+Terraform initialization uses the committed provider lock with no backend.
+The dbt job builds its locked image and parses both the default project and
+`enable_revision_preview: true`, so the optional selector is checked too.
+Container CLI/parsing checks run with networking disabled and no credentials.
+Installing packages/providers and building images can require internet access.
+
+These checks do not apply Terraform or execute warehouse SQL. Parsing detects
+configuration and reference errors, not every SQL error; real dbt unit/data tests
+remain a separate BigQuery integration check. Image dependencies have their own
+[update procedure](container.md#dependency-updates).
+
 ## Related documentation
 
 - [Current architecture and next warehouse milestone](architecture.md)

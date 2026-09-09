@@ -6,9 +6,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+COPY requirements/ requirements/
+RUN python -m pip install --no-cache-dir --no-deps --only-binary=:all: \
+    -r requirements/container.lock -r requirements/build.lock
+
 COPY pyproject.toml setup.cfg ./
 COPY src/runwx/ ./src/runwx/
-RUN python -m pip install --no-cache-dir .
+# A package build must use the installed tools and cannot resolve new dependencies.
+RUN --network=none python -m pip install --no-cache-dir --no-deps --no-build-isolation . \
+    && python -m pip check
 
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.source="https://github.com/mifuha/runwx" \

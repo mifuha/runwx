@@ -61,7 +61,8 @@ unit-test definitions without cloud credentials. The manifest appears under
 `dbt/target/`, with logs under `dbt/logs/`.
 
 The [container](../dbt/Dockerfile) provides the same dbt entry point. Building may
-need internet access; the parsing command explicitly disables networking:
+need internet access; its complete [dependency lock](../dbt/requirements.lock)
+keeps the validated package versions. The parsing command disables networking:
 
 ```bash
 docker build -t runwx-dbt:local dbt
@@ -176,8 +177,10 @@ code was unchanged. GitHub CI and other platforms were not tested in this run.
 A dbt build is not an atomic publication: a failed test does not restore earlier
 view definitions. The raw source stays intact, but some views may already have
 changed. Inspect the failing test and saved artifacts before rerunning.
-The dbt Core and adapter versions are pinned; transitive dependencies are not
-fully locked, so retain the image identifier for execution evidence.
+The container pins dbt Core, its adapter and indirect dependencies through the
+[image lock](../dbt/requirements.lock). The local environment command above installs
+only the direct pins; use the container for the fixed dependency set. Retain image
+identifiers as execution evidence; see [dependency updates](container.md#dependency-updates).
 The [local revision/attempt/selection contract](revisions.md) is tested in Python.
 The [optional warehouse selector](warehouse-revisions.md) is separately validated
 in BigQuery. Guarded publication, integration with these three analytical views

@@ -1,6 +1,7 @@
 **
 !Dockerfile
 !requirements.txt
+!requirements.lock
 !dbt_project.yml
 !profiles.yml
 !models/
