@@ -5,8 +5,6 @@ See docs/warehouse-revisions.md for native validation evidence and remaining lim
 """
 
 from dataclasses import asdict, dataclass
-from datetime import timedelta
-from hashlib import sha256
 import json
 from pathlib import Path
 import re
@@ -14,9 +12,8 @@ from uuid import uuid4
 
 from runwx.adapters.bigquery.result_load import MAXIMUM_BYTES_BILLED, _normalise_fields
 from runwx.domain.revisions import RevisionIdentity, Selection, canonical_json
-from runwx.services.offline_report import build_offline_report
-from runwx.services.revision_export import build_revision_rows
-from runwx.services.revisions import _analytical_json, _check_report
+from runwx.services.revision_export import build_revision_candidate
+from runwx.services.revisions import _analytical_json
 
 
 @dataclass(frozen=True)
@@ -55,25 +52,8 @@ def prepare_selection(
     if (not re.fullmatch(r"[0-9a-f]{64}", validation_code_sha256)
             or not validation_invocation_id.strip()):
         raise ValueError("warehouse validation hash and invocation are required")
-    if revision.race_kind != "synthetic" or revision.settings["weather_kind"] != "synthetic":
-        raise ValueError("this bounded publisher requires explicitly synthetic inputs")
-    rows = build_revision_rows(revision, race_html, weather_csv)
-    settings = revision.settings
-    settings["max_gap"] = timedelta(seconds=settings.pop("max_gap_seconds"))
-    report = build_offline_report(race_html, weather_csv, **settings)
-    _check_report(revision, report)
+    metadata, rows = build_revision_candidate(revision, race_html, weather_csv)
     rows_json = canonical_json(rows)
-    metadata = {
-        **asdict(revision), "revision_id": revision.revision_id,
-        "result_rows_sha256": sha256(rows_json.encode()).hexdigest(),
-        "report_json": canonical_json(report),
-        **{key: report["result_quality"][key] for key in (
-            "candidate_count", "accepted_count", "skipped_count", "invalid_count")},
-        "weather_matched_count": report["weather_coverage"]["matched_count"],
-    }
-    # Bound the read-back and query-parameter payload for this small demonstration.
-    if len(rows_json.encode()) + len(canonical_json(metadata).encode()) > 1024 * 1024:
-        raise ValueError("selection baseline exceeds the 1 MiB demonstration limit")
     receipt = {
         "attempt_id": successful_attempt_id, "revision_id": revision.revision_id,
         "status": "succeeded", "validation_scope": "warehouse",

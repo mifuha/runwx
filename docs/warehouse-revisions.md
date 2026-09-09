@@ -1,8 +1,9 @@
 # Warehouse revision keys and selection
 
 The four BigQuery tables and optional dbt selector have been validated with fully
-synthetic race and weather inputs. The existing three analytical views still read
-their original single export. The guarded selection writer has also passed a
+synthetic race and weather inputs. The deployed analytical views now read selected
+revisions; the default local dbt mode retains the original single export. The
+guarded selection writer has also passed a
 bounded native BigQuery check: stale requests fail, failed updates roll back,
 and an explicit selection change preserves candidate data.
 
@@ -39,6 +40,70 @@ report, including its paths and limitations. The publisher verifies loaded
 content against these inputs and requires an existing warehouse receipt. The
 digest identifies the prepared export; read-back comparison must account for
 equivalent timestamp and numeric spellings through typed value normalisation.
+
+## Loading a candidate
+
+The [candidate loader](../src/runwx/adapters/bigquery/revision_load.py) loads the
+existing `revision_result_rows` and `analysis_revisions` tables. It shares the
+writer's local baseline preparation and accepts explicitly synthetic, complete,
+nonempty inputs up to the existing 1 MiB baseline limit. The separate
+[single-export loader](../src/runwx/adapters/bigquery/result_load.py) still serves
+the original staging table.
+
+Preview without credentials or network access:
+
+```bash
+python -m runwx.revision_load \
+  --race-html data/sample_race_synthetic.html \
+  --weather-csv data/sample_lydd_weather_synthetic.csv \
+  --dataset runwx-learning-mifuha.runwx_revision_demo \
+  --event-id eventrac:900001 --weather-source-id runwx:synthetic \
+  --course-id runwx-synthetic-half --distance-m 21097 --timezone Europe/London \
+  --race-kind synthetic --weather-kind synthetic --snapshot-scope complete
+```
+
+The output includes the revision identity, quality counts and planned load job
+IDs. `--execute` explicitly enables warehouse access; use it only within an
+approved native validation window with existing tables and credentials. Preparation
+uses current package source, so new code produces a new revision identity. Earlier
+native receipts cannot be reused as evidence for a newly prepared revision.
+
+Before uploading, the loader checks both table schemas/types/location and reads
+both slices for the revision. An exact existing slice is retained. Conflicting,
+partial or duplicate data fails before either upload. Missing result rows load
+first, followed by metadata, with full read-back comparison after each load.
+Timestamp fields permit equivalent UTC spellings; report source paths may differ,
+while analytical fields, source hashes and saved settings must agree.
+
+BigQuery documents each [batch load as atomic](https://docs.cloud.google.com/bigquery/docs/batch-loading-data):
+all rows in that job load or none do. These two table loads are **not one
+transaction**. A rerun verifies a completed slice and finishes the missing one.
+Loads use deterministic job IDs derived from destination, schema and candidate
+content. If an earlier job is still pending, a repeated ID recovers and waits on
+that job rather than creating another append. Relocating identical input files
+preserves this recovery identity.
+
+An uncertain submission/result raises `CandidateLoadUnknown` with table ID, job
+ID and original cause. Inspect that job before recovery; a timeout is not proof
+of failure. A terminally failed job is not automatically replaced with a new ID.
+There are no application or SDK upload retries, overwrites, deletes or truncation.
+This requires one serialized writer and immutable candidates; it is not a
+concurrent ingestion service or a distributed lock.
+
+One invocation makes at most two load submissions and four verification queries,
+in `europe-west1`, with 30-second request timeouts and 300-second job/wait limits.
+Queries each have a 100 MiB billed limit; load jobs use `CREATE_NEVER`,
+`WRITE_APPEND`, explicit schemas and zero tolerated bad records. Actual query IDs
+and processed/billed byte statistics are returned. Loading creates a **candidate
+only**: warehouse validation, a successful receipt and explicit guarded selection
+remain separate stages. The CLI does not trigger them.
+
+The [loader tests](../tests/test_revision_load.py) block networking and use real
+SDK signatures with a stateful fake. They cover repeat ingestion, a second
+revision, interruption between loads, lost responses, moved files, conflicting
+contents, job recovery and preview/execute separation. This loader has **local
+verification only**; it has not been executed against BigQuery. The older native
+validation evidence below remains evidence for those earlier stages.
 
 ## The selection boundary
 
@@ -104,8 +169,8 @@ without another write. Replaying an analysis never invokes the writer automatica
 
 This is a serialized submission contract, not a distributed lock. Candidate data
 and validation receipts must remain immutable after validation; snapshot isolation
-does not prevent an outside writer changing them afterwards. No new table, loader,
-validation receipt creator, dbt model or orchestration step is added.
+does not prevent an outside writer changing them afterwards. The writer itself
+does not load candidates, create validation receipts or orchestrate the stages.
 
 ## Calling and testing the writer
 
@@ -139,8 +204,7 @@ execute SQL or prove native transaction behaviour. The separate
 [native writer validation](#verified-guarded-writer) below covers the update path
 and rollback; the earlier selector validation covers the dbt model.
 
-The existing loader does not load these new contracts. The
-[verified analytical integration](dbt-models.md#verified-selected-revision-run) now carries the
+The [verified analytical integration](dbt-models.md#verified-selected-revision-run) now carries the
 revision's saved top-N setting into staging/fact/summary and partitions summaries
 by event/revision. The deployed analytical views now use selected rows and match
 the saved Python baseline. Statistical definitions are unchanged.
@@ -150,7 +214,7 @@ the saved Python baseline. Statistical definitions are unchanged.
 Run the Python export tests in the report environment:
 
 ```bash
-python -m pytest -q tests/test_revision_export.py tests/test_revisions.py tests/test_guarded_selection.py
+python -m pytest -q tests/test_revision_export.py tests/test_revisions.py tests/test_guarded_selection.py tests/test_revision_load.py
 ```
 
 Parse the optional model and its native unit/data test definitions using the
