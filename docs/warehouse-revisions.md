@@ -1,14 +1,13 @@
 # Warehouse revision keys and selection
 
-Local preparation only: four BigQuery table schemas, a candidate-row exporter and
-an optional dbt selector. No tables have been created, no data uploaded and none
-of the new SQL tests have executed in BigQuery. The existing three dbt views still
-read their original single export.
+The four BigQuery tables and optional dbt selector have been validated with fully
+synthetic race and weather inputs. The existing three analytical views still read
+their original single export. A guarded publication writer remains unimplemented.
 
 ## Table grain and keys
 
 The [schema files](../dbt/contracts/revisions) use BigQuery's JSON schema format.
-Their proposed dataset is `runwx_revision_demo`, separate from the first staging
+Their private dataset is `runwx_revision_demo`, separate from the first staging
 table. These are the logical keys the publisher and tests must enforce:
 
 | Table | One row means | Logical key |
@@ -71,12 +70,14 @@ so the selector also checks uniqueness of revision, selection and receipt keys.
 It checks the complete candidate count, distinct contiguous row numbers, quality
 counts and source identity before returning any rows from a selected revision.
 
-A local report attempt has scope `local_report`. Only a future warehouse validator
-may record `warehouse` success, with the validation-code hash and invocation ID,
-after candidate loading, data checks and report agreement succeed. The receipt
+A local report attempt has scope `local_report`. A warehouse validation records
+`warehouse` success, with the validation-code hash and invocation ID, only after
+candidate loading, data checks and report agreement succeed. The bounded validation
+recorded those receipts manually; this is not yet an application command. The receipt
 fixtures in the unit tests are fabricated test inputs, not execution evidence.
 The Python source hash remains part of revision identity; the separate validation
-hash identifies the dbt/query code used to check warehouse materialisation.
+hash identifies the checked dbt files; verification-query hashes are recorded
+separately in the execution evidence.
 
 ## Failure behaviour and remaining work
 
@@ -96,8 +97,7 @@ The existing loader does not load these new contracts. The existing staging/fact
 summary chain is not yet wired to the selector. That integration must carry the
 revision's top-N setting and partition summaries by revision/event; the current
 single-export mart must not be pointed at multiple revisions as it stands.
-No new statistical formulas, dependencies, database engine or cloud resources were
-added for this preparation.
+No statistical formulas or application dependencies changed during validation.
 
 ## Local checks
 
@@ -122,5 +122,61 @@ the preview adds one model, one data test and twelve unit cases. Those cases cov
 retries/replay, failed or local-only receipts, duplicate keys and partial candidates.
 
 Parsing and local SQL syntax checks do not execute these assertions or prove
-BigQuery behaviour. Cloud validation of this contract remains the next step,
-within a separately authorised dataset/query scope.
+BigQuery behaviour. The cloud run below executed the native tests.
+
+## Verified BigQuery validation
+
+On 9 September 2026, two targeted container builds passed in `europe-west1`.
+Each executed **12 native unit tests, one reconciliation data test and one view**.
+The first ran with no selection; the second checked the populated selection.
+The [evidence JSON](evidence/revision-selector-validation.json) contains the actual
+test names/results, image and invocation IDs, queries, input hashes and selected rows.
+
+| Check | Result |
+| --- | --- |
+| Complete typed input read-back | Two revisions, ten candidates and four local receipts matched. |
+| Selected correction | Five candidates: three accepted, one skipped, one invalid. |
+| Weather coverage | Two matched accepted finishers; one without weather. |
+| Accepted durations | 3600, 6600 and 14400 seconds, matching the local correction. |
+| Populated selection reconciliation | Zero errors. |
+| Read-only local-receipt substitution | Zero exposed rows; saved valid selection still returned five. |
+
+Both race snapshots and the weather are synthetic, not historical evidence.
+The saved corrected Python report has median and top-N median duration 6600 seconds
+(requested N=20, effective N=3). This validation compared every selected result field;
+it did not create a new summary model or change the existing metric definition.
+UTC timestamp spelling and equivalent numeric representations were normalized
+before comparison. Paths remain in the saved report; execution IDs are separate.
+
+Terraform created only the private `runwx_revision_demo` dataset and four protected
+tables, using [revision_validation.tf](../infra/gcp/revision_validation.tf).
+Its `enable_revision_validation` flag defaults to false; the deployed configuration
+retains it as true. dbt created `runwx_dbt_demo.selected_revision_results`.
+The tables hold two revisions, ten candidates, six receipts (four local, two warehouse)
+and one selection. Existing source data and the three analytical views were unchanged.
+
+Only after the first build and full input read-back passed were the two warehouse
+receipts appended and the correction selected. The recorded validation hash covers
+the dbt input files; the verification queries have their own hashes. The image was
+built from the evidence's base commit. A later test-comment edit changes no SQL.
+This one-off validation procedure is not a reusable loader or publication service.
+
+The targeted command inside the [dbt container](dbt-models.md#cloud-execution) was:
+
+```bash
+dbt --no-partial-parse build --profiles-dir . --target cloud \
+  --vars '{"enable_revision_preview":true}' --select selected_revision_results
+```
+
+The window used two builds, three verification queries and five small batch loads.
+All 75 query jobs succeeded: 35,049 bytes processed and 209,715,200 bytes billed
+(200 MiB), including dbt's internal queries. Each query retained the 100 MiB billed
+limit; the profile used one thread, a 300-second wait and no job retries.
+Billed-byte statistics are not a currency invoice; actual charges were not verified.
+No temporary test tables remained, and the final Terraform plan reported no changes.
+No billing, API, IAM, Cloud Run or existing-resource cleanup changes were made.
+
+The next task is a guarded selection writer: validate a candidate, then replace
+the event pointer only if the expected previous selection still matches. Failure
+must preserve the previous successful output. Connecting that selected revision to
+the analytical models follows separately.

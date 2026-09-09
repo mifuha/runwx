@@ -1,5 +1,5 @@
 # Synthetic receipts and revision labels are test data, not execution evidence.
-# SQL fixtures retain typed nested settings/weather; these tests await BigQuery execution.
+# SQL fixtures retain typed nested settings/weather; execution evidence is in docs.
 version: 2
 unit_tests:
 - name: selected_correction_ignores_retry_receipts_and_old_replay

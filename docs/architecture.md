@@ -69,14 +69,15 @@ export retains quality counts with null performance metrics. See
 
 The [local revision contract](revisions.md) now separates analysis identity,
 execution attempts and explicit selection. It retains successful candidate reports
-in memory and tests correction, repeat and replay behaviour. Warehouse revision
-storage and publication are still pending; the deployed views are unchanged.
-The [warehouse table contracts and optional selector](warehouse-revisions.md)
-are prepared locally, with native SQL tests awaiting BigQuery execution.
+in memory and tests correction, repeat and replay behaviour. The
+[warehouse tables and optional selector](warehouse-revisions.md) have also passed
+their native BigQuery tests using synthetic inputs. The selector keeps local-only
+successes hidden and exposes one explicitly selected, validated revision. It is
+not yet connected to the three analytical views. Guarded publication is next.
 
 Historical comparison requires the same canonical course identity plus checked
 distance, route and timing comparability. Weather provides context, not a causal
-performance adjustment. Later work covers warehouse revision selection and failure
+performance adjustment. Later work covers guarded warehouse publication and failure
 recovery; scheduling and orchestration are not implemented.
 
 See the [report contract and limitations](race-report.md) and
