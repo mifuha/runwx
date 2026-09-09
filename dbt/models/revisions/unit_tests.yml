@@ -1,0 +1,328 @@
+# Synthetic receipts and revision labels are test data, not execution evidence.
+# SQL fixtures retain typed nested settings/weather; execution evidence is in docs.
+version: 2
+unit_tests:
+- name: selected_correction_ignores_retry_receipts_and_old_replay
+  model: selected_revision_results
+  config: &id001
+    enabled: '{{ var(''enable_revision_preview'', false) }}'
+  given:
+  - &id002
+    input: source('revision_preview', 'analysis_revisions')
+    rows:
+    - &id014
+      revision_id: revision-a
+      event_id: eventrac:900001
+      race_sha256: 70095c35dc919ed11506924765def09eb6e5590e3feb95ee7f0e8e9dc6f82182
+      weather_source_id: runwx:synthetic-hourly-weather-demo
+      weather_sha256: 835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f
+      code_sha256: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      settings_json: '{"course_id":"runwx-synthetic-half","distance_m":21097,"max_gap_seconds":1800.0,"timezone_name":"Europe/London","top_n":20,"weather_kind":"synthetic"}'
+      race_kind: synthetic
+      snapshot_scope: complete
+      result_rows_sha256: 987582756bc3f5aaf6691560eace38f657efb716c0aa048381f3ad494b632967
+      report_json: '{"limitations":["Weather values are synthetic demo data, not historical race conditions.","Counts
+        describe the saved result rows; full event completeness is unverified.","Every runner uses the event start;
+        individual starts and chip/gun timing basis are unknown.","Weather coverage measures time matching, not
+        spatial suitability or whole-race conditions.","Weather medians are across matched runners; the same observation
+        may be reused.","Weather CSV has no verified location, provider or capture metadata.","Replay assumes the
+        same code and dependencies; their versions are not captured here."],"race":{"course_id":"runwx-synthetic-half","distance_m":21097,"event_id":"eventrac:900001","latitude":0.0,"longitude":0.0,"name":"Runwx
+        Synthetic Half","started_at_local_interpreted":"2022-03-06T10:00:00+00:00","started_at_utc":"2022-03-06T10:00:00+00:00"},"race_summary":{"best_duration_s":3600,"finisher_count":3,"mean_duration_s":8400,"median_duration_s":7200,"top_n_median_duration_s":7200},"report_schema_version":1,"result_quality":{"accepted_count":3,"candidate_count":5,"invalid":[{"reason":"invalid
+        finish time ''bad-time'': unsupported duration format: ''bad-time''","row_number":5}],"invalid_count":1,"skipped":[{"reason":"missing
+        finish time","row_number":4}],"skipped_count":1},"settings":{"alignment":"nearest observation to run midpoint","course_id_input":"runwx-synthetic-half","distance_m":21097,"duration_precision":"whole
+        seconds; fractions truncated","max_gap_seconds":1800.0,"tie_break":"earlier observation","timezone_name":"Europe/London","timing_basis":null,"top_n":20,"top_n_effective":3},"sources":{"race":{"file":"data/sample_race_synthetic.html","provider":"eventrac","sha256":"70095c35dc919ed11506924765def09eb6e5590e3feb95ee7f0e8e9dc6f82182","source_event_id":"900001"},"weather":{"file":"data/sample_lydd_weather_synthetic.csv","kind":"synthetic","observation_count":3,"sha256":"835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f"}},"weather_coverage":{"accepted_result_count":3,"matched_count":2,"matched_fraction":0.6666666666666666,"status":"partial","unmatched_count":1,"unmatched_reasons":{"No
+        weather within 0:30:00":1}},"weather_summary":{"enriched_count":2,"median_humidity_pct":70.0,"median_precipitation_mm":0.0,"median_temp_c":8.75,"median_wind_mps":4.1}}'
+      candidate_count: 5
+      accepted_count: 3
+      skipped_count: 1
+      invalid_count: 1
+      weather_matched_count: 2
+    - &id015
+      revision_id: revision-b
+      event_id: eventrac:900001
+      race_sha256: a7da242b64691c302c03810c4f1c7ac8018ed9e325bfa5950e49117b5d2936eb
+      weather_source_id: runwx:synthetic-hourly-weather-demo
+      weather_sha256: 835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f
+      code_sha256: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      settings_json: '{"course_id":"runwx-synthetic-half","distance_m":21097,"max_gap_seconds":1800.0,"timezone_name":"Europe/London","top_n":20,"weather_kind":"synthetic"}'
+      race_kind: synthetic
+      snapshot_scope: complete
+      result_rows_sha256: 69f8bd1ba5228ec3042c80af71361951b19516eaa6ef235a8b8843ef3bb88662
+      report_json: '{"limitations":["Weather values are synthetic demo data, not historical race conditions.","Counts
+        describe the saved result rows; full event completeness is unverified.","Every runner uses the event start;
+        individual starts and chip/gun timing basis are unknown.","Weather coverage measures time matching, not
+        spatial suitability or whole-race conditions.","Weather medians are across matched runners; the same observation
+        may be reused.","Weather CSV has no verified location, provider or capture metadata.","Replay assumes the
+        same code and dependencies; their versions are not captured here."],"race":{"course_id":"runwx-synthetic-half","distance_m":21097,"event_id":"eventrac:900001","latitude":0.0,"longitude":0.0,"name":"Runwx
+        Synthetic Half","started_at_local_interpreted":"2022-03-06T10:00:00+00:00","started_at_utc":"2022-03-06T10:00:00+00:00"},"race_summary":{"best_duration_s":3600,"finisher_count":3,"mean_duration_s":8200,"median_duration_s":6600,"top_n_median_duration_s":6600},"report_schema_version":1,"result_quality":{"accepted_count":3,"candidate_count":5,"invalid":[{"reason":"invalid
+        finish time ''bad-time'': unsupported duration format: ''bad-time''","row_number":5}],"invalid_count":1,"skipped":[{"reason":"missing
+        finish time","row_number":4}],"skipped_count":1},"settings":{"alignment":"nearest observation to run midpoint","course_id_input":"runwx-synthetic-half","distance_m":21097,"duration_precision":"whole
+        seconds; fractions truncated","max_gap_seconds":1800.0,"tie_break":"earlier observation","timezone_name":"Europe/London","timing_basis":null,"top_n":20,"top_n_effective":3},"sources":{"race":{"file":"data/sample_race_synthetic_corrected.html","provider":"eventrac","sha256":"a7da242b64691c302c03810c4f1c7ac8018ed9e325bfa5950e49117b5d2936eb","source_event_id":"900001"},"weather":{"file":"data/sample_lydd_weather_synthetic.csv","kind":"synthetic","observation_count":3,"sha256":"835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f"}},"weather_coverage":{"accepted_result_count":3,"matched_count":2,"matched_fraction":0.6666666666666666,"status":"partial","unmatched_count":1,"unmatched_reasons":{"No
+        weather within 0:30:00":1}},"weather_summary":{"enriched_count":2,"median_humidity_pct":70.0,"median_precipitation_mm":0.0,"median_temp_c":8.75,"median_wind_mps":4.1}}'
+      candidate_count: 5
+      accepted_count: 3
+      skipped_count: 1
+      invalid_count: 1
+      weather_matched_count: 2
+  - &id003
+    input: source('revision_preview', 'revision_result_rows')
+    format: sql
+    fixture: revision_candidates
+  - &id010
+    input: source('revision_preview', 'revision_attempts')
+    rows:
+    - &id004
+      attempt_id: attempt-a1
+      revision_id: revision-a
+      status: succeeded
+      validation_scope: warehouse
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: synthetic-test-receipt-not-a-real-execution
+    - &id013
+      attempt_id: attempt-b1
+      revision_id: revision-b
+      status: succeeded
+      validation_scope: warehouse
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: synthetic-test-receipt-not-a-real-execution
+    - &id005
+      attempt_id: attempt-b2
+      revision_id: revision-b
+      status: succeeded
+      validation_scope: warehouse
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: synthetic-test-receipt-not-a-real-execution
+    - &id006
+      attempt_id: attempt-a-replay
+      revision_id: revision-a
+      status: succeeded
+      validation_scope: warehouse
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: synthetic-test-receipt-not-a-real-execution
+  - &id008
+    input: source('revision_preview', 'event_selections')
+    rows:
+    - &id011
+      event_id: eventrac:900001
+      revision_id: revision-b
+      successful_attempt_id: attempt-b1
+  expect:
+    rows:
+    - revision_id: revision-b
+      source_row_number: 1
+      validation_status: accepted
+      duration_s: 3600
+      weather_match_status: matched
+    - revision_id: revision-b
+      source_row_number: 2
+      validation_status: accepted
+      duration_s: 6600
+      weather_match_status: matched
+    - revision_id: revision-b
+      source_row_number: 3
+      validation_status: accepted
+      duration_s: 14400
+      weather_match_status: unmatched
+    - revision_id: revision-b
+      source_row_number: 4
+      validation_status: skipped
+      duration_s: null
+      weather_match_status: not_applicable
+    - revision_id: revision-b
+      source_row_number: 5
+      validation_status: invalid
+      duration_s: null
+      weather_match_status: not_applicable
+- name: failed_correction_leaves_original_selection_visible
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - &id007
+    input: source('revision_preview', 'revision_attempts')
+    rows:
+    - *id004
+    - attempt_id: attempt-b1
+      revision_id: revision-b
+      status: failed
+      validation_scope: warehouse
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: synthetic-test-receipt-not-a-real-execution
+    - *id005
+    - *id006
+  - input: source('revision_preview', 'event_selections')
+    rows:
+    - &id012
+      event_id: eventrac:900001
+      revision_id: revision-a
+      successful_attempt_id: attempt-a1
+  expect:
+    rows:
+    - revision_id: revision-a
+      source_row_number: 1
+      validation_status: accepted
+      duration_s: 3600
+      weather_match_status: matched
+    - revision_id: revision-a
+      source_row_number: 2
+      validation_status: accepted
+      duration_s: 7200
+      weather_match_status: matched
+    - revision_id: revision-a
+      source_row_number: 3
+      validation_status: accepted
+      duration_s: 14400
+      weather_match_status: unmatched
+    - revision_id: revision-a
+      source_row_number: 4
+      validation_status: skipped
+      duration_s: null
+      weather_match_status: not_applicable
+    - revision_id: revision-a
+      source_row_number: 5
+      validation_status: invalid
+      duration_s: null
+      weather_match_status: not_applicable
+- name: failed_receipt_is_not_selectable
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - *id007
+  - *id008
+  expect: &id009
+    rows: []
+- name: local_success_is_not_warehouse_validation
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - input: source('revision_preview', 'revision_attempts')
+    rows:
+    - *id004
+    - attempt_id: attempt-b1
+      revision_id: revision-b
+      status: succeeded
+      validation_scope: local_report
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: synthetic-test-receipt-not-a-real-execution
+    - *id005
+    - *id006
+  - *id008
+  expect: *id009
+- name: running_attempt_is_not_selectable
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - input: source('revision_preview', 'revision_attempts')
+    rows:
+    - *id004
+    - attempt_id: attempt-b1
+      revision_id: revision-b
+      status: running
+      validation_scope: warehouse
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: synthetic-test-receipt-not-a-real-execution
+    - *id005
+    - *id006
+  - *id008
+  expect: *id009
+- name: missing_validation_evidence_is_not_selectable
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - input: source('revision_preview', 'revision_attempts')
+    rows:
+    - *id004
+    - attempt_id: attempt-b1
+      revision_id: revision-b
+      status: succeeded
+      validation_scope: warehouse
+      validation_code_sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+      validation_invocation_id: null
+    - *id005
+    - *id006
+  - *id008
+  expect: *id009
+- name: ambiguous_event_selection_emits_no_blended_rows
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - *id010
+  - input: source('revision_preview', 'event_selections')
+    rows:
+    - *id011
+    - *id012
+  expect: *id009
+- name: duplicate_candidate_key_blocks_the_whole_revision
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - input: source('revision_preview', 'revision_result_rows')
+    format: sql
+    fixture: revision_candidates_duplicate
+  - *id010
+  - *id008
+  expect: *id009
+- name: partial_candidate_load_emits_no_partial_report
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - input: source('revision_preview', 'revision_result_rows')
+    format: sql
+    fixture: revision_candidates_partial
+  - *id010
+  - *id008
+  expect: *id009
+- name: receipt_for_another_revision_is_not_selectable
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - *id010
+  - input: source('revision_preview', 'event_selections')
+    rows:
+    - event_id: eventrac:900001
+      revision_id: revision-b
+      successful_attempt_id: attempt-a1
+  expect: *id009
+- name: duplicate_attempt_id_is_ambiguous
+  model: selected_revision_results
+  config: *id001
+  given:
+  - *id002
+  - *id003
+  - input: source('revision_preview', 'revision_attempts')
+    rows:
+    - *id004
+    - *id013
+    - *id005
+    - *id006
+    - *id013
+  - *id008
+  expect: *id009
+- name: duplicate_revision_metadata_cannot_multiply_results
+  model: selected_revision_results
+  config: *id001
+  given:
+  - input: source('revision_preview', 'analysis_revisions')
+    rows:
+    - *id014
+    - *id015
+    - *id015
+  - *id003
+  - *id010
+  - *id008
+  expect: *id009

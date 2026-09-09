@@ -64,13 +64,21 @@ The mart records requested and effective N. The
 [existing top-N metric](bigquery-staging.md#metric-contract) is a median of the
 fastest N finishers. A complete export must have one input/settings context;
 mixed or empty contexts fail a data test and produce no summary. An all-rejected
-export retains quality counts with null performance metrics. Multi-revision
-selection and execution-attempt tracking remain later work. See [setup and failure behaviour](dbt-models.md).
+export retains quality counts with null performance metrics. See
+[setup and failure behaviour](dbt-models.md).
+
+The [local revision contract](revisions.md) now separates analysis identity,
+execution attempts and explicit selection. It retains successful candidate reports
+in memory and tests correction, repeat and replay behaviour. The
+[warehouse tables and optional selector](warehouse-revisions.md) have also passed
+their native BigQuery tests using synthetic inputs. The selector keeps local-only
+successes hidden and exposes one explicitly selected, validated revision. It is
+not yet connected to the three analytical views. Guarded publication is next.
 
 Historical comparison requires the same canonical course identity plus checked
 distance, route and timing comparability. Weather provides context, not a causal
-performance adjustment. Later work covers explicit result-revision selection and
-failure recovery; scheduling and orchestration are not implemented.
+performance adjustment. Later work covers guarded warehouse publication and failure
+recovery; scheduling and orchestration are not implemented.
 
 See the [report contract and limitations](race-report.md) and
 [cloud verification](first-cloud-run.md#verification).

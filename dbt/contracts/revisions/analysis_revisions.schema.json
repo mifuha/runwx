@@ -1,0 +1,82 @@
+[
+  {
+    "name": "revision_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "event_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "race_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "weather_source_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "weather_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "code_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "settings_json",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "race_kind",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "snapshot_scope",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "result_rows_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "report_json",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "candidate_count",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "accepted_count",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "skipped_count",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "invalid_count",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "weather_matched_count",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  }
+]
