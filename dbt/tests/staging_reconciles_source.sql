@@ -1,11 +1,13 @@
 with source_rows as (
-    select * from {{ source('runwx', 'synthetic_results') }}
+    select * from {{ race_results_input() }}
 ), staged_rows as (
     select * from {{ ref('stg_race_results') }}
 ), differences as (
     select coalesce(raw.source_row_id, staged.source_row_id) as source_row_id
     from source_rows as raw
-    full outer join staged_rows as staged using (source_row_id)
+    full outer join staged_rows as staged using (
+        source_row_id{% if var('enable_revision_preview', false) %}, revision_id{% endif %}
+    )
     where raw.source_row_id is null
         or staged.source_row_id is null
         or raw.source_row_number is distinct from staged.source_row_number
@@ -15,6 +17,11 @@ with source_rows as (
         or raw.weather_match_status is distinct from staged.weather_match_status
         or raw.race_sha256 is distinct from staged.race_sha256
         or raw.weather_sha256 is distinct from staged.weather_sha256
+        {% if var('enable_revision_preview', false) %}
+        or raw.code_sha256 is distinct from staged.code_sha256
+        or safe_cast(json_value(raw.revision_settings_json, '$.top_n') as int64)
+            is distinct from staged.top_n_requested
+        {% endif %}
 )
 select source_row_id from differences
 union all

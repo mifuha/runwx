@@ -119,8 +119,10 @@ passed, including a repeat that kept five rows without uploading twice.
 The [three dbt views](docs/dbt-models.md#verified-cloud-run) now pass their tests in
 BigQuery and match the Python baseline for median/top-N median pace, quality counts
 and weather coverage. [Revision selection](docs/warehouse-revisions.md) also passes
-its BigQuery tests with synthetic inputs. Guarded publication and recovery remain
-the next milestone.
+its BigQuery tests with synthetic inputs. The guarded selection writer has passed
+native update and rollback checks. The analytical views now read selected
+revisions and match the corrected Python baseline. Connecting the remaining manual
+stages and testing recovery are next.
 See the [architecture](docs/architecture.md).
 
 ## Development approach

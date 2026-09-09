@@ -100,8 +100,9 @@ the `complete` declaration. Partial/delta or unverified inputs are refused.
 
 The [warehouse keys and selection query](warehouse-revisions.md) have also been
 validated in BigQuery: candidates by revision ID, separate attempts and an
-event-to-revision reference. Local-only successes remain hidden. A guarded durable
-publication writer is still needed; the in-memory session is not that writer.
+event-to-revision reference. Local-only successes remain hidden. The separate
+guarded writer has also passed native update, stale-request and rollback checks;
+the in-memory session remains only the local contract.
 No cross-revision athlete identity is inferred from a name, place or row number.
 
 Run the [contract tests](../tests/test_revisions.py):

@@ -2,6 +2,8 @@
 version: 2
 unit_tests:
 - name: staging_keeps_every_candidate_and_flattens_weather
+  config: &single_export_tests
+    enabled: "{{ not var('enable_revision_preview', false) }}"
   model: stg_race_results
   given:
   - input: source('runwx', 'synthetic_results')
@@ -35,6 +37,7 @@ unit_tests:
       max_gap_seconds: 1800.0
       timing_basis: null
 - name: fact_keeps_accepted_finisher_without_weather
+  config: *single_export_tests
   model: fct_race_results
   given:
   - input: ref('stg_race_results')
@@ -55,6 +58,7 @@ unit_tests:
       duration_s: 14400
       pace_s_per_km: 682.5615016353036
 - name: fact_keeps_equal_finishers_distinct
+  config: *single_export_tests
   model: fct_race_results
   given:
   - input: ref('stg_race_results')
@@ -72,6 +76,7 @@ unit_tests:
       place: 1
       duration_s: 3600
 - name: summary_matches_python_demo_and_clamps_n
+  config: *single_export_tests
   model: mart_event_summary
   overrides:
     vars:
@@ -109,6 +114,7 @@ unit_tests:
       race_sha256: 70095c35dc919ed11506924765def09eb6e5590e3feb95ee7f0e8e9dc6f82182
       weather_sha256: 835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f
 - name: top_two_uses_even_median_of_fastest_finishers
+  config: *single_export_tests
   model: mart_event_summary
   overrides:
     vars:
@@ -130,6 +136,7 @@ unit_tests:
       finisher_count: 3
       weather_coverage_fraction: 0.6666666666666666
 - name: rejected_only_export_has_no_invented_metrics
+  config: *single_export_tests
   model: mart_event_summary
   given:
   - input: ref('stg_race_results')
@@ -157,6 +164,7 @@ unit_tests:
       weather_coverage_fraction: null
       weather_coverage_status: not_applicable
 - name: mixed_settings_do_not_produce_a_blended_summary
+  config: *single_export_tests
   model: mart_event_summary
   given:
   - input: ref('stg_race_results')

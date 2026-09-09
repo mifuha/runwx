@@ -3,9 +3,10 @@ version: 2
 models:
   - name: stg_race_results
     description: >-
-      One row per candidate in a single saved export, including skipped and
-      invalid rows. Settings and weather records are exposed as columns;
-      source identity, hashes and synthetic labels remain attached.
+      One row per candidate, including skipped and invalid rows. The default
+      input is a single saved export. With enable_revision_preview, the input
+      is the selected revision for each event, with revision/code identity and
+      saved top-N. Settings and weather records are exposed as columns.
     columns:
       - name: source_row_id
         description: Snapshot row identity, not an athlete or execution identifier.
@@ -45,8 +46,9 @@ models:
 
   - name: mart_event_summary
     description: >-
-      One event summary for one input export and its settings. Mixed or empty
-      input contexts produce no summary and fail a data test. Accepted finishers
+      One summary per selected event/revision and its saved settings, or one
+      export in the default demo. Ambiguous contexts produce no summary and
+      fail a data test. No selected events means no summaries. Accepted finishers
       contribute to duration and pace metrics whether or not weather matched.
     columns:
       - name: median_duration_s

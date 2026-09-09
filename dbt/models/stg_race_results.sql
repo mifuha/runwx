@@ -1,4 +1,10 @@
 select
+    {% if var('enable_revision_preview', false) %}
+    revision_id,
+    code_sha256,
+    -- Missing or invalid saved N stays NULL; never substitute today's CLI value.
+    safe_cast(json_value(revision_settings_json, '$.top_n') as int64) as top_n_requested,
+    {% endif %}
     export_schema_version,
     source_row_id,
     source_row_number,
@@ -30,4 +36,4 @@ select
     weather.wind_mps as weather_wind_mps,
     weather.precipitation_mm as weather_precipitation_mm,
     weather.humidity_pct as weather_humidity_pct
-from {{ source('runwx', 'synthetic_results') }}
+from {{ race_results_input() }}
