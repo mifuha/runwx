@@ -183,8 +183,9 @@ only the direct pins; use the container for the fixed dependency set. Retain ima
 identifiers as execution evidence; see [dependency updates](container.md#dependency-updates).
 The [local revision/attempt/selection contract](revisions.md) is tested in Python.
 The [optional warehouse selector](warehouse-revisions.md) is separately validated
-in BigQuery. Guarded publication, integration with these three analytical views
-and recovery across execution attempts remain later work.
+in BigQuery. Native validation of the locally tested guarded writer, integration
+with these three analytical views and recovery across execution attempts remain
+later work.
 
 Historical analysis still needs a suitable second edition and checked course,
 distance and timing comparability. See [architecture](architecture.md).

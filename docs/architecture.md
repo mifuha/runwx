@@ -73,7 +73,8 @@ in memory and tests correction, repeat and replay behaviour. The
 [warehouse tables and optional selector](warehouse-revisions.md) have also passed
 their native BigQuery tests using synthetic inputs. The selector keeps local-only
 successes hidden and exposes one explicitly selected, validated revision. It is
-not yet connected to the three analytical views. Guarded publication is next.
+not yet connected to the three analytical views. The guarded selection writer is
+tested locally; native BigQuery transaction validation remains pending.
 
 Historical comparison requires the same canonical course identity plus checked
 distance, route and timing comparability. Weather provides context, not a causal

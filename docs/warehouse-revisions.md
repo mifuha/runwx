@@ -2,7 +2,8 @@
 
 The four BigQuery tables and optional dbt selector have been validated with fully
 synthetic race and weather inputs. The existing three analytical views still read
-their original single export. A guarded publication writer remains unimplemented.
+their original single export. A guarded selection writer is implemented and tested
+locally; its new transaction has not yet been executed in BigQuery.
 
 ## Table grain and keys
 
@@ -85,13 +86,56 @@ An ambiguous selection or partial/duplicated selected candidate emits no rows an
 fails [selection reconciliation](../dbt/tests/selected_revision_reconciles.sql).
 This detects a broken pointer; it does not restore the previous selection.
 
-Durable promotion is not implemented. The intended next publication mechanism is
-one explicit event-selection row updated only after immutable candidate data and
-its validation receipt pass. Publication must recheck the current pointer and
-replace it as one guarded operation, with serialized submissions. A failed or
-replayed candidate must never write that pointer automatically. Candidate content
-must stay immutable after validation; the selector is not a substitute for this
-write boundary or for verifying the loaded digest.
+The [guarded writer](../src/runwx/adapters/bigquery/selection.py) prepares a baseline
+through the existing report and revision export. Before writing, it reads the
+candidate directly from its metadata, result and receipt tables, independently of
+the selector.
+It requires complete agreement with the local rows, metadata, hashes, report and
+the exact successful warehouse receipt, including validation hash/invocation.
+Local receipt identifiers alone do not count as warehouse evidence.
+
+It then uses one [BigQuery transaction](https://docs.cloud.google.com/bigquery/docs/transactions)
+to recheck that candidate content and compare the event's current revision **and
+attempt** with the caller's explicit expectation. Only then does it insert or
+update one pointer. `expected=None` means no selection may exist. Duplicate pointers
+are rejected. An already-selected, still-valid candidate returns `already_selected`
+without another write. Replaying an analysis never invokes the writer automatically.
+
+This is a serialized submission contract, not a distributed lock. Candidate data
+and validation receipts must remain immutable after validation; snapshot isolation
+does not prevent an outside writer changing them afterwards. No new table, loader,
+validation receipt creator, dbt model or orchestration step is added.
+
+## Calling and testing the writer
+
+`prepare_selection(revision, race_html, weather_csv, ...)` is offline. Supply the
+destination dataset, expected `Selection` (or explicit `None`), successful attempt
+ID, validation-code SHA-256 and validation invocation ID. It reuses the current
+processing code, so a revision prepared by different code must be reproduced in
+its matching environment; new code creates a new revision identity. It currently
+accepts synthetic inputs only, with a baseline limit of 1 MiB.
+
+After candidate loading and real warehouse validation, `publish_selection(client,
+prepared)` runs a read and a guarded write in `europe-west1`. Each query has a fresh
+job ID, a 100 MiB billed limit, a 300-second timeout setting and no automatic retries.
+Job IDs identify execution attempts; they are not logical revision IDs. The result
+contains the selected event/revision/attempt and actual job IDs/byte statistics.
+Input paths may differ in the saved report; all analytical fields and hashes must
+agree. Typed row comparison permits equivalent UTC timestamp and numeric spellings.
+
+A read-back mismatch sends no write. A transaction assertion failure rolls back
+that transaction, leaving the prior pointer intact. A client exception after
+submission is reported conservatively as `SelectionOutcomeUnknown`, with the job
+ID: it may already have committed. Inspect that job and the pointer before another
+submission; a timeout is not evidence of rollback. The Python exception retains
+the original API error as its cause. No automatic retry or recovery loop is added.
+
+The [focused tests](../tests/test_guarded_selection.py) block network access and use
+the real SDK interfaces with a small stateful API fake. They check correction,
+repeat, initial selection, malformed candidates/receipts, stale revision or attempt,
+changes between read and write, and a lost response after commit. They do **not**
+execute SQL or prove native transaction behaviour. That cloud validation remains
+pending; the earlier selector validation below does not cover this writer.
 
 The existing loader does not load these new contracts. The existing staging/fact/
 summary chain is not yet wired to the selector. That integration must carry the
@@ -104,7 +148,7 @@ No statistical formulas or application dependencies changed during validation.
 Run the Python export tests in the report environment:
 
 ```bash
-python -m pytest -q tests/test_revision_export.py tests/test_revisions.py
+python -m pytest -q tests/test_revision_export.py tests/test_revisions.py tests/test_guarded_selection.py
 ```
 
 Parse the optional model and its native unit/data test definitions using the
@@ -176,7 +220,7 @@ Billed-byte statistics are not a currency invoice; actual charges were not verif
 No temporary test tables remained, and the final Terraform plan reported no changes.
 No billing, API, IAM, Cloud Run or existing-resource cleanup changes were made.
 
-The next task is a guarded selection writer: validate a candidate, then replace
-the event pointer only if the expected previous selection still matches. Failure
-must preserve the previous successful output. Connecting that selected revision to
-the analytical models follows separately.
+The next task is bounded native BigQuery validation of the guarded writer's
+success, stale-expectation and rollback cases. Connecting the selected revision to
+the analytical models follows separately; then suitable historical inputs should
+make the existing pipeline answer the course-comparison question.
