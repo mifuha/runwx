@@ -5,7 +5,9 @@ import pytest
 from runwx.adapters.races import eventrac_html
 
 
-def make_html(rows, headers=("Position", "Gender", "Time")):
+def make_html(rows, headers=("Position", "Gender", "Time"), *, jsonld=None):
+    if jsonld is None:
+        jsonld = '{"location": {"geo": {"latitude": 50.954438, "longitude": 0.902385}}}'
     header_cells = "".join(f"<th>{escape(value)}</th>" for value in headers)
     data_rows = "".join(
         "<tr>" + "".join(f"<td>{escape(value)}</td>" for value in row) + "</tr>"
@@ -14,7 +16,7 @@ def make_html(rows, headers=("Position", "Gender", "Time")):
     return f"""
     <link rel="canonical" href="https://www.eventrac.co.uk/results/21723">
     <script type="application/ld+json">
-        {{"location": {{"geo": {{"latitude": 50.954438, "longitude": 0.902385}}}}}}
+        {jsonld}
     </script>
     <div class="box-header">
         <h3 class="box-title">Synthetic Half Marathon Results</h3>
@@ -34,6 +36,42 @@ def parse(html):
         distance_m=21097,
         timezone_name="Europe/London",
     )
+
+
+@pytest.mark.parametrize(
+    "jsonld",
+    [
+        "null",
+        "[]",
+        '{"location": null}',
+        '{"location": []}',
+        '{"location": {"geo": null}}',
+        '{"location": {"geo": []}}',
+    ],
+)
+def test_unsupported_jsonld_shape_does_not_hide_later_valid_location(jsonld):
+    unrelated_script = f'<script type="application/ld+json">{jsonld}</script>'
+    outcome = parse(unrelated_script + make_html([("1", "Male", "01:00:00")]))
+
+    assert outcome.event.latitude == 50.954438
+    assert outcome.event.longitude == 0.902385
+    assert len(outcome.accepted) == 1
+
+
+@pytest.mark.parametrize(
+    "jsonld",
+    [
+        "null",
+        "[]",
+        '{"location": null}',
+        '{"location": []}',
+        '{"location": {"geo": null}}',
+        '{"location": {"geo": []}}',
+    ],
+)
+def test_unsupported_jsonld_without_valid_location_is_a_clear_page_failure(jsonld):
+    with pytest.raises(ValueError, match="could not extract latitude/longitude from JSON-LD"):
+        parse(make_html([("1", "Male", "01:00:00")], jsonld=jsonld))
 
 
 @pytest.mark.parametrize(

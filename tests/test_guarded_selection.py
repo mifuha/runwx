@@ -175,6 +175,11 @@ def test_invalid_candidate_never_submits_a_write(prepared, problem):
 @pytest.mark.parametrize("problem", ["revision", "attempt", "duplicate", "rows", "receipt", "metadata"])
 def test_changes_between_validation_and_write_preserve_current_selection(prepared, problem):
     warehouse = Warehouse(prepared)
+    expected_selections = {
+        "revision": [asdict(replace(OLD, revision_id="c" * 64))],
+        "attempt": [asdict(replace(OLD, successful_attempt_id="newer-success"))],
+        "duplicate": [asdict(OLD), asdict(OLD)],
+    }.get(problem, [asdict(OLD)])
 
     def change():
         if problem == "revision":
@@ -196,6 +201,7 @@ def test_changes_between_validation_and_write_preserve_current_selection(prepare
     assert error.value.job_id.startswith("runwx_select_")
     assert warehouse.writes == 0
     assert warehouse.selections != [asdict(prepared.selection)]
+    assert warehouse.selections == expected_selections
 
 
 def test_initial_selection_requires_explicit_absence(prepared):
