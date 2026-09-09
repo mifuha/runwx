@@ -107,8 +107,14 @@ def _extract_geo_from_jsonld(soup: BeautifulSoup) -> tuple[float, float]:
         except json.JSONDecodeError:
             continue
 
-        location = payload.get("location", {})
-        geo = location.get("geo", {})
+        if not isinstance(payload, dict):
+            continue
+        location = payload.get("location")
+        if not isinstance(location, dict):
+            continue
+        geo = location.get("geo")
+        if not isinstance(geo, dict):
+            continue
         latitude = geo.get("latitude")
         longitude = geo.get("longitude")
 

@@ -34,7 +34,9 @@ See [CSV adapters](../src/runwx/adapters/csv) and
 
 These domain dataclasses are frozen. Timestamps must be timezone-aware;
 duration and distance must be positive; wind speed and precipitation cannot be
-negative. Input schemas validate external data before conversion.
+negative. All four weather measurements must be finite: CSV and Open-Meteo hourly
+validation reject NaN and infinities before conversion, and `WeatherObs` enforces
+the same requirement for direct callers. CSV errors retain the source row number.
 
 The pipeline loops through runs, aligns weather, attaches valid matches and
 records skipped runs with reasons. See the [matching rules](race-report.md#time-matching)
