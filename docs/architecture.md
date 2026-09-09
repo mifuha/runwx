@@ -72,9 +72,12 @@ execution attempts and explicit selection. It retains successful candidate repor
 in memory and tests correction, repeat and replay behaviour. The
 [warehouse tables and optional selector](warehouse-revisions.md) have also passed
 their native BigQuery tests using synthetic inputs. The selector keeps local-only
-successes hidden and exposes one explicitly selected, validated revision. It is
-not yet connected to the three analytical views. The guarded selection writer is
-tested locally; native BigQuery transaction validation remains pending.
+successes hidden and exposes one explicitly selected, validated revision. The
+[verified integration](dbt-models.md#verified-selected-revision-run) feeds those rows
+into the three analytical views, using each revision's saved N and separate event
+summaries. No selection produces no summary. The deployed correction B summary
+matches its Python baseline, with unchanged counts and weather coverage. The
+guarded writer has passed native replacement, stale-request and rollback checks.
 
 Historical comparison requires the same canonical course identity plus checked
 distance, route and timing comparability. Weather provides context, not a causal

@@ -1,7 +1,7 @@
 """Explicit, guarded event selection over the existing four warehouse tables.
 
 One controlled, serialized publisher; no loading, dbt execution or automatic retry.
-Native transaction behaviour still needs a separately authorised BigQuery check.
+See docs/warehouse-revisions.md for native validation evidence and remaining limits.
 """
 
 from dataclasses import asdict, dataclass

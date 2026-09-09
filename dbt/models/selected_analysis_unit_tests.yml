@@ -1,0 +1,261 @@
+version: 2
+# Flat inputs use dict fixtures; dbt fills unlisted columns with typed NULLs.
+# Anchors share context, not expected calculations. All examples are synthetic.
+# Keep expected-row keys in the same order: dbt emits a positional UNION ALL.
+unit_tests:
+  - name: selected_staging_retains_revision_settings_and_every_candidate
+    model: stg_race_results
+    config: &selected_tests
+      enabled: "{{ var('enable_revision_preview', false) }}"
+    overrides:
+      vars: {top_n: 1}
+    given:
+      - input: ref('selected_revision_results')
+        format: sql
+        fixture: selected_source
+    expect:
+      rows:
+        - {source_row_number: 1, revision_id: revision-b, top_n_requested: 20, validation_status: accepted, duration_s: 3600, weather_observed_at_utc: '2022-03-06T10:00:00+00:00'}
+        - {source_row_number: 2, revision_id: revision-b, top_n_requested: 20, validation_status: accepted, duration_s: 6600, weather_observed_at_utc: '2022-03-06T11:00:00+00:00'}
+        - {source_row_number: 3, revision_id: revision-b, top_n_requested: 20, validation_status: accepted, duration_s: 14400, weather_observed_at_utc: null}
+        - {source_row_number: 4, revision_id: revision-b, top_n_requested: 20, validation_status: skipped, duration_s: null, weather_observed_at_utc: null}
+        - {source_row_number: 5, revision_id: revision-b, top_n_requested: 20, validation_status: invalid, duration_s: null, weather_observed_at_utc: null}
+
+  - name: selected_fact_keeps_the_unmatched_finisher
+    model: fct_race_results
+    config: *selected_tests
+    given:
+      - input: ref('stg_race_results')
+        rows: &b_candidates
+          - &b_first
+            export_schema_version: 1
+            event_id: eventrac:900001
+            revision_id: revision-b
+            code_sha256: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+            source: eventrac
+            source_event_id: '900001'
+            course_id: runwx-synthetic-half
+            started_at_utc: '2022-03-06T10:00:00+00:00'
+            distance_m: 21097
+            race_sha256: a7da242b64691c302c03810c4f1c7ac8018ed9e325bfa5950e49117b5d2936eb
+            weather_sha256: 835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f
+            race_kind: synthetic
+            weather_kind: synthetic
+            course_id_input: runwx-synthetic-half
+            timezone_name: Europe/London
+            max_gap_seconds: 1800.0
+            alignment: nearest observation to run midpoint
+            tie_break: earlier observation
+            duration_precision: whole seconds; fractions truncated
+            timing_basis: null
+            top_n_requested: 20
+            source_row_id: b:1
+            source_row_number: 1
+            validation_status: accepted
+            validation_reason: null
+            place: 1
+            duration_s: 3600
+            weather_match_status: matched
+          - &b_second
+            <<: *b_first
+            source_row_id: b:2
+            source_row_number: 2
+            place: 2
+            duration_s: 6600
+          - &b_third
+            <<: *b_first
+            source_row_id: b:3
+            source_row_number: 3
+            place: 3
+            duration_s: 14400
+            weather_match_status: unmatched
+            weather_match_reason: No weather within 0:30:00
+          - &b_skipped
+            <<: *b_first
+            source_row_id: b:4
+            source_row_number: 4
+            validation_status: skipped
+            validation_reason: missing finish time
+            place: null
+            duration_s: null
+            weather_match_status: not_applicable
+          - &b_invalid
+            <<: *b_first
+            source_row_id: b:5
+            source_row_number: 5
+            validation_status: invalid
+            validation_reason: invalid finish time
+            place: null
+            duration_s: null
+            weather_match_status: not_applicable
+    expect:
+      rows:
+        - {revision_id: revision-b, source_row_number: 1, weather_match_status: matched, duration_s: 3600, pace_s_per_km: 170.6403754088259}
+        - {revision_id: revision-b, source_row_number: 2, weather_match_status: matched, duration_s: 6600, pace_s_per_km: 312.84068824951413}
+        - {revision_id: revision-b, source_row_number: 3, weather_match_status: unmatched, duration_s: 14400, pace_s_per_km: 682.5615016353036}
+
+  - name: selected_correction_uses_saved_n_even_with_a_cli_override
+    model: mart_event_summary
+    config: *selected_tests
+    overrides:
+      vars: {top_n: 1}
+    given:
+      - input: ref('stg_race_results')
+        rows: *b_candidates
+      - input: ref('fct_race_results')
+        rows: &b_finishers [*b_first, *b_second, *b_third]
+    expect:
+      rows:
+        - &b_summary
+          event_id: eventrac:900001
+          revision_id: revision-b
+          code_sha256: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+          race_sha256: a7da242b64691c302c03810c4f1c7ac8018ed9e325bfa5950e49117b5d2936eb
+          weather_sha256: 835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f
+          race_kind: synthetic
+          weather_kind: synthetic
+          candidate_count: 5
+          accepted_count: 3
+          skipped_count: 1
+          invalid_count: 1
+          finisher_count: 3
+          best_duration_s: 3600
+          mean_duration_s: 8200.0
+          median_duration_s: 6600.0
+          top_n_median_duration_s: 6600.0
+          median_pace_s_per_km: 312.84068824951413
+          top_n_median_pace_s_per_km: 312.84068824951413
+          top_n_requested: 20
+          top_n_effective: 3
+          weather_matched_count: 2
+          weather_unmatched_count: 1
+          weather_coverage_fraction: 0.6666666666666666
+          weather_coverage_status: partial
+          duration_unit: seconds
+          pace_unit: seconds_per_kilometre
+
+  - name: selected_events_keep_separate_counts_distances_and_top_n
+    model: mart_event_summary
+    config: *selected_tests
+    given:
+      - input: ref('stg_race_results')
+        rows:
+          - &n1_first {<<: *b_first, revision_id: revision-b-n1, top_n_requested: 1}
+          - &n1_second {<<: *b_second, revision_id: revision-b-n1, top_n_requested: 1}
+          - &n1_third {<<: *b_third, revision_id: revision-b-n1, top_n_requested: 1}
+          - {<<: *b_skipped, revision_id: revision-b-n1, top_n_requested: 1}
+          - {<<: *b_invalid, revision_id: revision-b-n1, top_n_requested: 1}
+          - &other_first
+            <<: *b_first
+            event_id: eventrac:900002
+            revision_id: revision-other
+            source_event_id: '900002'
+            source_row_id: other:1
+            course_id: synthetic-10k
+            course_id_input: synthetic-10k
+            distance_m: 10000
+            race_sha256: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+            top_n_requested: 2
+            duration_s: 4000
+          - &other_second
+            <<: *other_first
+            source_row_id: other:2
+            source_row_number: 2
+            place: 2
+            duration_s: 8000
+            weather_match_status: unmatched
+          - &other_third
+            <<: *other_second
+            source_row_id: other:3
+            source_row_number: 3
+            place: 3
+            duration_s: 12000
+      - input: ref('fct_race_results')
+        rows: [*n1_first, *n1_second, *n1_third, *other_first, *other_second, *other_third]
+    expect:
+      rows:
+        - <<: *b_summary
+          revision_id: revision-b-n1
+          top_n_requested: 1
+          top_n_effective: 1
+          top_n_median_duration_s: 3600.0
+          top_n_median_pace_s_per_km: 170.6403754088259
+        - <<: *b_summary
+          event_id: eventrac:900002
+          race_sha256: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+          best_duration_s: 4000
+          mean_duration_s: 8000.0
+          revision_id: revision-other
+          candidate_count: 3
+          accepted_count: 3
+          skipped_count: 0
+          invalid_count: 0
+          finisher_count: 3
+          median_duration_s: 8000.0
+          median_pace_s_per_km: 800.0
+          top_n_requested: 2
+          top_n_effective: 2
+          top_n_median_duration_s: 6000.0
+          top_n_median_pace_s_per_km: 600.0
+          weather_matched_count: 1
+          weather_unmatched_count: 2
+          weather_coverage_fraction: 0.3333333333333333
+          weather_coverage_status: partial
+
+  - name: no_selection_produces_no_summary
+    model: mart_event_summary
+    config: *selected_tests
+    given:
+      - {input: "ref('stg_race_results')", rows: []}
+      - {input: "ref('fct_race_results')", rows: []}
+    expect: {rows: []}
+
+  - name: selected_rejected_only_event_keeps_quality_without_metrics
+    model: mart_event_summary
+    config: *selected_tests
+    given:
+      - input: ref('stg_race_results')
+        rows: [*b_skipped, *b_invalid]
+      - {input: "ref('fct_race_results')", rows: []}
+    expect:
+      rows:
+        - event_id: eventrac:900001
+          revision_id: revision-b
+          candidate_count: 2
+          accepted_count: 0
+          skipped_count: 1
+          invalid_count: 1
+          finisher_count: 0
+          top_n_requested: 20
+          top_n_effective: 0
+          median_duration_s: null
+          top_n_median_duration_s: null
+          median_pace_s_per_km: null
+          top_n_median_pace_s_per_km: null
+          weather_matched_count: 0
+          weather_unmatched_count: 0
+          weather_coverage_fraction: null
+          weather_coverage_status: not_applicable
+
+  - name: invalid_saved_n_does_not_fall_back_to_cli_n
+    model: mart_event_summary
+    config: *selected_tests
+    given:
+      - input: ref('stg_race_results')
+        rows: &invalid_n
+          - {<<: *b_first, top_n_requested: null}
+          - {<<: *other_first, top_n_requested: 0}
+          - {<<: *other_first, event_id: 'eventrac:900003', revision_id: revision-negative-n, top_n_requested: -1}
+      - input: ref('fct_race_results')
+        rows: *invalid_n
+    expect: {rows: []}
+
+  - name: conflicting_revisions_for_one_event_produce_no_summary
+    model: mart_event_summary
+    config: *selected_tests
+    given:
+      - input: ref('stg_race_results')
+        rows: &mixed_revisions [*b_first, *n1_first]
+      - input: ref('fct_race_results')
+        rows: *mixed_revisions
+    expect: {rows: []}

@@ -8,7 +8,9 @@ with expected as (
 ), differences as (
     select coalesce(expected.source_row_id, actual.source_row_id) as source_row_id
     from expected
-    full outer join actual using (source_row_id)
+    full outer join actual using (
+        source_row_id{% if var('enable_revision_preview', false) %}, revision_id{% endif %}
+    )
     where expected.source_row_id is null
         or actual.source_row_id is null
         or to_json_string(expected) is distinct from to_json_string(actual)
