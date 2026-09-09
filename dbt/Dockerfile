@@ -9,8 +9,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HOME=/tmp
 
 WORKDIR /app/dbt
-COPY requirements.txt ./
-RUN python -m pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt requirements.lock ./
+RUN python -m pip install --no-cache-dir --no-deps --only-binary=:all: \
+    -r requirements.txt -r requirements.lock \
+    && python -m pip check
 COPY dbt_project.yml profiles.yml ./
 COPY models/ models/
 COPY macros/ macros/

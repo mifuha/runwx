@@ -118,7 +118,8 @@ The [first BigQuery staging load](docs/bigquery-staging.md#verified-cloud-run) a
 passed, including a repeat that kept five rows without uploading twice.
 The [three dbt views](docs/dbt-models.md#verified-cloud-run) now pass their tests in
 BigQuery and match the Python baseline for median/top-N median pace, quality counts
-and weather coverage. Revision selection and recovery remain the next milestone.
+and weather coverage. The next milestone uses real historical race and weather
+snapshots for a comparison between suitable editions through BigQuery and dbt.
 See the [architecture](docs/architecture.md).
 
 ## Development approach

@@ -17,7 +17,8 @@ strings, and observation times are timestamps. `settings` and `weather` are nest
 records. Rejected durations and absent weather remain null; schema inference is off.
 
 The source-row grain and identity are unchanged. This table accepts one export;
-appending multiple analyses or selecting historical revisions is later work.
+binding multiple real historical snapshots to the analytical models remains work
+for the historical-comparison milestone.
 
 ## Verified cloud run
 
@@ -155,10 +156,9 @@ without uploading again. A terminally failed job still needs inspection; the loa
 does not invent a fresh attempt ID or promise recovery from every failure.
 This is a sequential first-load contract, not a concurrent revision system.
 
-For later revision/retry work, keep logical load identity (the destination/region
-and exact export/schema) separate from execution attempts (individual submissions,
-job IDs and outcomes). Several attempts may serve one logical load. The current
-deterministic job ID is not the future attempt or revision model.
+The fixed-snapshot release retains this bounded rerun behaviour. Deliberate
+corrections have distinct content hashes and must be supplied explicitly to an
+analysis; they do not require an automatic current-revision pointer or attempt ledger.
 
 Verification queries use GoogleSQL, disable cached results and set a 100 MiB
 maximum billed-byte limit per query. The initial load uses two queries; an equal

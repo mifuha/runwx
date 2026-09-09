@@ -34,7 +34,8 @@ See [CSV adapters](../src/runwx/adapters/csv) and
 
 These domain dataclasses are frozen. Timestamps must be timezone-aware;
 duration and distance must be positive; wind speed and precipitation cannot be
-negative. Input schemas validate external data before conversion.
+negative. Weather measurements must be finite; finite negative temperatures remain
+valid. Input schemas validate external data before conversion.
 
 The pipeline loops through runs, aligns weather, attaches valid matches and
 records skipped runs with reasons. See the [matching rules](race-report.md#time-matching)
@@ -67,6 +68,20 @@ The [README tests section](../README.md#tests) gives the test commands. Keep ord
 tests deterministic and independent of credentials or live providers. The
 [report tests](../tests/test_offline_report.py) cover repeated output, source hashes,
 changed settings, malformed result rows and missing weather while blocking network access.
+
+## CI checks
+
+The [workflow](../.github/workflows/ci.yml) runs the Python tests, builds the report
+image and checks its CLI, and checks Terraform formatting and configuration.
+Terraform initialization uses the committed provider lock with no backend.
+The dbt job builds its locked image and parses the historical-snapshot project.
+Container CLI/parsing checks run with networking disabled and no credentials.
+Installing packages/providers and building images can require internet access.
+
+These checks do not apply Terraform or execute warehouse SQL. Parsing detects
+configuration and reference errors, not every SQL error; real dbt unit/data tests
+remain a separate BigQuery integration check. Image dependencies have their own
+[update procedure](container.md#dependency-updates).
 
 ## Related documentation
 

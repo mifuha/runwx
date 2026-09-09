@@ -3,6 +3,8 @@
 !Dockerfile
 !pyproject.toml
 !setup.cfg
+!requirements/
+!requirements/*.lock
 !src/
 !src/runwx/
 !src/runwx/**

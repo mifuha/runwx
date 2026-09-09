@@ -43,6 +43,13 @@ editions of the same course, with weather context. Start with one edition; a
 historical comparison needs a second suitable snapshot and comparability checks.
 Synthetic demonstrations remain separate from real historical evidence.
 
+The first release treats historical inputs as fixed snapshots. Its minimum
+guarantees are exact snapshot identity/provenance, duplicate-safe sequential
+reruns, validation before successful output, and distinguishable deliberately
+corrected inputs. Analyses use explicitly chosen snapshots. Guarded selection,
+concurrent publication and elaborate receipt handling are deferred learning work;
+they need a concrete changing-data or concurrent-writer requirement before adoption.
+
 Result rows and tested dbt views now provide median and top-N median pace, with
 units, settings, result counts and weather coverage. Parsing and weather alignment
 remain in Python; SQL/dbt handles warehouse relationships, reconciliation and
@@ -64,13 +71,14 @@ The mart records requested and effective N. The
 [existing top-N metric](bigquery-staging.md#metric-contract) is a median of the
 fastest N finishers. A complete export must have one input/settings context;
 mixed or empty contexts fail a data test and produce no summary. An all-rejected
-export retains quality counts with null performance metrics. Multi-revision
-selection and execution-attempt tracking remain later work. See [setup and failure behaviour](dbt-models.md).
+export retains quality counts with null performance metrics.
+See [setup and failure behaviour](dbt-models.md).
 
 Historical comparison requires the same canonical course identity plus checked
 distance, route and timing comparability. Weather provides context, not a causal
-performance adjustment. Later work covers explicit result-revision selection and
-failure recovery; scheduling and orchestration are not implemented.
+performance adjustment. The next integration work binds real historical inputs
+to the existing warehouse models. Scheduling and orchestration are not release
+prerequisites for these manually supplied snapshots.
 
 See the [report contract and limitations](race-report.md) and
 [cloud verification](first-cloud-run.md#verification).

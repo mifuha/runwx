@@ -1,0 +1,4 @@
+# Explicit tools for building the local runwx package without build isolation.
+# Runtime dependency versions live in container.lock.
+setuptools==84.0.0
+wheel==0.45.1

@@ -82,8 +82,8 @@ The complete output is built and serialised in memory before printing.
 Timing basis, source completeness and weather location remain unverified.
 `timing_basis` is null. These labels and hashes do not verify source accuracy.
 Code/dependency versions and the original start-time text are not captured in this
-export. Repeatability assumes the same code and environment; this is not yet a
-warehouse revision/publication contract. The synthetic export has passed a
+export. Repeatability assumes the same code and environment; companion provenance
+is needed when preparing real historical inputs. The synthetic export has passed a
 [first BigQuery load and repeat verification](bigquery-staging.md#verified-cloud-run).
 
 ## Where SQLite, BigQuery and dbt fit

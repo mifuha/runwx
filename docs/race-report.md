@@ -62,6 +62,11 @@ Both `load_eventrac_results_html` and `parse_eventrac_results_html` return an
 `EventracParseResult` with `event`, `accepted`, `skipped` and `errors` fields.
 `candidate_count` is checked against the source row count before returning.
 
+Location extraction accepts JSON-LD objects containing a `location.geo` object.
+Unsupported shapes, such as lists or nulls, are skipped so a later valid script
+can supply coordinates. If none supplies coordinates, parsing raises a page-level
+`ValueError`.
+
 A candidate is a row with direct data cells belonging to the results table,
 excluding header/footer and nested-table rows. Candidate row numbers start at 1
 in source order, independently of finishing place. Equal times or places do not

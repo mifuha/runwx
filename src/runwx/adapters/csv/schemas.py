@@ -41,7 +41,7 @@ class RunIn(BaseModel):
 
 
 class WeatherObsIn(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     observed_at: datetime
     temp_c: float
