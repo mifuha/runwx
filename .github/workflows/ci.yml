@@ -69,6 +69,11 @@ jobs:
       - name: Validate Terraform configuration
         run: terraform validate -no-color
 
+      - name: Validate historical warehouse root
+        run: |
+          terraform -chdir=historical init -backend=false -lockfile=readonly -input=false -no-color
+          terraform -chdir=historical validate -no-color
+
   dbt:
     runs-on: ubuntu-latest
     timeout-minutes: 15
