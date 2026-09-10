@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class OpenMeteoHourly(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", allow_inf_nan=False)
 
     time: list[str]
     temperature_2m: list[float]

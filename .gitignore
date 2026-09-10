@@ -21,3 +21,10 @@ data/*.csv
 
 # sqlite db files
 *.db
+
+# Isolated dbt tooling and generated artifacts
+.venv-dbt/
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml

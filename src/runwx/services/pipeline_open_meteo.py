@@ -4,6 +4,7 @@ from datetime import timedelta, timezone
 from typing import Sequence
 
 from runwx.adapters.weather.open_meteo import OpenMeteoClient
+from runwx.domain.align import run_anchor_time
 from runwx.domain.models import Run
 from runwx.services.pipeline import PipelineResult, enrich_runs
 
@@ -17,17 +18,21 @@ def enrich_runs_with_open_meteo(
     max_gap: timedelta = timedelta(minutes=30),
 ) -> PipelineResult:
     """
-    Fetch weather from Open-Meteo for the overall run date range, then
-    delegate alignment/enrichment to the generic pipeline.
+    Fetch UTC dates covering every midpoint +/- max_gap, then delegate
+    alignment/enrichment to the generic pipeline. Reject a negative gap
+    before requesting weather.
     """
+    if max_gap < timedelta(0):
+        raise ValueError("max_gap must be non-negative")
+
     if not runs:
         return PipelineResult(enriched=(), skipped=())
 
     client = client or OpenMeteoClient()
 
-    started_ats_utc = [run.started_at.astimezone(timezone.utc) for run in runs]
-    start_date = min(started_ats_utc).date()
-    end_date = max(started_ats_utc).date()
+    anchors_utc = [run_anchor_time(run).astimezone(timezone.utc) for run in runs]
+    start_date = (min(anchors_utc) - max_gap).date()
+    end_date = (max(anchors_utc) + max_gap).date()
 
     weather = client.fetch_weather_obs(
         latitude=latitude,

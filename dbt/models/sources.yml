@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: runwx
+    database: "{{ target.project }}"
+    schema: "{{ var('source_dataset', 'runwx_staging') }}"
+    tables:
+      - name: race_results
+        identifier: "{{ var('source_table', 'synthetic_results') }}"
+        description: One explicitly chosen complete export, including rejected candidates.

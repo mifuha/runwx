@@ -1,0 +1,12 @@
+# Send only package code and build metadata to the builder.
+**
+!Dockerfile
+!pyproject.toml
+!setup.cfg
+!requirements/
+!requirements/*.lock
+!src/
+!src/runwx/
+!src/runwx/**
+**/__pycache__/
+**/*.py[cod]

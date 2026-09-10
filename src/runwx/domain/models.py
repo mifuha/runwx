@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from math import isfinite
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,9 @@ class WeatherObs:
     def __post_init__(self) -> None:
         if self.observed_at.tzinfo is None:
             raise ValueError("observed_at must be timezone-aware (UTC recommended)")
+        for field in ("temp_c", "wind_mps", "precipitation_mm", "humidity_pct"):
+            if not isfinite(getattr(self, field)):
+                raise ValueError(f"{field} must be finite")
         if self.wind_mps < 0:
             raise ValueError("wind_mps must be non-negative")
         if self.precipitation_mm < 0:

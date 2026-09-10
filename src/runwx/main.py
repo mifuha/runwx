@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -11,6 +12,8 @@ from runwx.adapters.sqlite.query_sqlite import fetch_latest_enriched
 from runwx.adapters.sqlite.storage_sqlite import connect, write_pipeline_result
 from runwx.domain.models import Run, WeatherObs
 from runwx.services.pipeline import enrich_runs
+from runwx.services.offline_report import build_offline_report
+from runwx.services.result_export import build_result_rows
 
 
 def demo_data() -> tuple[list[Run], list[WeatherObs]]:
@@ -88,6 +91,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     action="store_true",
     help="Suppress human-readable output (logs only).",
 )
+    # Both saved-input commands use the same interpretation flags.
+    report_p = sub.add_parser("report", help="Report on saved race HTML and weather CSV without network access.")
+    export_p = sub.add_parser("export-results", help="Export one JSON line per saved race result row offline.")
+    for saved_p in (report_p, export_p):
+        saved_p.add_argument("--race-html", type=Path, required=True)
+        saved_p.add_argument("--weather-csv", type=Path, required=True)
+        saved_p.add_argument("--course-id", required=True)
+        saved_p.add_argument("--distance-m", type=int, required=True)
+        saved_p.add_argument("--timezone", dest="timezone_name", required=True)
+        saved_p.add_argument("--max-gap-min", type=int, default=30)
+        saved_p.set_defaults(log_level="WARNING")
+    report_p.add_argument("--top-n", type=int, default=20)
+    report_p.add_argument("--weather-kind", choices=("synthetic", "unknown"), default="unknown")
+    export_p.add_argument("--race-kind", choices=("synthetic", "historical", "unknown"), default="unknown")
+    export_p.add_argument("--weather-kind", choices=("synthetic", "historical_reanalysis", "unknown"), default="unknown")
+    export_p.add_argument("--timing-basis", choices=("chip", "gun"),
+                          help="Documented basis of the Time column; does not select a different column.")
+
     args = p.parse_args(argv)
 
     # default: if no subcommand, behave like "run"
@@ -110,6 +131,27 @@ def main(argv: list[str] | None = None) -> None:
     def out(msg: str) -> None:
         if not getattr(args, "quiet", False):
             print(msg)
+
+    if args.cmd == "export-results":
+        rows = build_result_rows(
+            args.race_html, args.weather_csv, course_id=args.course_id,
+            distance_m=args.distance_m, timezone_name=args.timezone_name,
+            max_gap=timedelta(minutes=args.max_gap_min),
+            race_kind=args.race_kind, weather_kind=args.weather_kind,
+            timing_basis=args.timing_basis,
+        )
+        print("\n".join(json.dumps(row, sort_keys=True, allow_nan=False) for row in rows))
+        return
+
+    if args.cmd == "report":
+        report = build_offline_report(
+            args.race_html, args.weather_csv, course_id=args.course_id,
+            distance_m=args.distance_m, timezone_name=args.timezone_name,
+            top_n=args.top_n, max_gap=timedelta(minutes=args.max_gap_min),
+            weather_kind=args.weather_kind,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+        return
 
     # --- QUERY MODE ---
     if args.cmd == "query":

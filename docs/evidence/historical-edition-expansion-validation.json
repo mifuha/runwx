@@ -1,0 +1,738 @@
+{
+  "status": "verified_in_bigquery",
+  "date": "2026-09-10",
+  "code_commit": "5b317f1b3879223bdaed0fab34fd91b6deb10776",
+  "project": "runwx-learning-mifuha",
+  "location": "europe-west1",
+  "dbt_image_id": "sha256:793985f1cc57621527c2033e6115830f0c8d75ca0793b83c63f7d565ece71208",
+  "dependency_changes": false,
+  "terraform": {
+    "add": 4,
+    "change": 0,
+    "destroy": 0,
+    "plan_sha256": "be81a5c5eec3f352a3457b721a655195c2bfe1c8188dbacdec271501dff3fc05",
+    "parent_state_and_config_unchanged": true,
+    "historical_state_and_full_four_snapshot_config_retained": true
+  },
+  "new_snapshots": [
+    {
+      "year": 2023,
+      "source_table": "runwx-learning-mifuha.runwx_staging.lydd_2023_bb1171d02f0f",
+      "output_dataset": "runwx_dbt_lydd_2023_bb1171d02f0f",
+      "rows": 226,
+      "export_bytes": 259584,
+      "export_sha256": "bb1171d02f0fdb2547b1a6f0ed5bbdceb485c79fa74156593a6b31710fa672a5",
+      "race_sha256": "772ac63372e39b546a5d7143a595ea3393e6ffba3bd8d4679a39ea08caa6a276",
+      "weather_csv_sha256": "b3aff51643b834db5ed77b3a6e4ef1070458fa39a85e8788c99936ea88dfed9c",
+      "raw_weather_sha256": "280abd00a5c4b2c22183d22096f60c5bbc2a5715fd5c4ff8268051217cf4d0a8",
+      "provider_distance_m": 21082,
+      "load_job_id": "runwx_load_630998184706e662d960e2e5d3077712a1b2da0fea2a973e7294a059eb7983d5",
+      "load_status": "loaded_verified",
+      "repeat_status": "already_present_verified",
+      "repeat_load_job_id": null,
+      "loader_verification_job_ids": [
+        "3c59a86f-6549-4af7-96d7-a2eaa23f383d",
+        "de338564-9312-46bc-a56c-69ed047138a7",
+        "49304177-c33e-4c5e-9e78-2ac61a0810aa"
+      ]
+    },
+    {
+      "year": 2026,
+      "source_table": "runwx-learning-mifuha.runwx_staging.lydd_2026_5243cfebedc2",
+      "output_dataset": "runwx_dbt_lydd_2026_5243cfebedc2",
+      "rows": 292,
+      "export_bytes": 335199,
+      "export_sha256": "5243cfebedc288135beb7cc281f9e4f194c0c1c64236c9e763d778c2b207cb47",
+      "race_sha256": "ff91fd4ec81876c7129294d179df422368b32d0deedcc14b87faaf464d02d041",
+      "weather_csv_sha256": "d6904584e1f70fbfac4ef06afc1dee6233a71caed2fb97b059292c08f9cb8840",
+      "raw_weather_sha256": "a77bd428653a25ecae6f1545e0739ea98ec323663d5d40d29fefdfe03710a884",
+      "provider_distance_m": 21000,
+      "load_job_id": "runwx_load_3fecf98a683fbbda92a84f187ebab02b6afc91545e5135b1d06f6f564675ae38",
+      "load_status": "loaded_verified",
+      "repeat_status": "already_present_verified",
+      "repeat_load_job_id": null,
+      "loader_verification_job_ids": [
+        "0274a44c-784d-49d2-8b76-755474ad4f0e",
+        "3d1817cd-b3c8-4f22-9b11-eaed48f7119e",
+        "b7f4ab3e-5049-4ef4-b387-9e0fd2b16505"
+      ]
+    }
+  ],
+  "comparison_view": "runwx-learning-mifuha.runwx_dbt_lydd_2022_99783aaa85b8.mart_course_comparison",
+  "comparison_view_sql_sha256": "08236754c7d1b111b6638c88d63634ed72a55adb7afabddfde9a72e7f50936dc",
+  "bindings": {
+    "comparison_baseline": "runwx_dbt_lydd_2022_99783aaa85b8",
+    "comparison_datasets": [
+      "runwx_dbt_lydd_2022_99783aaa85b8",
+      "runwx_dbt_lydd_2023_bb1171d02f0f",
+      "runwx_dbt_lydd_2024_f0758db89562",
+      "runwx_dbt_lydd_2026_5243cfebedc2"
+    ]
+  },
+  "validation": {
+    "dbt_tests_passed": 49,
+    "unit_tests": 16,
+    "data_tests": 33,
+    "unit_results_served_from_cache": 16,
+    "data_tests_uncached": 33,
+    "new_edition_mart_columns_checked": 37,
+    "new_edition_weather_summaries_checked": 2,
+    "comparison_rows_checked": 4,
+    "comparison_columns_per_row": 62,
+    "comparison_finishers": 936,
+    "weather_coverage_fraction": 1.0,
+    "additional_reconciliation_queries": 3,
+    "float_relative_tolerance": 1e-12,
+    "float_absolute_tolerance": 1e-09,
+    "timestamp_check": "Compare timezone-aware UTC instants; the 2026 09:00 BST start is 08:00 UTC.",
+    "application_tests": "Existing 251-test CI evidence reused; application, tests and dependencies unchanged.",
+    "runs": [
+      {
+        "selection": "2023",
+        "invocation_id": "d7d985e3-fef1-45ca-ac25-6634a0299d18",
+        "result_counts": {
+          "pass": 21,
+          "success": 3
+        },
+        "results": [
+          {
+            "id": "unit_test.runwx.stg_race_results.staging_keeps_every_candidate_and_flattens_weather",
+            "status": "pass",
+            "job_id": "7a928435-01b9-408a-90b8-3fbee647c722"
+          },
+          {
+            "id": "model.runwx.stg_race_results",
+            "status": "success",
+            "job_id": "130252f2-4ac7-4a14-88e9-68f83563915e"
+          },
+          {
+            "id": "test.runwx.accepted_values_stg_race_results_validation_status__accepted__skipped__invalid.3b8b94c990",
+            "status": "pass",
+            "job_id": "6cd52e0f-2a64-4d25-8409-efd82b2080f9"
+          },
+          {
+            "id": "test.runwx.accepted_values_stg_race_results_weather_match_status__matched__unmatched__not_applicable.2dcec24430",
+            "status": "pass",
+            "job_id": "5fb8c655-36fe-4ae9-85b6-c840b9ecb2c3"
+          },
+          {
+            "id": "test.runwx.not_null_stg_race_results_source_row_id.541d0a0cbf",
+            "status": "pass",
+            "job_id": "ca54d465-db71-4d35-98ec-f42caedbd188"
+          },
+          {
+            "id": "test.runwx.not_null_stg_race_results_validation_status.d8ef91afb7",
+            "status": "pass",
+            "job_id": "2c7ed3b5-3ce0-4745-8601-656b55c55d24"
+          },
+          {
+            "id": "test.runwx.not_null_stg_race_results_weather_match_status.61780364ee",
+            "status": "pass",
+            "job_id": "38742ce3-257e-4815-8fa4-a0b982c4c0e5"
+          },
+          {
+            "id": "test.runwx.row_outcomes_are_consistent",
+            "status": "pass",
+            "job_id": "42d87c7a-f4a3-4d0b-b571-220af5dc57cb"
+          },
+          {
+            "id": "test.runwx.single_export_context",
+            "status": "pass",
+            "job_id": "d5a8ce3e-4d26-46d1-806b-b61c704d6e51"
+          },
+          {
+            "id": "test.runwx.staging_reconciles_source",
+            "status": "pass",
+            "job_id": "69ff0521-c9d3-4eca-998f-17d1ca9e3920"
+          },
+          {
+            "id": "test.runwx.unique_stg_race_results_source_row_id.dee0eae6fd",
+            "status": "pass",
+            "job_id": "de222cab-fff5-4a4e-afac-e8d37bd9168e"
+          },
+          {
+            "id": "unit_test.runwx.fct_race_results.fact_keeps_accepted_finisher_without_weather",
+            "status": "pass",
+            "job_id": "6eb5cc2a-0c7f-46f1-a30e-528a5a8bed21"
+          },
+          {
+            "id": "unit_test.runwx.fct_race_results.fact_keeps_equal_finishers_distinct",
+            "status": "pass",
+            "job_id": "7b0cbe8f-53f2-45a4-9ea6-d8103c0fe03e"
+          },
+          {
+            "id": "model.runwx.fct_race_results",
+            "status": "success",
+            "job_id": "e5f5ef43-1235-4f26-bc3d-0bd8b69d698d"
+          },
+          {
+            "id": "test.runwx.accepted_fact_reconciles",
+            "status": "pass",
+            "job_id": "f09aa985-80d1-4f51-b1da-03eab712361f"
+          },
+          {
+            "id": "test.runwx.not_null_fct_race_results_pace_s_per_km.3dba2c85ae",
+            "status": "pass",
+            "job_id": "e73c0ab0-fdc5-4404-badd-47d801b84f98"
+          },
+          {
+            "id": "test.runwx.not_null_fct_race_results_source_row_id.3e696c73f5",
+            "status": "pass",
+            "job_id": "84d0821c-282a-4479-914d-f6995a62c8c4"
+          },
+          {
+            "id": "test.runwx.unique_fct_race_results_source_row_id.1106b8b149",
+            "status": "pass",
+            "job_id": "17a29d7a-d9af-4455-b529-b3b70be3646d"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.rejected_only_export_has_no_invented_metrics",
+            "status": "pass",
+            "job_id": "a56b5d89-a166-48f0-8ce8-8ed5c454f95c"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.summary_matches_python_demo_and_clamps_n",
+            "status": "pass",
+            "job_id": "d1b1a23a-1aff-48d9-8e64-71a60145f506"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.top_two_uses_even_median_of_fastest_finishers",
+            "status": "pass",
+            "job_id": "1d3e0b4c-65ea-44fc-ab18-7aa4248e0874"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.mixed_settings_do_not_produce_a_blended_summary",
+            "status": "pass",
+            "job_id": "3440050f-7a63-411f-8867-f6d8f983f0e4"
+          },
+          {
+            "id": "model.runwx.mart_event_summary",
+            "status": "success",
+            "job_id": "6da49137-629d-4223-b809-d9acbee46fbd"
+          },
+          {
+            "id": "test.runwx.event_summary_reconciles",
+            "status": "pass",
+            "job_id": "2bf94d94-e8aa-4971-b093-94b65b09657f"
+          }
+        ],
+        "reconciliation_job_id": "69b8c427-0b35-44d6-96f9-6ef8371b8b13",
+        "reconciliation_uncached": true,
+        "reconciliation_rows": 1
+      },
+      {
+        "selection": "2026",
+        "invocation_id": "8d67f3bd-d5ec-4417-8c51-abc93e49f4a6",
+        "result_counts": {
+          "pass": 21,
+          "success": 3
+        },
+        "results": [
+          {
+            "id": "unit_test.runwx.stg_race_results.staging_keeps_every_candidate_and_flattens_weather",
+            "status": "pass",
+            "job_id": "f7ec9ccc-ca1e-47a1-8a68-9aa93233d0e4"
+          },
+          {
+            "id": "model.runwx.stg_race_results",
+            "status": "success",
+            "job_id": "5c9e6b2d-e7dc-40c6-9b41-49b04b7d844b"
+          },
+          {
+            "id": "test.runwx.accepted_values_stg_race_results_validation_status__accepted__skipped__invalid.3b8b94c990",
+            "status": "pass",
+            "job_id": "fbe5d382-95d3-4ef1-95ca-d0aa8730262e"
+          },
+          {
+            "id": "test.runwx.accepted_values_stg_race_results_weather_match_status__matched__unmatched__not_applicable.2dcec24430",
+            "status": "pass",
+            "job_id": "6f04db97-e605-4ca1-b131-ae01dcf3bb6a"
+          },
+          {
+            "id": "test.runwx.not_null_stg_race_results_source_row_id.541d0a0cbf",
+            "status": "pass",
+            "job_id": "c558a28b-4719-4d04-8bee-27af1b2e0c73"
+          },
+          {
+            "id": "test.runwx.not_null_stg_race_results_validation_status.d8ef91afb7",
+            "status": "pass",
+            "job_id": "98b6bce5-5ad5-46fd-a6db-6552b63b7dd4"
+          },
+          {
+            "id": "test.runwx.not_null_stg_race_results_weather_match_status.61780364ee",
+            "status": "pass",
+            "job_id": "6373d267-8cb9-4c9a-a496-bf3eda370ec9"
+          },
+          {
+            "id": "test.runwx.row_outcomes_are_consistent",
+            "status": "pass",
+            "job_id": "2d075daa-5642-478c-96c1-18fad49e9638"
+          },
+          {
+            "id": "test.runwx.single_export_context",
+            "status": "pass",
+            "job_id": "b4aeb2f1-538f-404f-b2e5-7501e1ec1c0d"
+          },
+          {
+            "id": "test.runwx.staging_reconciles_source",
+            "status": "pass",
+            "job_id": "f4174970-2304-4ef8-b806-b85497459ce0"
+          },
+          {
+            "id": "test.runwx.unique_stg_race_results_source_row_id.dee0eae6fd",
+            "status": "pass",
+            "job_id": "0d27c6ed-b5c1-4c96-a380-290da88aec28"
+          },
+          {
+            "id": "unit_test.runwx.fct_race_results.fact_keeps_accepted_finisher_without_weather",
+            "status": "pass",
+            "job_id": "112d7e9b-f99f-4c84-aced-5f9c3092eb2c"
+          },
+          {
+            "id": "unit_test.runwx.fct_race_results.fact_keeps_equal_finishers_distinct",
+            "status": "pass",
+            "job_id": "4ab649e7-60f0-4df1-a4b7-6981b84000a1"
+          },
+          {
+            "id": "model.runwx.fct_race_results",
+            "status": "success",
+            "job_id": "8620778d-35d1-41bc-88bc-46b0d581ea9d"
+          },
+          {
+            "id": "test.runwx.accepted_fact_reconciles",
+            "status": "pass",
+            "job_id": "6f959e31-1385-48c5-bfa8-923621ccb61f"
+          },
+          {
+            "id": "test.runwx.not_null_fct_race_results_pace_s_per_km.3dba2c85ae",
+            "status": "pass",
+            "job_id": "d50d7606-5107-4e96-99ea-168a9ec546f6"
+          },
+          {
+            "id": "test.runwx.not_null_fct_race_results_source_row_id.3e696c73f5",
+            "status": "pass",
+            "job_id": "86b3dcad-868e-4f4c-a57d-74fb141cbec7"
+          },
+          {
+            "id": "test.runwx.unique_fct_race_results_source_row_id.1106b8b149",
+            "status": "pass",
+            "job_id": "356cbc2a-36f9-476a-b214-64f83594bb54"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.rejected_only_export_has_no_invented_metrics",
+            "status": "pass",
+            "job_id": "6f3aacab-2fb4-48e7-8492-63b62ed10674"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.mixed_settings_do_not_produce_a_blended_summary",
+            "status": "pass",
+            "job_id": "d8ed60a9-be6b-4006-9433-e3b80e7e3d47"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.summary_matches_python_demo_and_clamps_n",
+            "status": "pass",
+            "job_id": "e49e726c-c3b6-4602-887a-ab078134d2f4"
+          },
+          {
+            "id": "unit_test.runwx.mart_event_summary.top_two_uses_even_median_of_fastest_finishers",
+            "status": "pass",
+            "job_id": "be3f45f4-620a-4e83-aa85-eab71adfec24"
+          },
+          {
+            "id": "model.runwx.mart_event_summary",
+            "status": "success",
+            "job_id": "ee6d6a9b-190d-4e84-9b16-92b30fdcfec5"
+          },
+          {
+            "id": "test.runwx.event_summary_reconciles",
+            "status": "pass",
+            "job_id": "f26243de-5dad-4587-b73a-303c0b4172f8"
+          }
+        ],
+        "reconciliation_job_id": "8b6aede5-11f8-4657-845c-23a85f0fcf41",
+        "reconciliation_uncached": true,
+        "reconciliation_rows": 1
+      },
+      {
+        "selection": "comparison",
+        "invocation_id": "8ee05bae-f28d-4ca9-b64e-8f93068fddb7",
+        "result_counts": {
+          "pass": 7,
+          "success": 1
+        },
+        "results": [
+          {
+            "id": "test.runwx.comparison_inputs_reconcile",
+            "status": "pass",
+            "job_id": "a163e87f-aaf5-406e-9af0-57c3363bbbc5"
+          },
+          {
+            "id": "unit_test.runwx.mart_course_comparison.comparison_preserves_editions_and_separates_pace_from_speed",
+            "status": "pass",
+            "job_id": "f7246ef8-1bd5-402a-ae65-d85a6115adb6"
+          },
+          {
+            "id": "unit_test.runwx.mart_course_comparison.missing_baseline_does_not_invent_comparison_rows",
+            "status": "pass",
+            "job_id": "ea0ccae7-7a6b-4cf6-a343-c73d122716e3"
+          },
+          {
+            "id": "model.runwx.mart_course_comparison",
+            "status": "success",
+            "job_id": "79ff1ca6-530a-4055-963d-32e4683c66c9"
+          },
+          {
+            "id": "test.runwx.accepted_values_mart_course_comparison_comparison_status__comparable__different_course_or_distance__unknown_timing_basis__different_interpretation__no_finishers.c7e37168a2",
+            "status": "pass",
+            "job_id": "f2b2b766-ee95-441d-bc51-6d6e7b6ae6f0"
+          },
+          {
+            "id": "test.runwx.comparison_rows_reconcile",
+            "status": "pass",
+            "job_id": "8e3fc227-2358-4316-b402-7deabe625db3"
+          },
+          {
+            "id": "test.runwx.not_null_mart_course_comparison_snapshot_dataset.dbecd7b937",
+            "status": "pass",
+            "job_id": "c60c8b30-ac0c-4c09-a8e9-f8a962cbf167"
+          },
+          {
+            "id": "test.runwx.unique_mart_course_comparison_snapshot_dataset.0362000290",
+            "status": "pass",
+            "job_id": "8d194a88-1c2a-4c29-bea3-b85461707e4f"
+          }
+        ],
+        "reconciliation_job_id": "e1110a69-778f-4fb2-856a-cf6ed011f76e",
+        "reconciliation_uncached": true,
+        "reconciliation_rows": 4
+      }
+    ]
+  },
+  "usage": {
+    "total_jobs": 86,
+    "load_jobs": 2,
+    "query_jobs": 84,
+    "successful_jobs": 86,
+    "failed_jobs": 0,
+    "statement_types": {
+      "SELECT": 61,
+      "CREATE_VIEW": 7,
+      "CREATE_TABLE_AS_SELECT": 16,
+      "LOAD": 2
+    },
+    "processed_bytes": 3770962,
+    "billed_bytes": 566231040,
+    "billed_mib": 540.0,
+    "cache_hits": 16,
+    "started_at_utc": "2026-09-10T20:03:57.923000+00:00",
+    "ended_at_utc": "2026-09-10T20:05:59.886000+00:00",
+    "note": "Server job counters, not an invoice charge or account credit balance."
+  },
+  "limits": {
+    "maximum_bytes_billed_per_query": 104857600,
+    "dbt_queries_with_300_second_server_timeout": 75,
+    "loader_and_reconciliation_queries_with_300_second_wait_without_server_deadline": 9,
+    "threads": 1,
+    "job_retries": 0
+  },
+  "preservation": {
+    "old_source_tables_unchanged": 2,
+    "old_edition_view_definitions_unchanged": 6,
+    "temporary_probe_tables_remaining": 0,
+    "cloud_operations_repeated_after_success": 0
+  },
+  "source_qualification": {
+    "new_rows_with_verified_chip_and_gun_duration": 518,
+    "name_discrepancies": 3,
+    "name_discrepancy_details": "One differing surname spelling, one different name/gender and one missing first name. No source rows were changed.",
+    "qualified_use": "Edition-level timing and matched-weather summaries; athlete identity and demographics unqualified.",
+    "held_2025": {
+      "organiser_rows": 399,
+      "distinct_positions": 261,
+      "reason": "Requires source reconciliation; no automatic deduplication."
+    }
+  },
+  "rows": [
+    {
+      "snapshot_dataset": "runwx_dbt_lydd_2022_99783aaa85b8",
+      "export_schema_version": 1,
+      "event_id": "eventrac:21723",
+      "source": "eventrac",
+      "source_event_id": "21723",
+      "course_id": "lydd-half",
+      "started_at_utc": "2022-03-06T10:00:00Z",
+      "distance_m": 21097,
+      "race_sha256": "ee10244068e38e3ff5c80c54f983d76a2f72eba469289a842af149486db16807",
+      "weather_sha256": "3b1ea0470e6d8b640d3390640b667f3c87dac0aeaf703165d8c0ee38e706db76",
+      "race_kind": "historical",
+      "weather_kind": "historical_reanalysis",
+      "course_id_input": "lydd-half",
+      "timezone_name": "Europe/London",
+      "max_gap_seconds": 1800,
+      "alignment": "nearest observation to run midpoint",
+      "tie_break": "earlier observation",
+      "duration_precision": "whole seconds; fractions truncated",
+      "timing_basis": "chip",
+      "candidate_count": 189,
+      "accepted_count": 189,
+      "skipped_count": 0,
+      "invalid_count": 0,
+      "finisher_count": 189,
+      "best_duration_s": 4267,
+      "mean_duration_s": 6979.603174603175,
+      "median_duration_s": 6954,
+      "top_n_median_duration_s": 4953.5,
+      "weather_matched_count": 189,
+      "median_pace_s_per_km": 329.6203251647153,
+      "top_n_median_pace_s_per_km": 234.7964165521164,
+      "top_n_requested": 20,
+      "top_n_effective": 20,
+      "weather_unmatched_count": 0,
+      "weather_coverage_fraction": 1,
+      "weather_coverage_status": "complete",
+      "duration_unit": "seconds",
+      "pace_unit": "seconds_per_kilometre",
+      "pace_p25_s_per_km": 283.263023178651,
+      "pace_p75_s_per_km": 375.93022704649945,
+      "median_temp_c": 5.8,
+      "median_wind_mps": 7.34,
+      "median_precipitation_mm": 0,
+      "median_humidity_pct": 61,
+      "baseline_dataset": "runwx_dbt_lydd_2022_99783aaa85b8",
+      "baseline_event_id": "eventrac:21723",
+      "baseline_race_sha256": "ee10244068e38e3ff5c80c54f983d76a2f72eba469289a842af149486db16807",
+      "baseline_weather_sha256": "3b1ea0470e6d8b640d3390640b667f3c87dac0aeaf703165d8c0ee38e706db76",
+      "baseline_median_duration_s": 6954,
+      "baseline_median_pace_s_per_km": 329.6203251647153,
+      "baseline_top_n_median_pace_s_per_km": 234.7964165521164,
+      "baseline_top_n_requested": 20,
+      "baseline_top_n_effective": 20,
+      "mean_pace_s_per_km": 330.83391831081076,
+      "speed_at_median_duration_kmh": 10.92165660051769,
+      "comparison_status": "comparable",
+      "median_duration_difference_s": 0,
+      "median_pace_difference_s_per_km": 0,
+      "median_pace_change_pct": 0,
+      "speed_at_median_duration_change_pct": 0,
+      "top_n_median_pace_difference_s_per_km": 0,
+      "top_n_median_pace_change_pct": 0
+    },
+    {
+      "snapshot_dataset": "runwx_dbt_lydd_2023_bb1171d02f0f",
+      "export_schema_version": 1,
+      "event_id": "eventrac:16900",
+      "source": "eventrac",
+      "source_event_id": "16900",
+      "course_id": "lydd-half",
+      "started_at_utc": "2023-03-12T10:00:00Z",
+      "distance_m": 21097,
+      "race_sha256": "772ac63372e39b546a5d7143a595ea3393e6ffba3bd8d4679a39ea08caa6a276",
+      "weather_sha256": "b3aff51643b834db5ed77b3a6e4ef1070458fa39a85e8788c99936ea88dfed9c",
+      "race_kind": "historical",
+      "weather_kind": "historical_reanalysis",
+      "course_id_input": "lydd-half",
+      "timezone_name": "Europe/London",
+      "max_gap_seconds": 1800,
+      "alignment": "nearest observation to run midpoint",
+      "tie_break": "earlier observation",
+      "duration_precision": "whole seconds; fractions truncated",
+      "timing_basis": "chip",
+      "candidate_count": 226,
+      "accepted_count": 226,
+      "skipped_count": 0,
+      "invalid_count": 0,
+      "finisher_count": 226,
+      "best_duration_s": 4811,
+      "mean_duration_s": 7431.699115044248,
+      "median_duration_s": 7310.5,
+      "top_n_median_duration_s": 5266,
+      "weather_matched_count": 226,
+      "median_pace_s_per_km": 346.51846234061713,
+      "top_n_median_pace_s_per_km": 249.6089491396881,
+      "top_n_requested": 20,
+      "top_n_effective": 20,
+      "weather_unmatched_count": 0,
+      "weather_coverage_fraction": 1,
+      "weather_coverage_status": "complete",
+      "duration_unit": "seconds",
+      "pace_unit": "seconds_per_kilometre",
+      "pace_p25_s_per_km": 306.12172346779164,
+      "pace_p75_s_per_km": 394.39256766364883,
+      "median_temp_c": 11,
+      "median_wind_mps": 7.47,
+      "median_precipitation_mm": 0.1,
+      "median_humidity_pct": 81,
+      "baseline_dataset": "runwx_dbt_lydd_2022_99783aaa85b8",
+      "baseline_event_id": "eventrac:21723",
+      "baseline_race_sha256": "ee10244068e38e3ff5c80c54f983d76a2f72eba469289a842af149486db16807",
+      "baseline_weather_sha256": "3b1ea0470e6d8b640d3390640b667f3c87dac0aeaf703165d8c0ee38e706db76",
+      "baseline_median_duration_s": 6954,
+      "baseline_median_pace_s_per_km": 329.6203251647153,
+      "baseline_top_n_median_pace_s_per_km": 234.7964165521164,
+      "baseline_top_n_requested": 20,
+      "baseline_top_n_effective": 20,
+      "mean_pace_s_per_km": 352.263313032386,
+      "speed_at_median_duration_kmh": 10.389056836057726,
+      "comparison_status": "comparable",
+      "median_duration_difference_s": 356.5,
+      "median_pace_difference_s_per_km": 16.89813717590181,
+      "median_pace_change_pct": 5.126545872878929,
+      "speed_at_median_duration_change_pct": -4.876547431776224,
+      "top_n_median_pace_difference_s_per_km": 14.812532587571695,
+      "top_n_median_pace_change_pct": 6.308670636923397
+    },
+    {
+      "snapshot_dataset": "runwx_dbt_lydd_2024_f0758db89562",
+      "export_schema_version": 1,
+      "event_id": "eventrac:19914",
+      "source": "eventrac",
+      "source_event_id": "19914",
+      "course_id": "lydd-half",
+      "started_at_utc": "2024-03-10T10:00:00Z",
+      "distance_m": 21097,
+      "race_sha256": "0f769a770c437566c477a537f7b24247daf8a6a64df6b52e14da214c16a5180a",
+      "weather_sha256": "2d976a04fa5537fe28a9c4f3b6d781e244f34c108b685328202fc27c294a9a90",
+      "race_kind": "historical",
+      "weather_kind": "historical_reanalysis",
+      "course_id_input": "lydd-half",
+      "timezone_name": "Europe/London",
+      "max_gap_seconds": 1800,
+      "alignment": "nearest observation to run midpoint",
+      "tie_break": "earlier observation",
+      "duration_precision": "whole seconds; fractions truncated",
+      "timing_basis": "chip",
+      "candidate_count": 229,
+      "accepted_count": 229,
+      "skipped_count": 0,
+      "invalid_count": 0,
+      "finisher_count": 229,
+      "best_duration_s": 4680,
+      "mean_duration_s": 7286.013100436681,
+      "median_duration_s": 7106,
+      "top_n_median_duration_s": 5122,
+      "weather_matched_count": 229,
+      "median_pace_s_per_km": 336.82514101531024,
+      "top_n_median_pace_s_per_km": 242.78333412333507,
+      "top_n_requested": 20,
+      "top_n_effective": 20,
+      "weather_unmatched_count": 0,
+      "weather_coverage_fraction": 1,
+      "weather_coverage_status": "complete",
+      "duration_unit": "seconds",
+      "pace_unit": "seconds_per_kilometre",
+      "pace_p25_s_per_km": 299.28425842536853,
+      "pace_p75_s_per_km": 383.41944352277574,
+      "median_temp_c": 8.8,
+      "median_wind_mps": 2.08,
+      "median_precipitation_mm": 0.5,
+      "median_humidity_pct": 90,
+      "baseline_dataset": "runwx_dbt_lydd_2022_99783aaa85b8",
+      "baseline_event_id": "eventrac:21723",
+      "baseline_race_sha256": "ee10244068e38e3ff5c80c54f983d76a2f72eba469289a842af149486db16807",
+      "baseline_weather_sha256": "3b1ea0470e6d8b640d3390640b667f3c87dac0aeaf703165d8c0ee38e706db76",
+      "baseline_median_duration_s": 6954,
+      "baseline_median_pace_s_per_km": 329.6203251647153,
+      "baseline_top_n_median_pace_s_per_km": 234.7964165521164,
+      "baseline_top_n_requested": 20,
+      "baseline_top_n_effective": 20,
+      "mean_pace_s_per_km": 345.3577807478163,
+      "speed_at_median_duration_kmh": 10.688038277511962,
+      "comparison_status": "comparable",
+      "median_duration_difference_s": 152,
+      "median_pace_difference_s_per_km": 7.204815850594912,
+      "median_pace_change_pct": 2.1857923497267784,
+      "speed_at_median_duration_change_pct": -2.1390374331550888,
+      "top_n_median_pace_difference_s_per_km": 7.986917571218669,
+      "top_n_median_pace_change_pct": 3.401635207429088
+    },
+    {
+      "snapshot_dataset": "runwx_dbt_lydd_2026_5243cfebedc2",
+      "export_schema_version": 1,
+      "event_id": "eventrac:32793",
+      "source": "eventrac",
+      "source_event_id": "32793",
+      "course_id": "lydd-half",
+      "started_at_utc": "2026-03-29T08:00:00Z",
+      "distance_m": 21097,
+      "race_sha256": "ff91fd4ec81876c7129294d179df422368b32d0deedcc14b87faaf464d02d041",
+      "weather_sha256": "d6904584e1f70fbfac4ef06afc1dee6233a71caed2fb97b059292c08f9cb8840",
+      "race_kind": "historical",
+      "weather_kind": "historical_reanalysis",
+      "course_id_input": "lydd-half",
+      "timezone_name": "Europe/London",
+      "max_gap_seconds": 1800,
+      "alignment": "nearest observation to run midpoint",
+      "tie_break": "earlier observation",
+      "duration_precision": "whole seconds; fractions truncated",
+      "timing_basis": "chip",
+      "candidate_count": 292,
+      "accepted_count": 292,
+      "skipped_count": 0,
+      "invalid_count": 0,
+      "finisher_count": 292,
+      "best_duration_s": 4388,
+      "mean_duration_s": 7151.863013698629,
+      "median_duration_s": 7095.5,
+      "top_n_median_duration_s": 4948,
+      "weather_matched_count": 292,
+      "median_pace_s_per_km": 336.3274399203678,
+      "top_n_median_pace_s_per_km": 234.53571597857513,
+      "top_n_requested": 20,
+      "top_n_effective": 20,
+      "weather_unmatched_count": 0,
+      "weather_coverage_fraction": 1,
+      "weather_coverage_status": "complete",
+      "duration_unit": "seconds",
+      "pace_unit": "seconds_per_kilometre",
+      "pace_p25_s_per_km": 288.3703844148457,
+      "pace_p75_s_per_km": 373.74982224960894,
+      "median_temp_c": 7.4,
+      "median_wind_mps": 3.05,
+      "median_precipitation_mm": 0,
+      "median_humidity_pct": 74,
+      "baseline_dataset": "runwx_dbt_lydd_2022_99783aaa85b8",
+      "baseline_event_id": "eventrac:21723",
+      "baseline_race_sha256": "ee10244068e38e3ff5c80c54f983d76a2f72eba469289a842af149486db16807",
+      "baseline_weather_sha256": "3b1ea0470e6d8b640d3390640b667f3c87dac0aeaf703165d8c0ee38e706db76",
+      "baseline_median_duration_s": 6954,
+      "baseline_median_pace_s_per_km": 329.6203251647153,
+      "baseline_top_n_median_pace_s_per_km": 234.7964165521164,
+      "baseline_top_n_requested": 20,
+      "baseline_top_n_effective": 20,
+      "mean_pace_s_per_km": 338.9990526472308,
+      "speed_at_median_duration_kmh": 10.703854555704321,
+      "comparison_status": "comparable",
+      "median_duration_difference_s": 141.5,
+      "median_pace_difference_s_per_km": 6.707114755652469,
+      "median_pace_change_pct": 2.0348001150417128,
+      "speed_at_median_duration_change_pct": -1.9942216898033993,
+      "top_n_median_pace_difference_s_per_km": -0.2607005735412713,
+      "top_n_median_pace_change_pct": -0.11103260320985964
+    }
+  ],
+  "audit_notes": [
+    "The initial time-window metadata listing missed the first empty-table SELECT before the first load. Its recorded job ID was fetched with get_job and added locally; no query or cloud operation was repeated.",
+    "All approved cloud operations succeeded. The additional audit call was get_job metadata only.",
+    "Execution and focused self-review evidence; no independent approval or practice claimed."
+  ],
+  "limitations": [
+    "Same course is supported by common venue/certificate but remains an assumption.",
+    "Three name discrepancies prevent athlete-identity qualification; all 518 chip/gun durations match.",
+    "ERA5 venue grid and event-start midpoint estimates, not on-course measurement or individual starts.",
+    "Weather medians are across matched runners; hourly values can be reused.",
+    "Precipitation represents a preceding-hour sum, not total race rainfall.",
+    "Different fields of runners prevent causal weather attribution.",
+    "Local Python and Docker invoked BigQuery; no Cloud Run or orchestrator execution is claimed."
+  ],
+  "artifact_sha256": {
+    "execution-authorisation.json": "d0a54012d792b3ed2262eecf3532b3b4f49a62c480a21eb74c6f48b15472acc2",
+    "execution.log": "b660470bcf2a58f6fe7ea410b426e312c83929aecbb940f1e431439a80137990",
+    "plan-review.json": "98bc230e8f361184043077683f5ea4bb536db2b78423edf0d0d051f03a291136",
+    "execution-audit.json": "0474838ab6476aa0d074a48c93be1476d5243524e9b8216ec2f170f6fe9b95d9",
+    "execution-audit-complete.json": "8f0ff2eaf780d1d1f65d81421cbd0fa216e5915a13c90ce1b091582997e3b4b3",
+    "server-jobs-complete.json": "d2b4e3c65ee79a1fc1e573d51397c37f7a0e03ab3ec371c23433520bcd7ec3e5",
+    "run-2023/verified.json": "80edfdf1865babd09c3a954645cca5441e9c9857e42ee49cbf78ef88f4b0108a",
+    "run-2026/verified.json": "6eee42dd977d11d3be3ae07301c02f4f47d9b617f7f77dc570bfed2712df75fd",
+    "run-comparison/verified.json": "8b641dc80369532e810ace9d4f44b50f454d433af2baedd8b0243e167a9772f0"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "actual_currency_charge": null,
+  "bigquery_client_version": "3.45.0",
+  "charge_note": "Job byte statistics do not establish a currency charge after free allowances/trial credits.",
+  "dataset_access": [
+    {
+      "role": "OWNER",
+      "specialGroup": "projectOwners"
+    }
+  ],
+  "export_sha256": "91fcecdb956ea324d27aa8247c05a7eea357151ffe431752624f2ca95bb7b570",
+  "jobs": [
+    {
+      "create_disposition": "CREATE_NEVER",
+      "ended_utc": "2026-09-08T15:33:40.767000+00:00",
+      "error": null,
+      "input_file_bytes": 5521,
+      "job_id": "runwx_load_304fe491e6b933fd3196f22810e67f5c58a5cee14cbca9c56a07163effb5c418",
+      "output_rows": 5,
+      "started_utc": "2026-09-08T15:33:38.408000+00:00",
+      "state": "DONE",
+      "type": "load",
+      "write_disposition": "WRITE_EMPTY"
+    },
+    {
+      "bytes_billed": 0,
+      "bytes_processed": 0,
+      "cache_hit": false,
+      "ended_utc": "2026-09-08T15:33:37.201000+00:00",
+      "error": null,
+      "job_id": "e0fca582-25fb-48bd-b083-dffb4737c0d9",
+      "maximum_bytes_billed": 104857600,
+      "started_utc": "2026-09-08T15:33:37.036000+00:00",
+      "state": "DONE",
+      "type": "query"
+    },
+    {
+      "bytes_billed": 10485760,
+      "bytes_processed": 2688,
+      "cache_hit": false,
+      "ended_utc": "2026-09-08T15:33:41.593000+00:00",
+      "error": null,
+      "job_id": "94f638cb-0ebd-45ed-b272-138340e06b9d",
+      "maximum_bytes_billed": 104857600,
+      "started_utc": "2026-09-08T15:33:41.420000+00:00",
+      "state": "DONE",
+      "type": "query"
+    },
+    {
+      "bytes_billed": 10485760,
+      "bytes_processed": 2688,
+      "cache_hit": false,
+      "ended_utc": "2026-09-08T15:34:40.231000+00:00",
+      "error": null,
+      "job_id": "76d2d303-4880-4127-ac55-5c27a0d6a94a",
+      "maximum_bytes_billed": 104857600,
+      "started_utc": "2026-09-08T15:34:40.063000+00:00",
+      "state": "DONE",
+      "type": "query"
+    }
+  ],
+  "loader_commit": "7a4f2ea732343eb932eda3cec26822b76ec675d4",
+  "location": "europe-west1",
+  "race_kind": "synthetic",
+  "race_sha256": "70095c35dc919ed11506924765def09eb6e5590e3feb95ee7f0e8e9dc6f82182",
+  "repeat_load_job_id": null,
+  "repeat_status": "already_present_verified",
+  "repeat_table_modification_time_unchanged": true,
+  "result_quality": {
+    "accepted_count": 3,
+    "candidate_count": 5,
+    "invalid_count": 1,
+    "skipped_count": 1
+  },
+  "schema_sha256": "b76f8c014b19a403d7c88e33c2afb28d3d2903b24c79a498b9ea3f8f8aca2885",
+  "stored_rows_equal_local": true,
+  "summary_from_stored_rows_using_existing_python": {
+    "best_duration_s": 3600,
+    "finisher_count": 3,
+    "mean_duration_s": 8400,
+    "median_duration_s": 7200,
+    "top_n_median_duration_s": 7200
+  },
+  "summary_settings": {
+    "alignment": "nearest observation to run midpoint",
+    "course_id_input": "runwx-synthetic-half",
+    "distance_m": 21097,
+    "duration_precision": "whole seconds; fractions truncated",
+    "max_gap_seconds": 1800.0,
+    "tie_break": "earlier observation",
+    "timezone_name": "Europe/London",
+    "timing_basis": null,
+    "top_n": 20,
+    "top_n_effective": 3
+  },
+  "table_id": "runwx-learning-mifuha.runwx_staging.synthetic_results",
+  "table_logical_bytes": 2688,
+  "table_modified_utc": "2026-09-08T15:33:39.667000+00:00",
+  "table_rows": 5,
+  "total_query_bytes_billed": 20971520,
+  "total_query_bytes_processed": 5376,
+  "weather_coverage": {
+    "accepted_result_count": 3,
+    "matched_count": 2,
+    "matched_fraction": 0.6666666666666666,
+    "status": "partial",
+    "unmatched_count": 1,
+    "unmatched_reasons": {
+      "No weather within 0:30:00": 1
+    }
+  },
+  "weather_kind": "synthetic",
+  "weather_sha256": "835e03b360af5403540aa1f06a99f164ce30140cc958ea9fdbaef301165ca25f"
+}

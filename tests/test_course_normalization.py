@@ -2,16 +2,54 @@
 import pytest
 
 from runwx.adapters.races.course_normalization import normalize_course_id
+from runwx.adapters.races.schemas import RaceEventIn
 
 
-def test_normalize_course_id_normalizes_explicit_raw_course_id():
+@pytest.mark.parametrize(
+    ("raw_course_id", "expected"),
+    [
+        ("Sample Park 10K", "sample-park-10k"),
+        ("Lydd Half Marathon", "lydd-half-marathon"),
+        ("  Café 10K  ", "cafe-10k"),
+    ],
+)
+def test_normalize_course_id_normalizes_explicit_raw_course_id(raw_course_id, expected):
     assert normalize_course_id(
         source="demo",
         source_event_id="event-1",
         name="Whatever Event",
-        raw_course_id="Sample Park 10K",
+        raw_course_id=raw_course_id,
         distance_m=10_000,
-    ) == "sample-park-10k"
+    ) == expected
+
+
+@pytest.mark.parametrize("raw_course_id", ["---", " !@#$ ", "東京"])
+@pytest.mark.parametrize("name", ["Lydd Half Marathon 2022", "Unknown Event"])
+def test_normalize_course_id_rejects_explicit_id_that_normalizes_to_empty(raw_course_id, name):
+    with pytest.raises(ValueError, match="explicit course_id normalizes to an empty ID"):
+        normalize_course_id(
+            source="eventrac",
+            source_event_id="21723",
+            name=name,
+            raw_course_id=raw_course_id,
+            distance_m=21_097,
+        )
+
+
+def test_event_conversion_rejects_empty_normalized_id_instead_of_inferring_alias():
+    event_in = RaceEventIn(
+        source="eventrac",
+        source_event_id="21723",
+        name="Lydd Half Marathon 2022",
+        started_at="2022-03-06T10:00:00+00:00",
+        distance_m=21_097,
+        latitude=50.954438,
+        longitude=0.902385,
+        course_id="---",
+    )
+
+    with pytest.raises(ValueError, match="explicit course_id normalizes to an empty ID"):
+        event_in.to_domain()
 
 
 def test_normalize_course_id_falls_back_to_event_name_alias_when_raw_missing():

@@ -1,0 +1,12 @@
+**
+!Dockerfile
+!requirements.txt
+!requirements.lock
+!dbt_project.yml
+!profiles.yml
+!models/
+!models/**
+!macros/
+!macros/**
+!tests/
+!tests/**

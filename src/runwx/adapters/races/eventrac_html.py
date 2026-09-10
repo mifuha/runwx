@@ -8,25 +8,43 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
+from pydantic import ValidationError
 
 from runwx.adapters.races.schemas import RaceEventIn, RaceResultIn
 
 
 @dataclass(frozen=True)
 class SkippedEventracRow:
-    """A skipped row, numbered from 1 among data rows (excluding headers)."""
+    """An expected skip, numbered from 1 among candidate result rows."""
 
     row_number: int
     reason: str
 
 
 @dataclass(frozen=True)
+class InvalidEventracRow:
+    """A rejected source row and its stripped cell values in source order."""
+
+    row_number: int
+    reason: str
+    values: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class EventracParseResult:
-    """Accepted results and missing-finish-time skips for one Eventrac page."""
+    """Reconciled outcomes for a structurally valid Eventrac results page."""
 
     event: RaceEventIn
     accepted: tuple[RaceResultIn, ...]
     skipped: tuple[SkippedEventracRow, ...]
+    errors: tuple[InvalidEventracRow, ...] = ()
+    # Source locators in the same order as accepted; never finishing places.
+    accepted_row_numbers: tuple[int, ...] = ()
+
+    @property
+    def candidate_count(self) -> int:
+        """Total outcomes, checked against the input row count by the parser."""
+        return len(self.accepted) + len(self.skipped) + len(self.errors)
 
 
 def load_eventrac_results_html(
@@ -44,23 +62,21 @@ def load_eventrac_results_html(
         timezone_name=timezone_name,
     )
 
+
 def _parse_duration_to_seconds(value: str) -> int:
     text = value.strip()
     if not text:
         raise ValueError("empty duration")
 
-    parts = text.split(":")
-    if len(parts) != 3:
+    match = re.fullmatch(r"([0-9]+):([0-9]+):([0-9]+)(?:\.[0-9]+)?", text)
+    if match is None:
         raise ValueError(f"unsupported duration format: {value!r}")
 
-    hours = int(parts[0])
-    minutes = int(parts[1])
+    hours, minutes, seconds = (int(part) for part in match.groups())
+    if minutes >= 60 or seconds >= 60:
+        raise ValueError("minutes and seconds must be between 0 and 59")
 
-    seconds_part = parts[2]
-    if "." in seconds_part:
-        seconds_part = seconds_part.split(".", 1)[0]
-    seconds = int(seconds_part)
-
+    # Domain durations use whole seconds; preserve truncation of valid fractions.
     return hours * 3600 + minutes * 60 + seconds
 
 
@@ -91,8 +107,14 @@ def _extract_geo_from_jsonld(soup: BeautifulSoup) -> tuple[float, float]:
         except json.JSONDecodeError:
             continue
 
-        location = payload.get("location", {})
-        geo = location.get("geo", {})
+        if not isinstance(payload, dict):
+            continue
+        location = payload.get("location")
+        if not isinstance(location, dict):
+            continue
+        geo = location.get("geo")
+        if not isinstance(geo, dict):
+            continue
         latitude = geo.get("latitude")
         longitude = geo.get("longitude")
 
@@ -102,6 +124,34 @@ def _extract_geo_from_jsonld(soup: BeautifulSoup) -> tuple[float, float]:
     raise ValueError("could not extract latitude/longitude from JSON-LD")
 
 
+def _extract_results_heading(soup: BeautifulSoup) -> tuple[str, str]:
+    table = soup.find("table", id="results")
+    card = table.find_parent("div", class_="card") if table is not None else None
+    if card is not None:
+        header = card.find("div", class_="card-header", recursive=False)
+        title_node = header.find("h5", recursive=False) if header is not None else None
+        if title_node is None:
+            raise ValueError("could not find Eventrac results title")
+        # The current h5 also contains a date and action links; neither is title text.
+        title = " ".join(
+            text.strip() for text in title_node.find_all(string=True, recursive=False)
+            if text.strip()
+        )
+        date_node = title_node.find("small", recursive=False)
+    else:
+        title_node = soup.select_one("div.box-header h3.box-title")
+        if title_node is None:
+            raise ValueError("could not find Eventrac results title")
+        title = title_node.get_text(" ", strip=True)
+        date_node = soup.select_one("div.box-header small")
+
+    if not title:
+        raise ValueError("could not find Eventrac results title")
+    if date_node is None:
+        raise ValueError("could not find Eventrac results date/time")
+    return title, date_node.get_text(" ", strip=True)
+
+
 def parse_eventrac_results_html(
     html: str,
     *,
@@ -109,22 +159,17 @@ def parse_eventrac_results_html(
     distance_m: int,
     timezone_name: str,
 ) -> EventracParseResult:
-    """Parse results, reporting rows whose Time cell is blank.
+    """Give each candidate row one accepted, skipped, or invalid outcome.
 
-    Malformed durations and pages with no accepted results still raise errors.
+    Candidates are rows belonging to the results table with direct td cells,
+    excluding thead/tfoot. Numbering starts at 1 in source order. Blank times
+    are expected skips; malformed rows are errors. Invalid page structure or
+    an absence of candidate rows raises ValueError. All-rejected pages return
+    their outcomes so callers can still inspect data quality.
     """
     soup = BeautifulSoup(html, "html.parser")
 
-    title_node = soup.select_one("div.box-header h3.box-title")
-    if title_node is None:
-        raise ValueError("could not find Eventrac results title")
-
-    date_node = soup.select_one("div.box-header small")
-    if date_node is None:
-        raise ValueError("could not find Eventrac results date/time")
-
-    results_title = title_node.get_text(" ", strip=True)
-    date_text = date_node.get_text(" ", strip=True)
+    results_title, date_text = _extract_results_heading(soup)
 
     started_at = (
         datetime.strptime(date_text, "%d/%m/%Y, %H:%M")
@@ -154,17 +199,24 @@ def parse_eventrac_results_html(
     if header_row is None:
         raise ValueError("could not find Eventrac table header")
 
+    header_cells = header_row.find_all("th")
+    if any(
+        cell.get("colspan", "1") != "1" or cell.get("rowspan", "1") != "1"
+        for cell in header_cells
+    ):
+        raise ValueError("spanning Eventrac header cells are not supported")
+
     headers = [
         th.get_text(" ", strip=True)
-        for th in header_row.find_all("th")
+        for th in header_cells
     ]
-    header_map = {name.lower(): idx for idx, name in enumerate(headers)}
 
     def idx(*names: str) -> int | None:
-        for name in names:
-            if name.lower() in header_map:
-                return header_map[name.lower()]
-        return None
+        aliases = {name.lower() for name in names}
+        matches = [i for i, header in enumerate(headers) if header.lower() in aliases]
+        if len(matches) > 1:
+            raise ValueError(f"ambiguous required column {names[0]!r} in Eventrac headers")
+        return matches[0] if matches else None
 
     place_idx = idx("Position", "Place")
     gender_idx = idx("Gender")
@@ -174,19 +226,34 @@ def parse_eventrac_results_html(
         raise ValueError(f"missing required columns in Eventrac table headers: {headers}")
 
     results: list[RaceResultIn] = []
+    accepted_row_numbers: list[int] = []
     skipped: list[SkippedEventracRow] = []
+    errors: list[InvalidEventracRow] = []
     row_number = 0
 
     for row in table.find_all("tr"):
-        cells = row.find_all("td")
+        if row.find_parent("table") is not table or row.find_parent(["thead", "tfoot"]):
+            continue
+        cells = row.find_all("td", recursive=False)
         if not cells:
             continue
         row_number += 1
 
-        values = [cell.get_text(" ", strip=True) for cell in cells]
+        values = tuple(cell.get_text(" ", strip=True) for cell in cells)
 
-        # Skip malformed / non-result rows
-        if len(values) <= time_idx:
+        # Positional headers are trustworthy only when the complete row aligns.
+        if len(values) != len(headers):
+            errors.append(InvalidEventracRow(
+                row_number, f"expected {len(headers)} cells, found {len(values)}", values
+            ))
+            continue
+        if any(
+            cell.get("colspan", "1") != "1" or cell.get("rowspan", "1") != "1"
+            for cell in cells
+        ):
+            errors.append(InvalidEventracRow(
+                row_number, "spanning data cells are not supported", values
+            ))
             continue
 
         raw_place = values[place_idx].strip()
@@ -200,26 +267,56 @@ def parse_eventrac_results_html(
             continue
 
         if not raw_place:
+            errors.append(InvalidEventracRow(row_number, "missing finishing place", values))
             continue
 
         try:
             place = int(raw_place)
         except ValueError:
+            errors.append(InvalidEventracRow(
+                row_number, f"invalid finishing place: {raw_place!r}", values
+            ))
+            continue
+        if place <= 0:
+            errors.append(InvalidEventracRow(
+                row_number, "finishing place must be positive", values
+            ))
             continue
 
-        results.append(
-            RaceResultIn(
-                duration_s=_parse_duration_to_seconds(raw_time),
+        try:
+            duration_s = _parse_duration_to_seconds(raw_time)
+        except ValueError as exc:
+            errors.append(InvalidEventracRow(
+                row_number, f"invalid finish time {raw_time!r}: {exc}", values
+            ))
+            continue
+
+        try:
+            result = RaceResultIn(
+                duration_s=duration_s,
                 place=place,
                 gender=raw_gender or None,
             )
-        )
+        except ValidationError as exc:
+            details = "; ".join(
+                f"{'.'.join(str(part) for part in error['loc'])}: {error['msg']}"
+                for error in exc.errors()
+            )
+            errors.append(InvalidEventracRow(row_number, f"invalid result: {details}", values))
+            continue
+        results.append(result)
+        accepted_row_numbers.append(row_number)
 
-    if not results:
-        raise ValueError("no Eventrac result rows parsed")
+    if row_number == 0:
+        raise ValueError("no Eventrac candidate result rows found")
 
-    return EventracParseResult(
+    outcome = EventracParseResult(
         event=event_in,
         accepted=tuple(results),
         skipped=tuple(skipped),
+        errors=tuple(errors),
+        accepted_row_numbers=tuple(accepted_row_numbers),
     )
+    if outcome.candidate_count != row_number:
+        raise RuntimeError("Eventrac row outcome counts do not reconcile")
+    return outcome
