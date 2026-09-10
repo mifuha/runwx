@@ -5,7 +5,7 @@ models:
     description: >-
       One row per candidate in a single saved export, including skipped and
       invalid rows. Settings and weather records are exposed as columns;
-      source identity, hashes and synthetic labels remain attached.
+      source identity, hashes and input-kind labels remain attached.
     columns:
       - name: source_row_id
         description: Snapshot row identity, not an athlete or execution identifier.

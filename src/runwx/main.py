@@ -101,10 +101,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         saved_p.add_argument("--distance-m", type=int, required=True)
         saved_p.add_argument("--timezone", dest="timezone_name", required=True)
         saved_p.add_argument("--max-gap-min", type=int, default=30)
-        saved_p.add_argument("--weather-kind", choices=("synthetic", "unknown"), default="unknown")
         saved_p.set_defaults(log_level="WARNING")
     report_p.add_argument("--top-n", type=int, default=20)
-    export_p.add_argument("--race-kind", choices=("synthetic", "unknown"), default="unknown")
+    report_p.add_argument("--weather-kind", choices=("synthetic", "unknown"), default="unknown")
+    export_p.add_argument("--race-kind", choices=("synthetic", "historical", "unknown"), default="unknown")
+    export_p.add_argument("--weather-kind", choices=("synthetic", "historical_reanalysis", "unknown"), default="unknown")
+    export_p.add_argument("--timing-basis", choices=("chip", "gun"),
+                          help="Documented basis of the Time column; does not select a different column.")
 
     args = p.parse_args(argv)
 
@@ -135,6 +138,7 @@ def main(argv: list[str] | None = None) -> None:
             distance_m=args.distance_m, timezone_name=args.timezone_name,
             max_gap=timedelta(minutes=args.max_gap_min),
             race_kind=args.race_kind, weather_kind=args.weather_kind,
+            timing_basis=args.timing_basis,
         )
         print("\n".join(json.dumps(row, sort_keys=True, allow_nan=False) for row in rows))
         return

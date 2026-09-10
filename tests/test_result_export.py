@@ -174,6 +174,35 @@ def test_unlabelled_sources_remain_unknown():
     assert all(row["race_kind"] == row["weather_kind"] == "unknown" for row in rows)
 
 
+def test_historical_export_records_supplied_interpretation_without_changing_results(capsys):
+    # Synthetic bytes exercise the flags; this fixture is not historical evidence.
+    baseline = build_result_rows(RACE, WEATHER, **SETTINGS)
+    arguments = [
+        "export-results", "--race-html", str(RACE), "--weather-csv", str(WEATHER),
+        "--course-id", SETTINGS["course_id"], "--distance-m", "21097",
+        "--timezone", "Europe/London", "--race-kind", "historical",
+        "--weather-kind", "historical_reanalysis", "--timing-basis", "chip",
+    ]
+    main(arguments)
+    first = capsys.readouterr().out
+    main(arguments)
+    assert capsys.readouterr().out == first
+    rows = [json.loads(line) for line in first.splitlines()]
+    for actual, expected in zip(rows, baseline, strict=True):
+        assert actual.pop("race_kind") == "historical"
+        assert actual.pop("weather_kind") == "historical_reanalysis"
+        assert actual["settings"]["timing_basis"] == "chip"
+        actual["settings"]["timing_basis"] = None
+        expected.pop("race_kind")
+        expected.pop("weather_kind")
+        assert actual == expected
+
+
+def test_export_rejects_unsupported_timing_interpretation():
+    with pytest.raises(ValueError, match="timing_basis"):
+        build_result_rows(RACE, WEATHER, **SETTINGS, timing_basis="inferred")
+
+
 def test_unexpected_matching_failure_does_not_become_a_skipped_row(monkeypatch, capsys):
     def broken_matcher(*args, **kwargs):
         raise RuntimeError("unexpected matcher failure")

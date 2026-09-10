@@ -19,6 +19,7 @@ def build_result_rows(
     max_gap: timedelta = timedelta(minutes=30),
     race_kind: str = "unknown",
     weather_kind: str = "unknown",
+    timing_basis: str | None = None,
 ) -> list[dict]:
     """Export one row per candidate in a saved Eventrac snapshot, in source order.
 
@@ -28,9 +29,12 @@ def build_result_rows(
     """
     if max_gap < timedelta(0):
         raise ValueError("max_gap must be non-negative")
-    for name, value in (("race_kind", race_kind), ("weather_kind", weather_kind)):
-        if value not in {"synthetic", "unknown"}:
-            raise ValueError(f"{name} must be synthetic or unknown")
+    if race_kind not in {"synthetic", "historical", "unknown"}:
+        raise ValueError("race_kind must be synthetic, historical or unknown")
+    if weather_kind not in {"synthetic", "historical_reanalysis", "unknown"}:
+        raise ValueError("weather_kind must be synthetic, historical_reanalysis or unknown")
+    if timing_basis not in {None, "chip", "gun"}:
+        raise ValueError("timing_basis must be chip, gun or None")
 
     race_bytes = race_html.read_bytes()
     weather_bytes = weather_csv.read_bytes()
@@ -73,7 +77,7 @@ def build_result_rows(
                 "alignment": "nearest observation to run midpoint",
                 "tie_break": "earlier observation",
                 "duration_precision": "whole seconds; fractions truncated",
-                "timing_basis": None,
+                "timing_basis": timing_basis,
             },
             "validation_status": None,
             "validation_reason": None,

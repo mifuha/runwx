@@ -24,7 +24,7 @@ N defaults to 20 and must be a positive integer. The whole-field mean remains a
 separate duration metric. This preserves the [Python metric contract](bigquery-staging.md#metric-contract).
 
 Missing weather never removes an accepted result. Coverage uses all accepted
-finishers as its denominator. Source hashes, event/distance, synthetic labels and
+finishers as its denominator. Source hashes, event/distance, input-kind labels and
 interpretation settings remain attached; the mart also names units and requested/effective N.
 
 One source table contains one complete export. The [context guard](../dbt/macros/context_columns.sql)
@@ -186,3 +186,10 @@ concurrency controls are deferred until a concrete workflow requires them.
 
 Historical analysis still needs a suitable second edition and checked course,
 distance and timing comparability. See [architecture](architecture.md).
+
+For explicitly chosen historical inputs, `source('runwx', 'race_results')` maps
+to `source_dataset`/`source_table` variables, defaulting to the existing
+`runwx_staging.synthetic_results` table. `RUNWX_DBT_DATASET` selects the output
+dataset, defaulting to `runwx_dbt_demo`. Run each snapshot into its own output
+dataset to retain both sets of views. The single-export checks and all metric
+definitions are unchanged. See [historical input preparation](historical-inputs.md).

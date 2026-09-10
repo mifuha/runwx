@@ -114,7 +114,13 @@ def test_preflight_runs_offline_without_creating_a_client(rows, tmp_path, capsys
     assert summary["export_sha256"] == "91fcecdb956ea324d27aa8247c05a7eea357151ffe431752624f2ca95bb7b570"
 
 
-def test_initial_load_and_repeat_keep_five_rows_and_verify_every_value(rows):
+@pytest.mark.parametrize("historical", [False, True])
+def test_initial_load_and_repeat_keep_five_rows_and_verify_every_value(rows, historical):
+    if historical:
+        for row in rows:
+            row["race_kind"] = "historical"
+            row["weather_kind"] = "historical_reanalysis"
+            row["settings"]["timing_basis"] = "chip"
     prepared = prepare(rows)
     warehouse = Warehouse()
     first = load_prepared(warehouse.api, prepared)
@@ -127,6 +133,8 @@ def test_initial_load_and_repeat_keep_five_rows_and_verify_every_value(rows):
     assert warehouse.api.load_table_from_file.call_count == 1
     assert first["race_sha256"] == repeated["race_sha256"] == rows[0]["race_sha256"]
     assert first["weather_sha256"] == repeated["weather_sha256"] == rows[0]["weather_sha256"]
+    assert first["race_kind"] == repeated["race_kind"] == rows[0]["race_kind"]
+    assert first["weather_kind"] == repeated["weather_kind"] == rows[0]["weather_kind"]
     assert first["load_job_id"] == prepared.job_id
     assert repeated["load_job_id"] is None  # No new load job on a verified rerun.
     assert len(first["verification_jobs"]) == 2
@@ -146,6 +154,26 @@ def test_initial_load_and_repeat_keep_five_rows_and_verify_every_value(rows):
         assert config.query_parameters[0].value == 6
         assert config.use_query_cache is False
         assert call.kwargs["location"] == "europe-west1"
+
+
+@pytest.mark.parametrize("change", ["mixed_race_kind", "mixed_weather_kind", "unknown_weather", "invalid_timing"])
+def test_historical_export_rejects_inconsistent_or_unknown_interpretation(rows, change):
+    for row in rows:
+        row["race_kind"] = "historical"
+        row["weather_kind"] = "historical_reanalysis"
+        row["settings"]["timing_basis"] = "chip"
+    if change == "mixed_race_kind":
+        rows[1]["race_kind"] = "synthetic"
+    elif change == "mixed_weather_kind":
+        rows[1]["weather_kind"] = "synthetic"
+    elif change == "unknown_weather":
+        for row in rows:
+            row["weather_kind"] = "unknown"
+    else:
+        for row in rows:
+            row["settings"]["timing_basis"] = "inferred"
+    with pytest.raises(ValueError):
+        prepare(rows)
 
 
 def test_lost_response_can_be_rechecked_without_a_second_upload(rows):

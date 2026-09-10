@@ -63,7 +63,7 @@ it is never a zero finish time or invented weather observation.
 | `event_id`, `source`, `source_event_id`, `course_id` | Provider/event identity and normalised course identity. |
 | `started_at_utc`, `distance_m` | Interpreted event start and supplied event distance, including on rejected rows. |
 | `race_sha256`, `weather_sha256` | Hashes of the exact bytes parsed. Local file paths are omitted. |
-| `race_kind`, `weather_kind` | Caller-supplied `synthetic` or `unknown` labels; both default to `unknown`. |
+| `race_kind`, `weather_kind` | Caller-supplied labels. Race: `synthetic`, `historical`, `unknown`; weather: `synthetic`, `historical_reanalysis`, `unknown`. Both default to `unknown`. |
 | `validation_status`, `validation_reason` | `accepted`, `skipped` or `invalid`; reason is null for accepted rows. |
 | `place`, `duration_s` | Validated finishing place and whole seconds; both null for rejected rows. |
 | `weather_match_status`, `weather_match_reason` | `matched`, `unmatched` or `not_applicable`; unmatched rows include a reason. |
@@ -79,8 +79,13 @@ Page/schema errors, malformed weather and unexpected processing errors fail the
 whole export before it prints rows. Expected result-row rejections stay visible.
 The complete output is built and serialised in memory before printing.
 
-Timing basis, source completeness and weather location remain unverified.
-`timing_basis` is null. These labels and hashes do not verify source accuracy.
+The exporter does not independently verify timing basis, source completeness or
+weather location.
+`timing_basis` defaults to null. Supply `--timing-basis chip` or `gun` only after
+checking what the source's `Time` column means. This records interpretation; it
+does not select a different time column or change durations. These labels and
+hashes do not verify source accuracy. Retain provider/request and raw-response
+provenance alongside the export; see [historical inputs](historical-inputs.md).
 Code/dependency versions and the original start-time text are not captured in this
 export. Repeatability assumes the same code and environment; companion provenance
 is needed when preparing real historical inputs. The synthetic export has passed a

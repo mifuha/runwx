@@ -1,5 +1,5 @@
 with source_rows as (
-    select * from {{ source('runwx', 'synthetic_results') }}
+    select * from {{ source('runwx', 'race_results') }}
 ), staged_rows as (
     select * from {{ ref('stg_race_results') }}
 ), differences as (

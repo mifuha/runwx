@@ -4,7 +4,7 @@ unit_tests:
 - name: staging_keeps_every_candidate_and_flattens_weather
   model: stg_race_results
   given:
-  - input: source('runwx', 'synthetic_results')
+  - input: source('runwx', 'race_results')
     format: sql
     fixture: source_demo
   expect:

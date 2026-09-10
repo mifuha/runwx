@@ -3,7 +3,8 @@ version: 2
 sources:
   - name: runwx
     database: "{{ target.project }}"
-    schema: runwx_staging
+    schema: "{{ var('source_dataset', 'runwx_staging') }}"
     tables:
-      - name: synthetic_results
-        description: One complete synthetic export, including rejected candidates.
+      - name: race_results
+        identifier: "{{ var('source_table', 'synthetic_results') }}"
+        description: One explicitly chosen complete export, including rejected candidates.

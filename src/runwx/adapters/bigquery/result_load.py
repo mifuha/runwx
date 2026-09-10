@@ -1,4 +1,4 @@
-"""Validate one synthetic export and load it into an empty staging table."""
+"""Validate one explicitly labelled export and load it into an empty staging table."""
 
 from collections import Counter
 from dataclasses import dataclass
@@ -77,7 +77,8 @@ class PreparedLoad:
             "matched_count": sum(row["weather_match_status"] == "matched" for row in self.rows),
             "race_sha256": self.rows[0]["race_sha256"],
             "weather_sha256": self.rows[0]["weather_sha256"],
-            "race_kind": "synthetic", "weather_kind": "synthetic",
+            "race_kind": self.rows[0]["race_kind"],
+            "weather_kind": self.rows[0]["weather_kind"],
         }
 
     @property
@@ -100,10 +101,14 @@ def prepare_load(payload: bytes, *, table_id: str, expected_sha256: str,
     rows = [_normalise_fields(json.loads(line, object_pairs_hook=_unique_object))
             for line in payload.decode("utf-8").splitlines()]
     common = ("event_id", "source", "source_event_id", "course_id", "started_at_utc",
-              "distance_m", "race_sha256", "weather_sha256", "settings")
+              "distance_m", "race_sha256", "weather_sha256", "race_kind", "weather_kind", "settings")
     for number, row in enumerate(rows, 1):
-        if row["export_schema_version"] != 1 or row["race_kind"] != "synthetic" or row["weather_kind"] != "synthetic":
-            raise ValueError("first staging load requires version 1 and explicitly synthetic inputs")
+        if (row["export_schema_version"] != 1
+                or row["race_kind"] not in {"synthetic", "historical"}
+                or row["weather_kind"] not in {"synthetic", "historical_reanalysis"}):
+            raise ValueError("staging load requires version 1 and explicit supported source kinds")
+        if row["settings"]["timing_basis"] not in {None, "chip", "gun"}:
+            raise ValueError("timing_basis must be chip, gun or null")
         if any(row[key] != rows[0][key] for key in common):
             raise ValueError("one export must contain one snapshot and settings")
         if any(not re.fullmatch(r"[0-9a-f]{64}", row[key]) for key in ("race_sha256", "weather_sha256")):

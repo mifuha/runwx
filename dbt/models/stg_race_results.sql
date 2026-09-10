@@ -30,4 +30,4 @@ select
     weather.wind_mps as weather_wind_mps,
     weather.precipitation_mm as weather_precipitation_mm,
     weather.humidity_pct as weather_humidity_pct
-from {{ source('runwx', 'synthetic_results') }}
+from {{ source('runwx', 'race_results') }}

@@ -1,4 +1,4 @@
-"""Preview a synthetic staging load locally; --execute sends it to BigQuery."""
+"""Preview one fixed-snapshot staging load locally; --execute sends it to BigQuery."""
 
 import argparse
 import json

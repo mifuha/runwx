@@ -16,9 +16,10 @@ each column a type: seconds and metres are integers, hashes and outcomes are
 strings, and observation times are timestamps. `settings` and `weather` are nested
 records. Rejected durations and absent weather remain null; schema inference is off.
 
-The source-row grain and identity are unchanged. This table accepts one export;
-binding multiple real historical snapshots to the analytical models remains work
-for the historical-comparison milestone.
+The source-row grain and identity are unchanged. Each table accepts one export.
+The loader also supports explicitly labelled historical results and reanalysis
+weather; see [local historical preparation](historical-inputs.md). The verified
+cloud run below remains evidence for the original synthetic inputs.
 
 ## Verified cloud run
 
