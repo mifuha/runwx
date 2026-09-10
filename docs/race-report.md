@@ -49,6 +49,11 @@ Time matching does not establish spatial suitability or conditions over the whol
 
 ## Parser rules
 
+Both the saved `box-header`/`h3` layout and the newer `card-header`/`h5` layout
+are supported. For cards, the title and date come from the card containing the
+results table. Nested date/action text is excluded from the title; unrelated event
+cards cannot supply the results date. Missing required headings still fail the page.
+
 For a parser-only demonstration, using the same saved Lydd HTML:
 
 ```bash

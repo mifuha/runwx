@@ -124,6 +124,34 @@ def _extract_geo_from_jsonld(soup: BeautifulSoup) -> tuple[float, float]:
     raise ValueError("could not extract latitude/longitude from JSON-LD")
 
 
+def _extract_results_heading(soup: BeautifulSoup) -> tuple[str, str]:
+    table = soup.find("table", id="results")
+    card = table.find_parent("div", class_="card") if table is not None else None
+    if card is not None:
+        header = card.find("div", class_="card-header", recursive=False)
+        title_node = header.find("h5", recursive=False) if header is not None else None
+        if title_node is None:
+            raise ValueError("could not find Eventrac results title")
+        # The current h5 also contains a date and action links; neither is title text.
+        title = " ".join(
+            text.strip() for text in title_node.find_all(string=True, recursive=False)
+            if text.strip()
+        )
+        date_node = title_node.find("small", recursive=False)
+    else:
+        title_node = soup.select_one("div.box-header h3.box-title")
+        if title_node is None:
+            raise ValueError("could not find Eventrac results title")
+        title = title_node.get_text(" ", strip=True)
+        date_node = soup.select_one("div.box-header small")
+
+    if not title:
+        raise ValueError("could not find Eventrac results title")
+    if date_node is None:
+        raise ValueError("could not find Eventrac results date/time")
+    return title, date_node.get_text(" ", strip=True)
+
+
 def parse_eventrac_results_html(
     html: str,
     *,
@@ -141,16 +169,7 @@ def parse_eventrac_results_html(
     """
     soup = BeautifulSoup(html, "html.parser")
 
-    title_node = soup.select_one("div.box-header h3.box-title")
-    if title_node is None:
-        raise ValueError("could not find Eventrac results title")
-
-    date_node = soup.select_one("div.box-header small")
-    if date_node is None:
-        raise ValueError("could not find Eventrac results date/time")
-
-    results_title = title_node.get_text(" ", strip=True)
-    date_text = date_node.get_text(" ", strip=True)
+    results_title, date_text = _extract_results_heading(soup)
 
     started_at = (
         datetime.strptime(date_text, "%d/%m/%Y, %H:%M")

@@ -38,6 +38,53 @@ def parse(html):
     )
 
 
+def make_card_html(rows, *, heading=None):
+    legacy = make_html(rows)
+    metadata, rest = legacy.split('<div class="box-header">', 1)
+    _, table = rest.split('</div>', 1)
+    if heading is None:
+        heading = '''<h5><i class="fa fa-flag-checkered"></i>
+            Synthetic Half Marathon Results<br>
+            <small>06/03/2022, 10:00</small>
+            <div class="pull-right"><a>Full Results</a></div></h5>'''
+    return metadata + f'''<div class="card card-default">
+        <div class="card-header with-border">{heading}</div>
+        <div class="card-body">{table}</div></div>'''
+
+
+def test_card_results_heading_keeps_title_date_and_row_outcomes():
+    rows = [("1", "Male", "01:00:00"), ("2", "Female", "bad"), ("3", "Male", "01:10:00")]
+    unrelated = '''<div class="card"><div class="card-header"><h5>Next race
+        <small>04/04/2027, 09:00</small></h5></div></div>'''
+    outcome = parse(unrelated + make_card_html(rows))
+
+    assert outcome == parse(make_html(rows))
+    assert outcome.event.name == "Synthetic Half Marathon"
+    assert outcome.event.started_at.isoformat() == "2022-03-06T10:00:00+00:00"
+    assert outcome.accepted_row_numbers == (1, 3)
+    assert len(outcome.errors) == 1
+
+
+@pytest.mark.parametrize("heading", [
+    '<h5>Synthetic Half Marathon Results</h5>',
+    '<h5>Synthetic Half Marathon Results<div><small>06/03/2022, 10:00</small></div></h5>',
+])
+def test_card_missing_direct_results_date_fails_without_using_other_dates(heading):
+    unrelated = '<div class="card-header"><small>04/04/2027, 09:00</small></div>'
+    with pytest.raises(ValueError, match="could not find Eventrac results date/time"):
+        parse(unrelated + make_card_html([("1", "Male", "01:00:00")], heading=heading))
+
+
+@pytest.mark.parametrize("heading", [
+    '',
+    '<h4>Synthetic Half Marathon Results<small>06/03/2022, 10:00</small></h4>',
+    '<h5><small>06/03/2022, 10:00</small><div><a>Full Results</a></div></h5>',
+])
+def test_card_missing_supported_results_title_is_a_page_failure(heading):
+    with pytest.raises(ValueError, match="could not find Eventrac results title"):
+        parse(make_card_html([("1", "Male", "01:00:00")], heading=heading))
+
+
 @pytest.mark.parametrize(
     "jsonld",
     [
