@@ -16,3 +16,6 @@ vars:
 models:
   runwx:
     +materialized: view
+    comparison:
+      +enabled: "{{ var('comparison_datasets', []) | length > 0 }}"
+      +tags: [comparison]

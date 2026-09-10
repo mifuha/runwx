@@ -1,0 +1,129 @@
+# Expected columns are explicit for every row, including unavailable metrics.
+version: 2
+unit_tests:
+- name: comparison_preserves_editions_and_separates_pace_from_speed
+  model: mart_course_comparison
+  config:
+    enabled: '{{ var(''comparison_datasets'', []) | length > 0 }}'
+  overrides:
+    vars:
+      comparison_datasets:
+      - baseline
+      - later
+      - different_course
+      - unknown_timing
+      - empty
+      - small
+      comparison_baseline: baseline
+  given:
+  - input: ref('int_comparison_summaries')
+    format: sql
+    fixture: comparison_summaries
+  - input: ref('int_comparison_results')
+    format: sql
+    fixture: comparison_results
+  expect:
+    rows:
+    - snapshot_dataset: baseline
+      comparison_status: comparable
+      median_duration_difference_s: 0.0
+      median_pace_difference_s_per_km: 0.0
+      median_pace_change_pct: 0.0
+      speed_at_median_duration_change_pct: 0.0
+      mean_pace_s_per_km: 330.0
+      pace_p25_s_per_km: 285.0
+      pace_p75_s_per_km: 375.0
+      median_temp_c: 11.0
+      median_wind_mps: 4.0
+      weather_coverage_fraction: 1.0
+      top_n_median_pace_difference_s_per_km: 0.0
+      top_n_median_pace_change_pct: 0.0
+    - snapshot_dataset: later
+      comparison_status: comparable
+      median_duration_difference_s: 3300.0
+      median_pace_difference_s_per_km: 330.0
+      median_pace_change_pct: 100.0
+      speed_at_median_duration_change_pct: -50.0
+      mean_pace_s_per_km: 660.0
+      pace_p25_s_per_km: 570.0
+      pace_p75_s_per_km: 750.0
+      median_temp_c: 15.0
+      median_wind_mps: 3.0
+      weather_coverage_fraction: 0.5
+      top_n_median_pace_difference_s_per_km: 270.0
+      top_n_median_pace_change_pct: 100.0
+    - snapshot_dataset: different_course
+      comparison_status: different_course_or_distance
+      median_duration_difference_s: null
+      median_pace_difference_s_per_km: null
+      median_pace_change_pct: null
+      speed_at_median_duration_change_pct: null
+      mean_pace_s_per_km: 390.0
+      pace_p25_s_per_km: 345.0
+      pace_p75_s_per_km: 435.0
+      median_temp_c: null
+      median_wind_mps: null
+      weather_coverage_fraction: 0.0
+      top_n_median_pace_difference_s_per_km: null
+      top_n_median_pace_change_pct: null
+    - snapshot_dataset: unknown_timing
+      comparison_status: unknown_timing_basis
+      median_duration_difference_s: null
+      median_pace_difference_s_per_km: null
+      median_pace_change_pct: null
+      speed_at_median_duration_change_pct: null
+      mean_pace_s_per_km: 390.0
+      pace_p25_s_per_km: 345.0
+      pace_p75_s_per_km: 435.0
+      median_temp_c: null
+      median_wind_mps: null
+      weather_coverage_fraction: 0.0
+      top_n_median_pace_difference_s_per_km: null
+      top_n_median_pace_change_pct: null
+    - snapshot_dataset: empty
+      comparison_status: no_finishers
+      median_duration_difference_s: null
+      median_pace_difference_s_per_km: null
+      median_pace_change_pct: null
+      speed_at_median_duration_change_pct: null
+      mean_pace_s_per_km: null
+      pace_p25_s_per_km: null
+      pace_p75_s_per_km: null
+      median_temp_c: null
+      median_wind_mps: null
+      weather_coverage_fraction: null
+      top_n_median_pace_difference_s_per_km: null
+      top_n_median_pace_change_pct: null
+    - snapshot_dataset: small
+      comparison_status: comparable
+      median_duration_difference_s: 3300.0
+      median_pace_difference_s_per_km: 330.0
+      median_pace_change_pct: 100.0
+      speed_at_median_duration_change_pct: -50.0
+      mean_pace_s_per_km: 660.0
+      pace_p25_s_per_km: 660.0
+      pace_p75_s_per_km: 660.0
+      median_temp_c: null
+      median_wind_mps: null
+      weather_coverage_fraction: 0.0
+      top_n_median_pace_difference_s_per_km: null
+      top_n_median_pace_change_pct: null
+- name: missing_baseline_does_not_invent_comparison_rows
+  model: mart_course_comparison
+  config:
+    enabled: '{{ var(''comparison_datasets'', []) | length > 0 }}'
+  overrides:
+    vars:
+      comparison_datasets:
+      - baseline
+      - absent
+      comparison_baseline: absent
+  given:
+  - input: ref('int_comparison_summaries')
+    format: sql
+    fixture: comparison_summaries
+  - input: ref('int_comparison_results')
+    format: sql
+    fixture: comparison_results
+  expect:
+    rows: []

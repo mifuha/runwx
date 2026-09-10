@@ -90,3 +90,11 @@ jobs:
           docker run --rm --network none --read-only
           --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777
           runwx-dbt-ci --no-partial-parse parse --profiles-dir . --target local
+
+      - name: Parse comparison models offline
+        run: >-
+          docker run --rm --network none --read-only
+          --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777
+          --env RUNWX_DBT_DATASET=runwx_dbt_comparison_ci
+          runwx-dbt-ci --no-partial-parse parse --profiles-dir . --target local
+          --vars '{"comparison_datasets": ["edition_a", "edition_b"], "comparison_baseline": "edition_a"}'

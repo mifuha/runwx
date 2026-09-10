@@ -1,0 +1,42 @@
+version: 2
+models:
+  - name: int_comparison_summaries
+    description: Explicit union of already built edition summaries in the target project; no automatic snapshot discovery.
+  - name: int_comparison_results
+    description: Accepted results from the same explicit datasets, preserving snapshot provenance and unmatched finishers.
+  - name: mart_course_comparison
+    description: >-
+      One row per explicitly chosen snapshot dataset, with a stated baseline.
+      Raw statistics remain visible for incompatible inputs, while pace/speed
+      differences are null and comparison_status explains why. Same course ID
+      and distance are necessary but do not independently prove route equivalence.
+    columns:
+      - name: snapshot_dataset
+        data_tests:
+          - not_null:
+              config:
+                enabled: "{{ var('comparison_datasets', []) | length > 0 }}"
+          - unique:
+              config:
+                enabled: "{{ var('comparison_datasets', []) | length > 0 }}"
+      - name: comparison_status
+        data_tests:
+          - accepted_values:
+              config:
+                enabled: "{{ var('comparison_datasets', []) | length > 0 }}"
+              arguments:
+                values: [comparable, different_course_or_distance, unknown_timing_basis, different_interpretation, no_finishers]
+      - name: pace_p25_s_per_km
+        description: Exact interpolated 25th percentile of finisher pace; p25–p75 describes the middle 50 percent.
+      - name: pace_p75_s_per_km
+        description: Exact interpolated 75th percentile of finisher pace; unmatched finishers remain included.
+      - name: mean_pace_s_per_km
+        description: Whole-field arithmetic mean pace, derived from the existing mean duration and common distance.
+      - name: median_pace_change_pct
+        description: Positive means slower pace than the baseline; null for incomparable inputs or no finishers.
+      - name: speed_at_median_duration_change_pct
+        description: Positive means faster. Speed is the reciprocal of pace, so percentage magnitudes differ.
+      - name: top_n_median_pace_change_pct
+        description: Null unless interpretation, requested N and effective N agree with the baseline.
+      - name: median_temp_c
+        description: Median across matched finisher weather observations; not a race-day station average.

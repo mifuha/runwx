@@ -123,3 +123,9 @@ reconciliation values and measured usage. At the quoted starting rate, the query
 volume corresponds to about US$0.002 before free allowances at the
 [published starting rate](https://cloud.google.com/bigquery/pricing); this is not an invoice
 charge or a measurement of remaining trial credit. Retained storage continues.
+
+The optional [multi-edition comparison view](historical-comparison.md) adds baseline
+differences, mean pace and the middle-50% pace range. It is now verified in BigQuery:
+all seven comparison tests have passing results and one uncached readback matched
+both output rows. Its separate execution record preserves the initial test syntax
+error, the corrected test and the successful focused follow-up.
