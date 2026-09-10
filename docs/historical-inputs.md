@@ -76,6 +76,15 @@ isolate a causal weather effect. Keep coverage and source limitations visible.
 
 ## Executed historical comparison
 
+The initial 2022/2024 execution below is preserved as the first warehouse milestone.
+The comparison has since expanded to **2022, 2023, 2024 and 2026**, with 936 finishers
+and full weather coverage. The additional 518 rows passed exact loader readback,
+duplicate-safe reruns, two edition builds and a four-edition comparison build.
+See the [current comparison and qualification limits](historical-comparison.md#current-validation-status)
+and [native expansion evidence](evidence/historical-edition-expansion-validation.json).
+The existing ingestion schema and metric models were sufficient; 2025 remains
+excluded pending source reconciliation.
+
 On 10 September 2026, the Python loader and local dbt container processed both
 fixed snapshots against BigQuery in `europe-west1`. Each snapshot has its own
 source table and output dataset. Both initial loads passed full row readback;

@@ -82,7 +82,57 @@ the view does not certify same-course suitability or a causal weather effect.
 
 ## Current validation status
 
-The comparison is verified against BigQuery for the two fixed Lydd snapshots.
+The comparison is now verified in BigQuery for **2022, 2023, 2024 and 2026**:
+936 finishers with complete weather coverage. The two new snapshots added 226 and
+292 rows through the existing loader and edition models; both equal-data reruns
+verified the stored rows without another upload. No metric, schema or loader change
+was needed to expand the explicit input list.
+
+| Metric | 2022 | 2023 | 2024 | 2026 |
+| --- | ---: | ---: | ---: | ---: |
+| Finishers | 189 | 226 | 229 | 292 |
+| Median pace | 5:29.6/km | 5:46.5/km | 5:36.8/km | 5:36.3/km |
+| Mean pace | 5:30.8/km | 5:52.3/km | 5:45.4/km | 5:39.0/km |
+| Fastest-20 median pace | 3:54.8/km | 4:09.6/km | 4:02.8/km | 3:54.5/km |
+| Median pace change versus 2022 | 0% | +5.13% | +2.19% | +2.03% |
+| Speed at median duration change | 0% | −4.88% | −2.14% | −1.99% |
+| Matched temperature median | 5.8 °C | 11.0 °C | 8.8 °C | 7.4 °C |
+| Matched wind median | 7.34 m/s | 7.47 m/s | 2.08 m/s | 3.05 m/s |
+| Matched precipitation median | 0 mm | 0.1 mm | 0.5 mm | 0 mm |
+| Matched humidity median | 61% | 81% | 90% | 74% |
+| Weather coverage | 189/189 | 226/226 | 229/229 | 292/292 |
+
+The [edition-expansion execution record](evidence/historical-edition-expansion-validation.json)
+records 49 passing dbt tests: 21 for each new edition and seven for the comparison.
+BigQuery reused cached results for the 16 fixture unit tests; all 33 data tests,
+loader readbacks and three result-reconciliation queries were uncached. Both new
+37-column marts and their weather summaries match the saved expectations, as do all
+62 columns in each of the four comparison rows. All 86 jobs succeeded: two loads
+and 84 queries, with 540 MiB of reported billed query volume. These counters are
+not an invoice charge or a trial-credit balance.
+
+The exact Terraform plan added two source tables and two output datasets, with
+no changes or deletions to existing managed resources. The two old source tables
+and six edition views are preserved; only the comparison view was rebuilt with
+the expanded list. No temporary schema-probe tables remain. The original Terraform
+state and configuration, including parked resources, are unchanged.
+
+All 518 new chip and gun durations reconcile against primary timing-provider rows.
+Three source-name discrepancies remain documented; names and demographics are
+excluded from these exports, and athlete-level matching is unqualified. The 2025
+organiser page is held out because its 399 rows have only 261 distinct finishing
+positions. It is not automatically deduplicated or blended into the comparison.
+
+The common 21097 m convention remains, with provider metadata retained separately
+(21082 m for 2023; 21000 m for 2026). Shared venue/certificate evidence supports the
+unchanged-course assumption. The 2026 start is 09:00 BST, correctly represented as
+08:00 UTC. Weather uses the same hourly ERA5 venue proxy and midpoint assumptions;
+precipitation is a preceding-hour sum rather than whole-race rainfall. Different
+runner populations and four editions still do not establish weather causality.
+
+## Initial two-edition validation
+
+The first comparison was verified against BigQuery for the two fixed Lydd snapshots.
 All seven comparison tests have passing results across the initial build and its
 focused follow-up. One uncached readback matched all 62 columns in both output rows
 against the saved baseline, with the timestamp normalization described below.
@@ -128,7 +178,7 @@ view definitions and both source tables are unchanged, the comparison view was n
 rebuilt, and no temporary probe tables remain. No new upload or Terraform operation
 was needed.
 
-The verified comparison output is:
+The initial verified comparison output was:
 
 | Metric | Lydd 2022 | Lydd 2024 |
 | --- | ---: | ---: |

@@ -2,7 +2,9 @@
 
 Status: **deployed and verified on 8 September 2026** (Europe/London).
 Two successful cloud executions matched the synthetic local baseline. This proves
-the storage and execution path; BigQuery/dbt analysis is the next milestone.
+the storage and execution path. The [historical BigQuery/dbt flow](architecture.md)
+is now verified separately through local invocation; connecting it to Cloud Run
+remains to be implemented.
 
 ```text
 Private input bucket (synthetic race HTML + synthetic weather CSV)
