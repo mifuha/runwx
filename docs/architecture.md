@@ -101,30 +101,32 @@ CI runs offline Python, container, Terraform and dbt parse checks; it does not
 execute warehouse SQL.
 
 <a id="planned--next-milestone-warehouse-analysis"></a>
-## Cloud Run path and remaining integration
+## Cloud Run report path
 
-The [deployed Cloud Run Job](first-cloud-run.md) is a separate verified path using
-**fully synthetic race and weather inputs**. It runs the existing report function;
-it does not export result rows, load BigQuery or invoke dbt.
+The [deployed Cloud Run Job](first-cloud-run.md) runs the existing report function.
+Its stored defaults remain **fully synthetic**. Execution-specific overrides have
+also processed one explicitly allowed fixed snapshot: Folkestone 2019 produced 459
+accepted results and 459 weather matches, exactly matching the frozen local report
+apart from source file paths. The job does not export result rows, load BigQuery or
+invoke dbt.
 
 ```mermaid
 flowchart LR
-    inputs[("Private Cloud Storage<br/>synthetic inputs")] --> job["Manual Cloud Run report job"]
+    inputs[("Private Cloud Storage<br/>approved synthetic or historical inputs")] --> job["Manual Cloud Run report job"]
     job --> reports[("Private Cloud Storage<br/>JSON reports")]
 ```
 
 Input generations and SHA-256 checks bind the downloaded bytes. Execution-specific
-object names and create-only uploads retain earlier successful reports. The job's
-service account can read the two approved input objects and create report objects;
-it has no BigQuery loader/dbt permissions. This is report validation, not proof of
-the real historical warehouse flow running inside Cloud Run.
+object names and create-only uploads retain earlier successful reports. The runtime
+service account can read four exact input objects and create report objects; it has
+no BigQuery loader/dbt permissions. A separate least-privilege build identity can
+read Cloud Build source archives, push this repository's image and write build logs.
 
-Remaining integration is to package and invoke the existing historical export,
-load and dbt steps in a cloud job, with explicit snapshot destinations and narrowly
-scoped access, then reconcile its results against the verified local invocation.
-That deployment has not been implemented or executed. Scheduling, a hosted
-comparison UI and automatic source refresh are also absent; manually supplied
-fixed snapshots do not require them.
+This verifies real fixed input through the deployed parsing/report boundary. It is
+not proof that the warehouse flow runs inside Cloud Run: historical result export,
+BigQuery loading and dbt were executed and reconciled through the separate local
+launch path. Scheduling, a hosted comparison UI and automatic source refresh remain
+absent; manually supplied fixed snapshots remain the release model.
 
 ## Offline entry points and interpretation limits
 

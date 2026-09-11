@@ -66,11 +66,13 @@ retain earlier validation evidence. New raw captures and runner-level exports st
 outside Git; aggregate results can be inspected without a cloud account, but
 rerunning the historical warehouse needs the snapshots and configured BigQuery access.
 
-A separate [deployed Cloud Run Job](docs/first-cloud-run.md) reads **fully synthetic
-inputs** from private Cloud Storage and writes a JSON report back. Connecting real
-snapshot export/loading and dbt execution to Cloud Run remains to be implemented.
-There is no scheduled historical pipeline or hosted comparison UI yet. See the
-[architecture](docs/architecture.md) for the implemented boundaries and remaining work.
+A [deployed Cloud Run Job](docs/first-cloud-run.md) keeps **fully synthetic inputs**
+as its defaults and also accepts explicitly allowed fixed snapshots. One execution
+processed the exact Folkestone 2019 race and weather inputs: all 459 results and
+weather matches agreed with the frozen local report. The job still produces a report;
+BigQuery loading and dbt run through their separately verified paths. There is no
+scheduled historical pipeline or hosted comparison UI. See the
+[architecture](docs/architecture.md) for the implemented boundaries.
 
 <a id="quickstart"></a>
 <a id="example-result"></a>
@@ -169,7 +171,7 @@ with small manual changes or tests to reinforce understanding.
 
 ## Developer documentation
 
-- [Architecture and remaining Cloud Run integration](docs/architecture.md)
+- [Architecture and deployed Cloud Run report path](docs/architecture.md)
 - [Historical source qualification and warehouse inputs](docs/historical-inputs.md)
 - [Comparison statistics, explicit datasets and validation](docs/historical-comparison.md)
 - [dbt staging, fact and mart models](docs/dbt-models.md)

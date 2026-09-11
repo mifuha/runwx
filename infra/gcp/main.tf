@@ -2,7 +2,8 @@
 resource "google_project_service" "required" {
   for_each = toset([
     "run.googleapis.com", "storage.googleapis.com",
-    "artifactregistry.googleapis.com", "iam.googleapis.com",
+    "artifactregistry.googleapis.com", "cloudbuild.googleapis.com",
+    "iam.googleapis.com",
   ])
   service            = each.value
   disable_on_destroy = false
@@ -46,13 +47,44 @@ resource "google_service_account" "runtime" {
   depends_on   = [google_project_service.required]
 }
 
+resource "google_service_account" "image_builder" {
+  account_id   = "runwx-image-builder"
+  display_name = "runwx image builder"
+  depends_on   = [google_project_service.required]
+}
+
+resource "google_project_iam_member" "build_source_reader" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.image_builder.email}"
+  condition {
+    title      = "Only Cloud Build source archives"
+    expression = "resource.name.startsWith(${jsonencode("projects/_/buckets/${var.project_id}_cloudbuild/objects/source/")})"
+  }
+}
+
+resource "google_artifact_registry_repository_iam_member" "image_builder" {
+  location   = google_artifact_registry_repository.runwx.location
+  repository = google_artifact_registry_repository.runwx.repository_id
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:${google_service_account.image_builder.email}"
+}
+
+resource "google_project_iam_member" "image_builder_logging" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.image_builder.email}"
+}
+
 resource "google_storage_bucket_iam_member" "input_reader" {
   bucket = google_storage_bucket.inputs.name
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.runtime.email}"
   condition {
     title = "Only the two approved input objects"
-    expression = join(" || ", [for name in [var.race_object, var.weather_object] :
+    expression = join(" || ", [for name in concat(
+      [var.race_object, var.weather_object], sort(tolist(var.additional_input_objects))
+      ) :
       "resource.name == ${jsonencode("projects/_/buckets/${google_storage_bucket.inputs.name}/objects/${name}")}"
     ])
   }

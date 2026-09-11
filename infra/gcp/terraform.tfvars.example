@@ -5,3 +5,10 @@ region     = "europe-west1"
 image_uri = null
 # After publishing the approved image, use its actual registry digest:
 # image_uri = "europe-west1-docker.pkg.dev/PROJECT/runwx/runwx@sha256:DIGEST"
+
+# Keep the synthetic defaults while allowing explicitly reviewed historical inputs
+# to be supplied as one-execution Cloud Run overrides.
+# additional_input_objects = [
+#   "approved/folkestone/2019/race-4bc576fb3658.html",
+#   "approved/folkestone/2019/weather-17554d124696.csv",
+# ]

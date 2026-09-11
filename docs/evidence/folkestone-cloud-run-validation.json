@@ -1,0 +1,67 @@
+{
+  "checked_at_utc": "2026-09-11T22:15:20Z",
+  "scope": "One exact Folkestone 2019 fixed snapshot through the deployed Cloud Run report path",
+  "cloud_build": {
+    "successful_build_id": "ac4d759c-64d1-4fb0-87ce-e62d58909725",
+    "failed_build_ids": [
+      "b01277c4-4e08-4f87-b217-3105e4089d04",
+      "b05c70b7-7cf7-4990-bb07-7e8f0d15efc9",
+      "012fe3a4-4535-44be-b6f1-83f53fb9cdd0"
+    ],
+    "failure_cause": "Cloud Build's bundled Dockerfile parser did not recognize RUN --network=none until the standard Dockerfile frontend was declared.",
+    "image": "europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx@sha256:1762c7847bbbd9171237bb07b1ed4b84b256c68b665e39775eaaac3b3548dc94",
+    "source_revision_label": "906f22f4b03864517f4d20e23d01ca17b8ee7516"
+  },
+  "inputs": {
+    "race": {
+      "generation": "1789157021338837",
+      "sha256": "4bc576fb3658f75d6f78080e419eeb3630a7b835c4e0a2aafe8e814806637080"
+    },
+    "weather": {
+      "generation": "1789157025406518",
+      "sha256": "17554d12469688550d11468f54e0e6509177ac7de7b65ff8df35642cee3a2e43"
+    }
+  },
+  "execution": {
+    "name": "runwx-report-rpc8z",
+    "status": "succeeded",
+    "task_count": 1,
+    "max_retries": 0,
+    "duration_seconds": 71.63,
+    "report_generation": "1789164918076677"
+  },
+  "terraform": {
+    "builder_apply": {
+      "add": 5,
+      "change": 0,
+      "destroy": 0
+    },
+    "job_and_input_apply": {
+      "add": 1,
+      "change": 1,
+      "destroy": 1
+    },
+    "source_binding_representation_apply": {
+      "add": 1,
+      "change": 0,
+      "destroy": 1
+    },
+    "final_targeted_plan": "no changes",
+    "generic_parent_plan_run": false
+  },
+  "result": {
+    "candidate_count": 459,
+    "accepted_count": 459,
+    "finisher_count": 459,
+    "weather_matched_count": 459,
+    "median_duration_s": 7515,
+    "matches_frozen_local_report_except_source_paths": true,
+    "previous_synthetic_reports_unchanged": true,
+    "job_defaults_remain_synthetic": true
+  },
+  "boundaries": {
+    "cloud_run_exports_or_loads_bigquery_rows": false,
+    "cloud_run_invokes_dbt": false,
+    "scheduled": false
+  }
+}

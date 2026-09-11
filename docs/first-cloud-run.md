@@ -1,13 +1,13 @@
 # First cloud input/output run
 
-Status: **deployed and verified on 8 September 2026** (Europe/London).
-Two successful cloud executions matched the synthetic local baseline. This proves
-the storage and execution path. The [historical BigQuery/dbt flow](architecture.md)
-is now verified separately through local invocation; connecting it to Cloud Run
-remains to be implemented.
+Status: **deployed with real-input validation on 11 September 2026** (Europe/London).
+Two synthetic executions and one exact Folkestone 2019 execution matched their local
+baselines. This proves the private storage, deployed parsing and report-output path.
+The [historical BigQuery/dbt flow](architecture.md) remains a separately verified
+path; this job does not load BigQuery or invoke dbt.
 
 ```text
-Private input bucket (synthetic race HTML + synthetic weather CSV)
+Private input bucket (approved synthetic or fixed historical inputs)
     → download exact object generations; check SHA-256 hashes
     → temporary files → existing build_offline_report()
     → private report bucket: reports/<execution>/task-0-attempt-0.json
@@ -26,43 +26,52 @@ and authentication, but never fetches race or weather provider data.
 | Private input bucket | `runwx-learning-mifuha-runwx-inputs` |
 | Private report bucket | `runwx-learning-mifuha-runwx-reports` |
 | Artifact Registry repository | `runwx` |
+| Image builder service account | `runwx-image-builder@runwx-learning-mifuha.iam.gserviceaccount.com` |
 | Runtime service account | `runwx-report@runwx-learning-mifuha.iam.gserviceaccount.com` |
 | Cloud Run Job | `runwx-report` |
 
 Deployed image, verified against both execution descriptions and saved reports:
 
 ```text
-europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx@sha256:f90bc8ea97497ca377dec4cbc2e4bfb43cfe4484658e602561039782392475d5
+europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx@sha256:1762c7847bbbd9171237bb07b1ed4b84b256c68b665e39775eaaac3b3548dc94
 ```
 
-This Linux/amd64 manifest belongs to the published `first-run` image index
-`sha256:2c8257f6f0f1d79b69ac94ce429736fbf74fa977811a430968fe773ef1e1445c`.
-They identify two levels of the same image. All 51 application Python files in the
-image matched the checkout before publication. The image was built before the
-cloud changes were committed, so its Git revision label identifies the base
-checkout; use the verified image digest to identify the deployed code.
+Cloud Build produced this Linux image with application revision label `906f22f4`
+using the pinned base image and dependency locks. The local package installation
+completed with network disabled. The immutable registry digest identifies the
+deployed bytes.
 
 | Execution | Result | Start-to-completion time | Output generation |
 | --- | --- | ---: | --- |
 | `runwx-report-tdjvt` | 1 task succeeded, no retries | 27.510 s | `1788823251294987` |
 | `runwx-report-btttr` | 1 task succeeded, no retries | 41.499 s | `1788823418694525` |
+| `runwx-report-rpc8z` | 1 task succeeded, no retries | 71.630 s | `1789164918076677` |
 
-Both reports were downloaded from their private locations:
+All three reports were downloaded from their private locations:
 
 ```text
 gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-tdjvt/task-0-attempt-0.json
 gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-btttr/task-0-attempt-0.json
+gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-rpc8z/task-0-attempt-0.json
 ```
 
-Every local report field matched except the two source file paths: hashes,
-settings, quality counts, coverage and limitations all agreed. The two cloud
-`report` objects were identical. Execution names and output URIs differed in the
-surrounding metadata, as expected. Input generations matched the uploaded objects;
-the first output's generation and checksums stayed unchanged after the repeat.
+Every synthetic local report field matched except the two source file paths: hashes,
+settings, quality counts, coverage and limitations all agreed. The two synthetic
+cloud `report` objects were identical. Execution names and output URIs differed in
+the surrounding metadata, as expected. Input generations matched the uploaded
+objects; the first output's generation and checksums stayed unchanged after the repeat.
 
 **Entirely synthetic demonstration:** 5 candidate rows, 3 accepted, 1 skipped,
 1 invalid; weather matched 2 of 3 finishers. Best/median/mean finish durations were
 3600/7200/8400 seconds. These are pipeline checks, not historical race findings.
+
+**Fixed historical validation:** execution `runwx-report-rpc8z` read the exact
+Folkestone 2019 HTML and weather CSV generations. It accepted all 459 candidate
+results, matched weather for all 459 finishers and returned a 7515-second median.
+Every report field matched the frozen local report except the expected local/GCS
+source paths. The two earlier synthetic report generations remained unchanged.
+Report v1 labels this weather `unknown`; the separate qualification evidence records
+its ERA5 origin. See the [validation record](evidence/folkestone-cloud-run-validation.json).
 
 The [job execution page](https://console.cloud.google.com/run/jobs/details/europe-west1/runwx-report/executions?project=runwx-learning-mifuha)
 shows status, configuration and logs. The
@@ -108,11 +117,13 @@ about code/dependency versions remains. The cloud wrapper adds no analytical log
 
 [Terraform](../infra/gcp/main.tf) defines:
 
-- Cloud Run, Cloud Storage, Artifact Registry and IAM API enablements.
+- Cloud Run, Cloud Storage, Artifact Registry, Cloud Build and IAM API enablements.
 - Two private Standard buckets, uniform bucket-level access, enforced public
   access prevention and seven-day soft delete.
-- One private Docker registry and one dedicated runtime service account.
-- Input Object Viewer restricted by an IAM condition to the two named objects;
+- One private Docker registry, one dedicated image builder and one runtime identity.
+- The builder can read only the Cloud Build source prefix, write this image repository
+  and write build logs. It has no runtime data permissions.
+- Input Object Viewer restricted by an IAM condition to four named objects;
   output Object Creator restricted to the report bucket's `reports/` prefix.
 - One manual job: one task, parallelism 1, 1 vCPU, 512 MiB memory, a five-minute
   timeout and zero task retries. No scheduler is configured.
@@ -150,17 +161,18 @@ setup. Keep credentials, actual tfvars and Terraform state outside Git.
    `infra/gcp/terraform.tfvars`. Set the project and keep `image_uri = null`.
    Initialise Terraform and review/apply a saved plan for storage, registry and
    identity. This stage does not create or execute a job.
-3. Follow the [container instructions](container.md) with tag `runwx:cloud-local`.
-   The package includes `google-cloud-storage`. Authenticate Docker for the same
-   OS user running it, push the image and record its immutable registry digest.
+3. Build and publish with [cloudbuild.image.yaml](../infra/gcp/cloudbuild.image.yaml),
+   supplying a unique `_IMAGE_TAG` and the source commit as `_VCS_REF`. Record the
+   resulting immutable registry digest. A standard Docker build remains available
+   through the [container instructions](container.md).
 4. Upload only the two synthetic inputs, using `gcloud storage cp
    --if-generation-match=0`. Record their metadata/generations; this precondition
    prevents overwriting existing objects.
 5. Set `image_uri` to the pushed digest reference. Review/apply the job plan;
    creating the job does not execute it.
-6. Run twice sequentially, download both reports and compare them with the same
-   local baseline. This deployment used two of an operating limit of five manual
-   executions; five is not a Cloud Run lifetime quota.
+6. Execute with defaults for the synthetic demonstration, or use execution-only
+   environment overrides for explicitly allowed historical objects and their hashes.
+   Download each report and compare it with its local baseline.
 
 These commands execute an existing cloud job. From the repository root and an
 activated Python environment, set `PROJECT` to that job's project ID first:
@@ -198,10 +210,10 @@ so unchanged analytical results do not conceal an overwritten object.
 
 ## Costs and retained resources
 
-The two inputs and two reports total **9017 bytes**; Artifact Registry reported
-**61.579 MB**. The early monitoring snapshot exposed 60 seconds of billable instance
-time, which did not account for both one-minute billing minima. Actual billed
-charges were not independently verified; missing cost data does not mean zero cost.
+The inputs and three reports use less than 0.5 MiB. Artifact Registry retains the
+published image layers, and Cloud Build retains build records and staged source
+archives. Actual billed charges were not independently verified; missing cost data
+does not mean zero cost.
 
 Pricing checked on 7 September 2026, in USD before tax, currency conversion or
 free allowances:
@@ -209,7 +221,7 @@ free allowances:
 | Item | Estimate |
 | --- | --- |
 | Cloud Run, Belgium | $0.000018/vCPU-second plus $0.000002/GiB-second. At 1 CPU/0.5 GiB, one billed minute is about $0.00114; two minima total about $0.00228 compute. |
-| Standard storage, Belgium | $0.02/GiB-month. The 1231 input bytes cost less than $0.000001/month. |
+| Standard storage, Belgium | $0.02/GiB-month. Current inputs and reports remain below 0.5 MiB. |
 | Storage operations | Regional Class A $0.005/1,000; Class B $0.0004/1,000. |
 | Artifact Registry | About $0.10/GiB-month above the shared 0.5 GiB free allowance. |
 
@@ -217,8 +229,9 @@ Sources: [Cloud Run pricing](https://cloud.google.com/run/pricing),
 [Storage pricing](https://cloud.google.com/storage/pricing) and
 [Artifact Registry pricing](https://cloud.google.com/artifact-registry/pricing).
 Same-region input/image transfers are free under those pricing rules; report
-retrieval to a laptop can incur internet transfer charges. Paid image scanning and
-Cloud Build were not enabled for this deployment.
+retrieval to a laptop can incur internet transfer charges. Paid image scanning was
+not enabled. Cloud Build recorded three short parser failures and one successful
+build before the Dockerfile frontend compatibility fix was verified.
 
 The below-$1 estimate assumes at most five manual executions, one image under
 1 GiB, tiny inputs/reports and one month's retention. A project-only £3 monthly
@@ -233,6 +246,22 @@ buckets also refuse deletion while non-empty. Cleanup must account for those
 protections, retained reports, and the separately managed project and budget.
 
 ## Verification
+
+Follow-up checked on Ubuntu/WSL, 11 September 2026:
+
+- The dedicated builder plan applied **5 additions, 0 changes and 0 deletions**.
+  The final image build succeeded after three short parser failures exposed the
+  missing Dockerfile frontend declaration.
+- The input/job plan applied **1 addition, 1 in-place change and 1 deletion** because
+  Terraform replaces a conditional IAM member when its expression changes. A targeted
+  read-only plan across all seven affected resources then reported no changes.
+- Execution `runwx-report-rpc8z` succeeded once with one task and zero retries. Its
+  downloaded report matched the 459-result local baseline except source file paths;
+  both previous synthetic report generations and the job's synthetic defaults remained
+  unchanged.
+- Full Python suite: **251 passed in 4.26s**. Terraform formatting, validation, JSON,
+  links and whitespace checks passed. The successful Cloud Build exercised the
+  container build and its network-disabled package-install step.
 
 Checked on Ubuntu/WSL, 8 September 2026:
 
@@ -259,5 +288,5 @@ counts and durations, agreement with the local report and preservation of both
 outputs. Separate tests cover changed hashes, failed downloads/parsing and
 attempts to overwrite an earlier success.
 
-See [architecture](architecture.md) for the planned result-row and dbt milestone,
-and the [report reference](race-report.md) for analytical limitations.
+See [architecture](architecture.md) for the separate result-row and dbt path, and
+the [report reference](race-report.md) for analytical limitations.
