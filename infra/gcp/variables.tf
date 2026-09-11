@@ -30,6 +30,19 @@ variable "weather_object" {
   default = "approved/sample_lydd_weather_synthetic.csv"
 }
 
+variable "additional_input_objects" {
+  description = "Additional immutable input objects approved for execution-time overrides."
+  type        = set(string)
+  default     = []
+  validation {
+    condition = alltrue([
+      for name in var.additional_input_objects :
+      startswith(name, "approved/") && !endswith(name, "/")
+    ])
+    error_message = "Additional input object names must be files below the approved/ prefix."
+  }
+}
+
 variable "race_sha256" {
   type    = string
   default = "70095c35dc919ed11506924765def09eb6e5590e3feb95ee7f0e8e9dc6f82182"
