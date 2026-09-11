@@ -8,23 +8,23 @@ I'm building it to practise data engineering using something I care about: runni
 
 ## Real historical comparison
 
-The **Lydd Half Marathon 2022, 2023, 2024 and 2026** snapshots are verified in
-BigQuery: **936 finishers**, all with a time-matched weather observation.
+The **Lydd Half Marathon 2022–2026** snapshots are verified in
+BigQuery: **1,197 finishers**, all with a time-matched weather observation.
 These are real historical results and reanalysis weather, captured as fixed inputs.
 
-| Metric | 2022 | 2023 | 2024 | 2026 |
-| --- | ---: | ---: | ---: | ---: |
-| Finishers | 189 | 226 | 229 | 292 |
-| Median pace | 5:29.6/km | 5:46.5/km | 5:36.8/km | 5:36.3/km |
-| Mean pace | 5:30.8/km | 5:52.3/km | 5:45.4/km | 5:39.0/km |
-| Fastest-20 median pace | 3:54.8/km | 4:09.6/km | 4:02.8/km | 3:54.5/km |
-| Median pace change versus 2022 | 0% | +5.13% | +2.19% | +2.03% |
-| Speed at median duration change | 0% | −4.88% | −2.14% | −1.99% |
-| Matched temperature median | 5.8 °C | 11.0 °C | 8.8 °C | 7.4 °C |
-| Matched wind median | 7.34 m/s | 7.47 m/s | 2.08 m/s | 3.05 m/s |
-| Matched precipitation median | 0 mm | 0.1 mm | 0.5 mm | 0 mm |
-| Matched humidity median | 61% | 81% | 90% | 74% |
-| Weather coverage | 189/189 | 226/226 | 229/229 | 292/292 |
+| Metric | 2022 | 2023 | 2024 | 2025 | 2026 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Finishers | 189 | 226 | 229 | 261 | 292 |
+| Median pace | 5:29.6/km | 5:46.5/km | 5:36.8/km | 5:44.3/km | 5:36.3/km |
+| Mean pace | 5:30.8/km | 5:52.3/km | 5:45.4/km | 5:52.5/km | 5:39.0/km |
+| Fastest-20 median pace | 3:54.8/km | 4:09.6/km | 4:02.8/km | 4:03.8/km | 3:54.5/km |
+| Median pace change versus 2022 | 0% | +5.13% | +2.19% | +4.44% | +2.03% |
+| Speed at median duration change | 0% | −4.88% | −2.14% | −4.25% | −1.99% |
+| Matched temperature median | 5.8 °C | 11.0 °C | 8.8 °C | 13.4 °C | 7.4 °C |
+| Matched wind median | 7.34 m/s | 7.47 m/s | 2.08 m/s | 3.87 m/s | 3.05 m/s |
+| Matched precipitation median | 0 mm | 0.1 mm | 0.5 mm | 0 mm | 0 mm |
+| Matched humidity median | 61% | 81% | 90% | 58% | 74% |
+| Weather coverage | 189/189 | 226/226 | 229/229 | 261/261 | 292/292 |
 
 Positive pace change means slower. Speed at median duration is the reciprocal
 measure, so its percentage change differs. Fastest-20 means the **median of the
@@ -56,15 +56,15 @@ comparison reads an explicit list of edition datasets and a named baseline.
 Exact export reruns verify existing rows without another upload. A deliberately
 corrected snapshot uses a separate destination and retains its own provenance.
 
-The latest expansion passed **49 native dbt tests**: 21 for each new edition and
-seven for the four-edition comparison. Its full result readbacks matched the saved
-expectations. [Execution evidence](docs/evidence/historical-edition-expansion-validation.json)
-distinguishes cached fixture tests from uncached real-data checks; the
-[initial historical run](docs/evidence/historical-warehouse-validation.json)
-records the earlier 2022/2024 validation. New raw captures and runner-level exports
-are kept outside Git; these tables and aggregate evidence can be inspected without
-a cloud account, but rerunning the historical warehouse needs the source snapshots
-and configured BigQuery access.
+The latest 2025 addition passed **28 native dbt tests**: 21 for the new edition and
+seven for the five-edition comparison. Full result readbacks matched the saved
+expectations. [2025 execution evidence](docs/evidence/lydd-2025-validation.json)
+distinguishes nine cached fixture tests from 19 uncached data tests and records
+49 successful jobs. The [previous expansion](docs/evidence/historical-edition-expansion-validation.json)
+and [initial historical run](docs/evidence/historical-warehouse-validation.json)
+retain earlier validation evidence. New raw captures and runner-level exports stay
+outside Git; aggregate results can be inspected without a cloud account, but
+rerunning the historical warehouse needs the snapshots and configured BigQuery access.
 
 A separate [deployed Cloud Run Job](docs/first-cloud-run.md) reads **fully synthetic
 inputs** from private Cloud Storage and writes a JSON report back. Connecting real
@@ -129,9 +129,11 @@ this documentation update. The secondary
 - Exact source hashes and interpretation settings identify each input context.
   The loader supports one fixed export per table and duplicate-safe sequential
   reruns. A hash identifies contents, not their accuracy.
-- Source qualification remains necessary: 2025 is held out because the organiser
-  page repeats finishing positions. Three name discrepancies in 2023/2026 do not
-  affect the reconciled durations; athlete matching and demographics are unqualified.
+- Source qualification remains necessary: 2025 uses an explicitly derived snapshot
+  of 261 complete results reconciled against the timing provider. The original 399
+  rows and mapping are preserved; 138 incomplete companion rows are excluded.
+  Three name discrepancies in 2023/2026 do not affect the reconciled durations;
+  athlete matching and demographics are unqualified.
 - Guarded selection, concurrent publication and elaborate receipt machinery are
   deferred. The current release uses explicitly chosen fixed historical snapshots.
 
