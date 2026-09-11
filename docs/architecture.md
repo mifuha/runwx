@@ -2,8 +2,8 @@
 
 ## Historical analysis implemented today
 
-The current analytical output is a [four-edition Lydd comparison](../README.md#real-historical-comparison):
-936 finishers from fixed 2022, 2023, 2024 and 2026 race snapshots, with real hourly
+The current analytical output is a [five-edition Lydd comparison](../README.md#real-historical-comparison):
+1,197 finishers from fixed 2022–2026 race snapshots, with real hourly
 ERA5 weather. Python prepares the inputs; BigQuery and dbt produce the staging,
 accepted-results fact, edition summary and comparison views. This flow has been
 executed by locally launched Python and containerized dbt against BigQuery.
@@ -25,8 +25,11 @@ flowchart LR
 
 [Source qualification](historical-inputs.md) checks race date/start, timing fields,
 row counts, course evidence and weather provenance before an edition is admitted.
-Captured source bytes remain unchanged. The source-specific capture and
-reconciliation work is manual; it is not a general scheduled ingestion service.
+Captured source bytes remain unchanged. For 2025, an explicit derived snapshot
+retains the 261 complete, provider-reconciled rows; its own hash and mapping back
+to the original 399-row capture preserve provenance. The 138 excluded rows are
+verified incomplete companions, not a generic deduplication rule. Source-specific
+capture and reconciliation remain manual.
 New raw captures and per-runner exports stay outside Git; public evidence records
 hashes, settings, aggregate results, validation outcomes and limitations.
 
@@ -88,12 +91,14 @@ speed changes. Incompatible course, distance or interpretation settings retain r
 statistics with a status and null differences. Different N suppresses only fastest-N
 differences. SQL checks do not establish that two physical routes are identical.
 
-The initial 2022/2024 native builds passed 42 tests. The latest expansion passed
-49 tests across the 2023/2026 edition builds and four-edition comparison; result
-readbacks matched all 62 columns in each comparison row. The
-[execution evidence](evidence/historical-edition-expansion-validation.json) separates
-cached fixture tests, uncached data checks and query usage. CI runs offline Python,
-container, Terraform and dbt parse checks; it does not execute warehouse SQL.
+The initial 2022/2024 native builds passed 42 tests; the 2023/2026 expansion passed
+49. The latest 2025 addition passed 28 tests across its edition build and the
+five-edition comparison. Readbacks matched the 37-field new mart and all 62 fields
+in each comparison row. [2025 execution evidence](evidence/lydd-2025-validation.json)
+separates cached fixture tests, uncached data checks and query usage; the
+[previous expansion](evidence/historical-edition-expansion-validation.json) is retained.
+CI runs offline Python, container, Terraform and dbt parse checks; it does not
+execute warehouse SQL.
 
 <a id="planned--next-milestone-warehouse-analysis"></a>
 ## Cloud Run path and remaining integration

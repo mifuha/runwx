@@ -74,16 +74,36 @@ course ID alone does not establish that the route was unchanged. Weather provide
 context for a difference; two editions with different fields of runners do not
 isolate a causal weather effect. Keep coverage and source limitations visible.
 
+## 2025 source qualification
+
+The original organiser capture contains 399 rows but 261 distinct finishing
+positions. The complete 261 rows match all names, chip durations and gun durations
+on 27 saved timing-provider pages. Each of the remaining 138 rows is an incomplete
+companion of a complete result, with the same chip time but missing fields.
+
+An explicit selection produces a 261-row **derived analysis snapshot**. The
+original capture is unchanged; the derived file has its own SHA-256 and a mapping
+from every derived row back to its original candidate row. Serialization may
+normalize HTML formatting; retained cells, parsed results and event metadata were
+checked equal. This source-specific selection introduces no general deduplication
+or revision mechanism. The database uses the derived snapshot's row identity.
+
+Weather was captured as 24 hourly ERA5 observations for 9 March 2025. The 09:00
+Europe/London start is 09:00 UTC; all 261 finishers have a matched observation.
+The [2025 validation record](evidence/lydd-2025-validation.json) includes original,
+derived and export hashes, qualification counts and native execution results.
+Raw captures, the row mapping, athlete names and runner-level exports stay local.
+
 ## Executed historical comparison
 
 The initial 2022/2024 execution below is preserved as the first warehouse milestone.
-The comparison has since expanded to **2022, 2023, 2024 and 2026**, with 936 finishers
-and full weather coverage. The additional 518 rows passed exact loader readback,
-duplicate-safe reruns, two edition builds and a four-edition comparison build.
-See the [current comparison and qualification limits](historical-comparison.md#current-validation-status)
-and [native expansion evidence](evidence/historical-edition-expansion-validation.json).
-The existing ingestion schema and metric models were sufficient; 2025 remains
-excluded pending source reconciliation.
+The comparison has since expanded to **2022–2026**, with **1,197 finishers** and
+full weather coverage. The latest 261-row 2025 addition passed exact loader
+readback, a duplicate-safe rerun, its edition build and the five-edition comparison.
+See the [current comparison](historical-comparison.md#current-validation-status),
+[2025 execution evidence](evidence/lydd-2025-validation.json) and retained
+[2023/2026 expansion evidence](evidence/historical-edition-expansion-validation.json).
+The existing ingestion schema and metric models were sufficient.
 
 On 10 September 2026, the Python loader and local dbt container processed both
 fixed snapshots against BigQuery in `europe-west1`. Each snapshot has its own
@@ -134,7 +154,7 @@ volume corresponds to about US$0.002 before free allowances at the
 charge or a measurement of remaining trial credit. Retained storage continues.
 
 The optional [multi-edition comparison view](historical-comparison.md) adds baseline
-differences, mean pace and the middle-50% pace range. It is now verified in BigQuery:
-all seven comparison tests have passing results and one uncached readback matched
-both output rows. Its separate execution record preserves the initial test syntax
+differences, mean pace and the middle-50% pace range. Its initial BigQuery validation
+passed all seven comparison tests and an uncached readback matched both output
+rows. That separate execution record preserves the initial test syntax
 error, the corrected test and the successful focused follow-up.
