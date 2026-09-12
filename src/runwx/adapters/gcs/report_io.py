@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from runwx.services.snapshot_artifacts import build_snapshot_artifacts
 
 
-def _object_path(uri: str) -> tuple[str, str]:
+def object_path(uri: str) -> tuple[str, str]:
     parts = urlsplit(uri)
     if (parts.scheme != "gs" or not parts.netloc or not parts.path.strip("/")
             or parts.query or parts.fragment or parts.username or parts.port):
@@ -31,10 +31,10 @@ def run_stored_report(
     """
     inputs = {"race": (race_uri, race_sha256), "weather": (weather_uri, weather_sha256)}
     for uri, expected_hash in inputs.values():
-        _object_path(uri)
+        object_path(uri)
         if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
             raise ValueError("expected a lowercase SHA-256 input hash")
-    output_bucket, prefix = _object_path(output_prefix)
+    output_bucket, prefix = object_path(output_prefix)
     if not re.fullmatch(r"[a-z0-9-]+", execution["name"]):
         raise ValueError("invalid Cloud Run execution name")
     if not re.fullmatch(r".+@sha256:[0-9a-f]{64}", execution["image"]):
@@ -57,7 +57,7 @@ def run_stored_report(
         paths = {}
         provenance = {}
         for kind, (uri, expected_hash) in inputs.items():
-            bucket, name = _object_path(uri)
+            bucket, name = object_path(uri)
             blob = client.bucket(bucket).blob(name)
             blob.reload(timeout=30)
             generation = blob.generation

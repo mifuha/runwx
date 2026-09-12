@@ -126,6 +126,32 @@ BigQuery and runs verification queries. This first step does not stage another
 Cloud Storage object. The existing saved-input Cloud Run path stays as described
 in [first-cloud-run.md](first-cloud-run.md).
 
+For a Cloud Run artifact pair, use the separate Storage adapter. It downloads the
+exact report and result-export generations, checks that the version 2 report names
+and hashes the export, and reconciles source identity, settings and counts before it
+calls the same `prepare_load` function. This preview reads Cloud Storage but does
+not create a BigQuery client or submit a job:
+
+```bash
+python -m runwx.gcs_bigquery_load \
+  --report-uri gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.json \
+  --report-generation 1789226380183224 \
+  --result-export-uri gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.ndjson \
+  --result-export-generation 1789226379967796 \
+  --expected-sha256 f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47 \
+  --table runwx-learning-mifuha.runwx_staging.folkestone_2019_results
+```
+
+The report object is the completeness marker because the Cloud Run job writes it
+after the NDJSON. Both generations are still required: the marker does not turn two
+Cloud Storage writes into one atomic transaction. A missing generation, changed or
+truncated export, mismatched URI/hash/byte/row metadata, or disagreement in report
+counts, settings or source hashes fails before any BigQuery operation. Adding
+`--execute` then delegates the already prepared bytes to the existing safe loader;
+it does not use a direct BigQuery URI load or introduce another loading algorithm.
+The Folkestone pair has passed this local preparation path, but it has not yet been
+loaded from Cloud Storage into BigQuery.
+
 The loader follows this sequence:
 
 1. Check the destination, then read up to the expected row count plus one.
@@ -175,6 +201,7 @@ separate operation: preserve wanted evidence before removing this table/dataset.
 
 ```bash
 python -m pytest -q tests/test_bigquery_load.py
+python -m pytest -q tests/test_gcs_bigquery_load.py
 ```
 
 The tests use real SDK configuration objects and API signatures with a small fake
@@ -182,6 +209,8 @@ warehouse. They block network access and check first load, equal rerun, changed
 data, lost acknowledgement, post-load mismatch and invalid inputs. They do not
 execute SQL or prove that BigQuery accepts the schema. The separate
 [verified cloud run](#verified-cloud-run) now supplies that evidence for this fixture.
+The Storage-adapter tests additionally check exact-generation reads, pair
+reconciliation, early rejection and delegation to the same loader.
 
 The [staging → accepted-results fact → event-summary mart](dbt-models.md) SQL
 and tests have now executed in BigQuery and matched the Python baseline.
