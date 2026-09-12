@@ -9,7 +9,7 @@ import pytest
 
 from runwx.main import main
 from runwx.services.offline_report import build_offline_report
-from runwx.services.result_export import build_result_rows
+from runwx.services.result_export import build_result_rows, encode_result_rows
 
 
 RACE = Path("data/sample_race_synthetic.html")
@@ -49,6 +49,7 @@ def test_synthetic_export_reconciles_with_report_and_repeats_offline(capsys):
     first, rows = export(capsys)
     second, _ = export(capsys)
     report = build_offline_report(RACE, WEATHER, **SETTINGS)
+    assert first.encode("utf-8") == encode_result_rows(rows)
 
     assert first == second
     assert len(rows) == report["result_quality"]["candidate_count"] == 5

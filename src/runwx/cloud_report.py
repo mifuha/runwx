@@ -16,13 +16,14 @@ def main(*, client=None):
         "task_index": int(os.environ["CLOUD_RUN_TASK_INDEX"]),
         "task_attempt": int(os.environ["CLOUD_RUN_TASK_ATTEMPT"]),
         "image": os.environ["RUNWX_IMAGE"],
+        "source_revision": os.environ["RUNWX_SOURCE_REVISION"],
     }
     if client is None:
         from google.cloud import storage
 
         # Cloud Run supplies credentials for the job's service account; no key file.
         client = storage.Client()
-    output_uri = run_stored_report(
+    outputs = run_stored_report(
         client,
         race_uri=os.environ["RUNWX_RACE_URI"],
         race_sha256=os.environ["RUNWX_RACE_SHA256"],
@@ -31,7 +32,7 @@ def main(*, client=None):
         output_prefix=os.environ["RUNWX_OUTPUT_PREFIX"],
         execution=execution, settings=settings,
     )
-    print(json.dumps({"output_uri": output_uri, "execution": execution}, sort_keys=True))
+    print(json.dumps({**outputs, "execution": execution}, sort_keys=True))
 
 
 if __name__ == "__main__":

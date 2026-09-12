@@ -19,6 +19,7 @@ RUN --network=none python -m pip install --no-cache-dir --no-deps --no-build-iso
     && python -m pip check
 
 ARG VCS_REF=unknown
+ENV RUNWX_SOURCE_REVISION=${VCS_REF}
 LABEL org.opencontainers.image.source="https://github.com/mifuha/runwx" \
       org.opencontainers.image.revision="${VCS_REF}"
 

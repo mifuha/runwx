@@ -10,9 +10,11 @@ import runpy
 
 import pytest
 
+import runwx.services.snapshot_artifacts as snapshot_artifacts
 from runwx.adapters.gcs.report_io import run_stored_report
 from runwx.cloud_report import main
 from runwx.services.offline_report import build_offline_report
+from runwx.services.result_export import build_result_rows, encode_result_rows
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +46,11 @@ def storage():
             obj = Mock(generation=17)
 
             def upload(data, *, content_type, if_generation_match, timeout):
-                assert content_type == "application/json"
+                expected_type = (
+                    "application/x-ndjson" if name.endswith(".ndjson")
+                    else "application/json"
+                )
+                assert content_type == expected_type
                 assert if_generation_match == 0
                 if key in saved:
                     raise FileExistsError("object already exists")
@@ -68,7 +74,8 @@ def arguments(execution="report-abc"):
         weather_sha256=hashlib.sha256(WEATHER.read_bytes()).hexdigest(),
         output_prefix="gs://outputs/reports",
         execution={"job": "report", "name": execution, "task_index": 0,
-                   "task_attempt": 0, "image": "registry/image@sha256:" + "a" * 64},
+                   "task_attempt": 0, "image": "registry/image@sha256:" + "a" * 64,
+                   "source_revision": "b" * 40},
         settings=SETTINGS,
     )
 
@@ -82,12 +89,19 @@ def comparable(report):
 
 def test_saved_report_matches_local_and_repeat_keeps_both_outputs(storage):
     client, blobs, saved = storage
-    uri = run_stored_report(client, **arguments())
+    outputs = run_stored_report(client, **arguments())
     run_stored_report(client, **arguments("report-def"))
-    assert uri == "gs://outputs/reports/report-abc/task-0-attempt-0.json"
-    assert len(saved) == 2
-    first, second = [json.loads(value) for value in saved.values()]
+    report_uri = "gs://outputs/reports/report-abc/task-0-attempt-0.json"
+    result_uri = "gs://outputs/reports/report-abc/task-0-attempt-0.ndjson"
+    assert outputs["report_uri"] == outputs["output_uri"] == report_uri
+    assert outputs["result_export_uri"] == result_uri
+    assert len(saved) == 4
+    first = json.loads(saved[("outputs", "reports/report-abc/task-0-attempt-0.json")])
+    second = json.loads(saved[("outputs", "reports/report-def/task-0-attempt-0.json")])
+    result_payload = saved[("outputs", "reports/report-abc/task-0-attempt-0.ndjson")]
     baseline = build_offline_report(RACE, WEATHER, **SETTINGS)
+    expected_rows = build_result_rows(RACE, WEATHER, **SETTINGS, race_kind="synthetic")
+    expected_payload = encode_result_rows(expected_rows)
     assert baseline["race"]["name"] == "Runwx Synthetic Half"
     assert baseline["race_summary"] == {
         "finisher_count": 3, "best_duration_s": 3600,
@@ -101,12 +115,23 @@ def test_saved_report_matches_local_and_repeat_keeps_both_outputs(storage):
     assert baseline["weather_coverage"]["matched_fraction"] == 2 / 3
     assert comparable(first["report"]) == comparable(baseline)
     compare_reports(baseline, first)
+    assert first["cloud_report_schema_version"] == 2
     assert first["report"] == second["report"]
     assert first["execution"]["name"] != second["execution"]["name"]
     assert first["execution"]["image"] == arguments()["execution"]["image"]
+    assert first["execution"]["source_revision"] == "b" * 40
     assert first["report"]["sources"]["weather"]["kind"] == "synthetic"
     assert first["storage"]["inputs"]["race"]["generation"] == "17"
-    assert first["storage"]["output_uri"] == uri
+    assert first["storage"]["output_uri"] == report_uri
+    assert first["storage"]["outputs"]["result_export"] == {
+        "uri": result_uri,
+        "sha256": hashlib.sha256(expected_payload).hexdigest(),
+        "bytes": len(expected_payload),
+        "row_count": 5,
+        "schema_version": 1,
+    }
+    assert result_payload == expected_payload
+    assert saved[("outputs", "reports/report-def/task-0-attempt-0.ndjson")] == expected_payload
     blobs[("inputs", "race.html")].download_as_bytes.assert_called_with(
         if_generation_match=17, checksum="auto", timeout=30,
     )
@@ -152,6 +177,21 @@ def test_download_failure_publishes_nothing(storage):
     assert not saved
 
 
+def test_cross_artifact_count_mismatch_publishes_nothing(storage, monkeypatch):
+    client, _, saved = storage
+    original = snapshot_artifacts.build_result_rows
+
+    def inconsistent_rows(*args, **kwargs):
+        rows = original(*args, **kwargs)
+        rows[-1]["validation_status"] = "skipped"
+        return rows
+
+    monkeypatch.setattr(snapshot_artifacts, "build_result_rows", inconsistent_rows)
+    with pytest.raises(RuntimeError, match="row counts do not reconcile"):
+        run_stored_report(client, **arguments())
+    assert not saved
+
+
 def test_entrypoint_uses_runtime_identity_and_explicit_settings(storage, monkeypatch, capsys):
     client, _, saved = storage
     args = arguments()
@@ -160,6 +200,7 @@ def test_entrypoint_uses_runtime_identity_and_explicit_settings(storage, monkeyp
         "RUNWX_WEATHER_URI": args["weather_uri"], "RUNWX_WEATHER_SHA256": args["weather_sha256"],
         "RUNWX_OUTPUT_PREFIX": args["output_prefix"],
         "RUNWX_IMAGE": args["execution"]["image"],
+        "RUNWX_SOURCE_REVISION": args["execution"]["source_revision"],
         "RUNWX_REPORT_SETTINGS": json.dumps(dict(SETTINGS, top_n=2, max_gap_minutes=15)),
         "CLOUD_RUN_JOB": "report", "CLOUD_RUN_EXECUTION": "report-abc",
         "CLOUD_RUN_TASK_INDEX": "0", "CLOUD_RUN_TASK_ATTEMPT": "0",
@@ -167,10 +208,49 @@ def test_entrypoint_uses_runtime_identity_and_explicit_settings(storage, monkeyp
     for name, value in env.items():
         monkeypatch.setenv(name, value)
     main(client=client)
-    report = json.loads(next(iter(saved.values())))["report"]
+    report = json.loads(saved[("outputs", "reports/report-abc/task-0-attempt-0.json")])["report"]
     assert report["settings"]["top_n"] == 2
     assert report["settings"]["max_gap_seconds"] == 900
     assert json.loads(capsys.readouterr().out)["output_uri"].startswith("gs://outputs/")
+
+
+def test_historical_labels_apply_to_export_without_changing_report_v1(storage):
+    client, _, saved = storage
+    args = arguments()
+    # Synthetic fixture bytes exercise the explicit mapping; they are not evidence.
+    args["settings"] = dict(
+        SETTINGS,
+        weather_kind="unknown",
+        race_kind="historical",
+        export_weather_kind="historical_reanalysis",
+        timing_basis="chip",
+    )
+    run_stored_report(client, **args)
+
+    report = json.loads(saved[("outputs", "reports/report-abc/task-0-attempt-0.json")])
+    rows = [
+        json.loads(line)
+        for line in saved[("outputs", "reports/report-abc/task-0-attempt-0.ndjson")]
+        .decode("utf-8")
+        .splitlines()
+    ]
+    assert report["report"]["sources"]["weather"]["kind"] == "unknown"
+    assert all(row["race_kind"] == "historical" for row in rows)
+    assert all(row["weather_kind"] == "historical_reanalysis" for row in rows)
+    assert all(row["settings"]["timing_basis"] == "chip" for row in rows)
+
+
+def test_report_upload_failure_is_reported_and_leaves_traceable_export(storage):
+    client, blobs, saved = storage
+    report_key = ("outputs", "reports/report-abc/task-0-attempt-0.json")
+    client.bucket("outputs").blob(report_key[1])
+    blobs[report_key].upload_from_string.side_effect = RuntimeError("report upload failed")
+
+    with pytest.raises(RuntimeError, match="report upload failed"):
+        run_stored_report(client, **arguments())
+
+    assert ("outputs", "reports/report-abc/task-0-attempt-0.ndjson") in saved
+    assert report_key not in saved
 
 
 @pytest.mark.parametrize("field,value", [
@@ -189,6 +269,16 @@ def test_invalid_configuration_fails_before_storage(storage, field, value):
     assert not saved
 
 
+def test_invalid_source_revision_fails_before_storage(storage):
+    client, _, saved = storage
+    args = arguments()
+    args["execution"]["source_revision"] = "short"
+    with pytest.raises(ValueError, match="source_revision"):
+        run_stored_report(client, **args)
+    client.bucket.assert_not_called()
+    assert not saved
+
+
 @pytest.mark.parametrize("section,key,value", [
     ("settings", "top_n", 10),
     ("race_summary", "median_duration_s", 0),
@@ -198,7 +288,7 @@ def test_invalid_configuration_fails_before_storage(storage, field, value):
 def test_comparison_does_not_hide_analytical_or_input_changes(storage, section, key, value):
     client, _, saved = storage
     run_stored_report(client, **arguments())
-    cloud = json.loads(next(iter(saved.values())))
+    cloud = json.loads(saved[("outputs", "reports/report-abc/task-0-attempt-0.json")])
     cloud["report"][section][key] = value
     with pytest.raises(ValueError, match="differs from local baseline"):
         compare_reports(build_offline_report(RACE, WEATHER, **SETTINGS), cloud)
