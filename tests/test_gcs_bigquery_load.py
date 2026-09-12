@@ -211,6 +211,9 @@ def test_execute_calls_the_existing_safe_loader_only_after_pair_validation(
         (("storage", "outputs", "result_export", "row_count"), 4),
         (("report", "result_quality", "accepted_count"), 2),
         (("report", "settings", "timezone_name"), "UTC"),
+        (("report", "race", "started_at_utc"), "2022-03-06T11:00:00+00:00"),
+        (("report", "sources", "race", "provider"), "other"),
+        (("report", "sources", "race", "source_event_id"), "other"),
         (("report", "sources", "race", "sha256"), "3" * 64),
     ],
 )

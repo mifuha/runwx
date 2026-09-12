@@ -133,6 +133,9 @@ def prepare_stored_load(
             and report["race"]["event_id"] == first["event_id"]
             and report["race"]["course_id"] == first["course_id"]
             and report["race"]["distance_m"] == first["distance_m"]
+            and report["race"]["started_at_utc"] == first["started_at_utc"]
+            and report["sources"]["race"]["provider"] == first["source"]
+            and report["sources"]["race"]["source_event_id"] == first["source_event_id"]
             and report["sources"]["race"]["sha256"] == first["race_sha256"]
             and report["sources"]["weather"]["sha256"] == first["weather_sha256"]
             and all(report["settings"][key] == first["settings"][key] for key in common_settings)
