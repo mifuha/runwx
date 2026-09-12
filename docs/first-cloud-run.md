@@ -1,20 +1,23 @@
 # First cloud input/output run
 
-Status: **deployed with real-input validation on 11 September 2026** (Europe/London).
-Two synthetic executions and one exact Folkestone 2019 execution matched their local
-baselines. This proves the private storage, deployed parsing and report-output path.
+Status: **deployed with paired real-input validation on 12 September 2026**
+(Europe/London). Two earlier synthetic executions and the first Folkestone report
+remain retained. A new exact Folkestone 2019 execution matched both frozen local
+artifacts. This proves the private storage, deployed parsing, reporting and warehouse-
+export path.
 The [historical BigQuery/dbt flow](architecture.md) remains a separately verified
 path; this job does not load BigQuery or invoke dbt.
 
 ```text
 Private input bucket (approved synthetic or fixed historical inputs)
     → download exact object generations; check SHA-256 hashes
-    → temporary files → existing build_offline_report()
+    → temporary files → existing build_offline_report() + build_result_rows()
     → private report bucket: reports/<execution>/task-0-attempt-0.json
+                            reports/<execution>/task-0-attempt-0.ndjson
 ```
 
-The container's temporary files disappear after the job. The uploaded JSON stays
-in Cloud Storage until deleted. The job needs network access to Google Storage
+The container's temporary files disappear after the job. The uploaded pair stays in
+Cloud Storage until deleted. The job needs network access to Google Storage
 and authentication, but never fetches race or weather provider data.
 
 ## Deployed resources and results
@@ -30,29 +33,30 @@ and authentication, but never fetches race or weather provider data.
 | Runtime service account | `runwx-report@runwx-learning-mifuha.iam.gserviceaccount.com` |
 | Cloud Run Job | `runwx-report` |
 
-Deployed image, verified against both execution descriptions and saved reports:
+Deployed image, verified against the paired execution description and report:
 
 ```text
-europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx@sha256:1762c7847bbbd9171237bb07b1ed4b84b256c68b665e39775eaaac3b3548dc94
+europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx@sha256:4a090fe42e24320b1eb169ff4bcd40be8641802e87528ffd90f89c307c333dbd
 ```
 
-Cloud Build produced this Linux image with application revision label `906f22f4`
+Cloud Build `414ee1ca-a217-4cbb-8a26-78383a49ddc4` produced this Linux image with
+application revision `6378f4c236aa82bc40bc51443c200549714ae26f`
 using the pinned base image and dependency locks. The local package installation
 completed with network disabled. The immutable registry digest identifies the
 deployed bytes.
 
-| Execution | Result | Start-to-completion time | Output generation |
-| --- | --- | ---: | --- |
-| `runwx-report-tdjvt` | 1 task succeeded, no retries | 27.510 s | `1788823251294987` |
-| `runwx-report-btttr` | 1 task succeeded, no retries | 41.499 s | `1788823418694525` |
-| `runwx-report-rpc8z` | 1 task succeeded, no retries | 71.630 s | `1789164918076677` |
+| Execution | Result | Duration | Report generation | Export generation |
+| --- | --- | ---: | --- | --- |
+| `runwx-report-tdjvt` | 1 task succeeded, no retries | 27.510 s | `1788823251294987` | — |
+| `runwx-report-btttr` | 1 task succeeded, no retries | 41.499 s | `1788823418694525` | — |
+| `runwx-report-rpc8z` | 1 task succeeded, no retries | 71.630 s | `1789164918076677` | — |
+| `runwx-report-6ccdt` | 1 task succeeded, no retries | 30.540 s | `1789226380183224` | `1789226379967796` |
 
-All three reports were downloaded from their private locations:
+The new paired output is stored at:
 
 ```text
-gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-tdjvt/task-0-attempt-0.json
-gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-btttr/task-0-attempt-0.json
-gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-rpc8z/task-0-attempt-0.json
+gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.json
+gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.ndjson
 ```
 
 Every synthetic local report field matched except the two source file paths: hashes,
@@ -73,40 +77,57 @@ source paths. The two earlier synthetic report generations remained unchanged.
 Report v1 labels this weather `unknown`; the separate qualification evidence records
 its ERA5 origin. See the [validation record](evidence/folkestone-cloud-run-validation.json).
 
+**Paired historical validation:** execution `runwx-report-6ccdt` read those same
+input generations with their expected SHA-256 hashes. Its report again accepted and
+weather-matched all 459 candidates with a 7515-second median. Its 551,872-byte NDJSON
+is byte-for-byte identical to the frozen warehouse input, including historical race,
+ERA5 reanalysis and chip-time labels; SHA-256 is
+`f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47`.
+The report records the image digest, full source revision, both input generations and
+the export URI/hash/count. See the
+[paired validation record](evidence/cloud-run-result-export-validation.json).
+
 The [job execution page](https://console.cloud.google.com/run/jobs/details/europe-west1/runwx-report/executions?project=runwx-learning-mifuha)
 shows status, configuration and logs. The
 [report bucket](https://console.cloud.google.com/storage/browser/runwx-learning-mifuha-runwx-reports/reports?project=runwx-learning-mifuha)
 and [registry](https://console.cloud.google.com/artifacts/docker/runwx-learning-mifuha/europe-west1/runwx?project=runwx-learning-mifuha)
 require access to this private project; they are not public downloads.
 
-## Report contract and failure behaviour
+## Artifact contract and failure behaviour
 
 [report_io.py](../src/runwx/adapters/gcs/report_io.py) uses the official
 `google-cloud-storage` client to download two objects and call the existing report
-function. [cloud_report.py](../src/runwx/cloud_report.py) reads configuration from
-environment variables and uses the runtime service account through Application
-Default Credentials. No service-account key is needed.
+and export functions through the shared coordinator.
+[cloud_report.py](../src/runwx/cloud_report.py) reads configuration from environment
+variables and uses the runtime service account through Application Default
+Credentials. No service-account key is needed.
 
 Each download is pinned to the generation returned by its metadata lookup. The
 bytes must also match the configured local SHA-256. A missing, changed or invalid
-input fails the execution before any report upload.
+input fails the execution before either artifact upload.
 
-Output names include execution, task and attempt identifiers. Upload uses
+Output names include execution, task and attempt identifiers. Both uploads use
 `if_generation_match=0`, so an existing object causes failure instead of replacement.
 The runtime also lacks delete/overwrite permission. There is no `latest.json` or
-automatic selection of a current report. Failed attempts leave earlier reports
-alone. If an upload succeeds but its acknowledgement is lost, inspect that exact
-object before rerunning: a failed execution does not prove that no object was saved.
+automatic selection of a current report. The result export uploads first; the report
+envelope uploads last and marks a complete pair. A failure can therefore leave an
+export without its report, which downstream processing must reject. Failed attempts
+leave earlier objects alone. If an upload succeeds but its acknowledgement is lost,
+inspect that exact object before rerunning: a failed execution does not prove that no
+object was saved.
 See Google's [generation preconditions](https://docs.cloud.google.com/storage/docs/request-preconditions).
 
-The version 1 envelope contains:
+The version 2 cloud envelope retains the inner deterministic report at schema v1 and
+adds the paired export metadata:
 
 - `report`: the existing summaries, row counts, weather coverage, hashes, settings
   and limitations. Only `sources.race.file` and `sources.weather.file` change from
   local paths to `gs://` source locations.
-- `execution`: job, execution, task index, attempt and configured image digest.
+- `execution`: job, execution, task index, attempt, configured image digest and full
+  source commit embedded in the image.
   Check the digest against the actual execution description as well.
-- `storage`: input URIs/generations and the output URI.
+- `storage`: input URIs/generations, both output URIs and the export SHA-256, byte
+  count, row count and schema version. The legacy report `output_uri` remains.
 
 Cloud Run supplies the execution identifiers through its
 [documented environment](https://docs.cloud.google.com/run/docs/container-contract).
@@ -172,7 +193,7 @@ setup. Keep credentials, actual tfvars and Terraform state outside Git.
    creating the job does not execute it.
 6. Execute with defaults for the synthetic demonstration, or use execution-only
    environment overrides for explicitly allowed historical objects and their hashes.
-   Download each report and compare it with its local baseline.
+   Download both artifacts and compare them with their local baselines.
 
 These commands execute an existing cloud job. From the repository root and an
 activated Python environment, set `PROJECT` to that job's project ID first:
@@ -187,6 +208,13 @@ python -m runwx report \
   --course-id runwx-synthetic-half --distance-m 21097 \
   --timezone Europe/London --weather-kind synthetic > "$EVIDENCE/local.json"
 
+python -m runwx export-results \
+  --race-html data/sample_race_synthetic.html \
+  --weather-csv data/sample_lydd_weather_synthetic.csv \
+  --course-id runwx-synthetic-half --distance-m 21097 \
+  --timezone Europe/London --race-kind synthetic --weather-kind synthetic \
+  > "$EVIDENCE/local.ndjson"
+
 gcloud run jobs execute runwx-report --project "$PROJECT" --region "$REGION" \
   --wait --format=json > "$EVIDENCE/execution.json"
 ```
@@ -196,11 +224,14 @@ into `EXECUTION`, then retrieve and compare:
 
 ```bash
 REPORT_URI="gs://${PROJECT}-runwx-reports/reports/${EXECUTION}/task-0-attempt-0.json"
+EXPORT_URI="gs://${PROJECT}-runwx-reports/reports/${EXECUTION}/task-0-attempt-0.ndjson"
 gcloud storage cp "$REPORT_URI" "$EVIDENCE/cloud.json"
+gcloud storage cp "$EXPORT_URI" "$EVIDENCE/cloud.ndjson"
 gcloud storage objects describe "$REPORT_URI" --format=json > "$EVIDENCE/output-object.json"
 gcloud run jobs describe runwx-report --project "$PROJECT" --region "$REGION" \
   --format=json > "$EVIDENCE/job.json"
 python scripts/compare_cloud_report.py "$EVIDENCE/local.json" "$EVIDENCE/cloud.json"
+cmp "$EVIDENCE/local.ndjson" "$EVIDENCE/cloud.ndjson"
 ```
 
 Retain a separate evidence directory for each run. The comparator excludes only
@@ -210,10 +241,11 @@ so unchanged analytical results do not conceal an overwritten object.
 
 ## Costs and retained resources
 
-The inputs and three reports use less than 0.5 MiB. Artifact Registry retains the
-published image layers, and Cloud Build retains build records and staged source
-archives. Actual billed charges were not independently verified; missing cost data
-does not mean zero cost.
+The retained output objects use less than 0.6 MiB; the approved synthetic and
+Folkestone inputs use less than 0.5 MiB. Artifact Registry retains the published
+image layers, and Cloud Build retains build records and staged source archives.
+Actual billed charges were not independently verified; missing cost data does not
+mean zero cost.
 
 Pricing checked on 7 September 2026, in USD before tax, currency conversion or
 free allowances:
@@ -246,6 +278,21 @@ buckets also refuse deletion while non-empty. Cleanup must account for those
 protections, retained reports, and the separately managed project and budget.
 
 ## Verification
+
+Follow-up checked on Ubuntu/WSL, 12 September 2026:
+
+- Local and CI Python suites passed **255 tests**; CI also built/smoke-tested the
+  locked report image and passed Terraform and dbt checks.
+- Cloud Build used the dedicated builder, explicit logging mode, tracked source
+  archive and full commit. The resulting digest is the deployed digest shown above.
+- The reviewed targeted plan and apply were **0 additions, 1 in-place change and
+  0 deletions**: only the existing job image and matching `RUNWX_IMAGE` value changed.
+  A final targeted plan reported no changes.
+- Execution `runwx-report-6ccdt` succeeded once. The report and exact NDJSON both
+  reconcile with the frozen local artifacts; input/output generations, hashes,
+  counts, image and source revision are recorded in the paired validation record.
+- No BigQuery load, dbt run, scheduler, new IAM grant, bucket or parallel job was
+  created. The three older report objects and stored synthetic job defaults remain.
 
 Follow-up checked on Ubuntu/WSL, 11 September 2026:
 

@@ -101,32 +101,33 @@ CI runs offline Python, container, Terraform and dbt parse checks; it does not
 execute warehouse SQL.
 
 <a id="planned--next-milestone-warehouse-analysis"></a>
-## Cloud Run report path
+## Cloud Run validation/export path
 
-The [deployed Cloud Run Job](first-cloud-run.md) runs the existing report function.
-Its stored defaults remain **fully synthetic**. Execution-specific overrides have
-also processed one explicitly allowed fixed snapshot: Folkestone 2019 produced 459
-accepted results and 459 weather matches, exactly matching the frozen local report
-apart from source file paths. The job does not export result rows, load BigQuery or
-invoke dbt.
+The [deployed Cloud Run Job](first-cloud-run.md) runs the existing report and result-
+export functions through one small coordinator. Its stored defaults remain **fully
+synthetic**. An execution-specific Folkestone 2019 run produced 459 accepted results,
+459 weather matches and a byte-identical copy of the frozen warehouse-input NDJSON.
+The job does not load BigQuery or invoke dbt.
 
 ```mermaid
 flowchart LR
-    inputs[("Private Cloud Storage<br/>approved synthetic or historical inputs")] --> job["Manual Cloud Run report job"]
-    job --> reports[("Private Cloud Storage<br/>JSON reports")]
+    inputs[("Private Cloud Storage<br/>approved synthetic or historical inputs")] --> job["Manual Cloud Run validation/export job"]
+    job --> reports[("Private Cloud Storage<br/>audit report JSON")]
+    job --> exports[("Private Cloud Storage<br/>candidate-result NDJSON")]
 ```
 
 Input generations and SHA-256 checks bind the downloaded bytes. Execution-specific
-object names and create-only uploads retain earlier successful reports. The runtime
-service account can read four exact input objects and create report objects; it has
+object names and create-only uploads retain earlier successful artifacts. NDJSON is
+written first and the report envelope last as the pair's completeness marker; a
+consumer must require both. The runtime service account can read four exact input
+objects and create output objects; it has
 no BigQuery loader/dbt permissions. A separate least-privilege build identity can
 read Cloud Build source archives, push this repository's image and write build logs.
 
-This verifies real fixed input through the deployed parsing/report boundary. It is
-not proof that the warehouse flow runs inside Cloud Run: historical result export,
-BigQuery loading and dbt were executed and reconciled through the separate local
-launch path. Scheduling, a hosted comparison UI and automatic source refresh remain
-absent; manually supplied fixed snapshots remain the release model.
+This verifies real fixed input through the deployed parsing/export boundary. BigQuery
+loading and dbt still run through the separately verified local launch path; they are
+not invoked by this job. Scheduling, a hosted comparison UI and automatic source
+refresh remain absent; manually supplied fixed snapshots remain the release model.
 
 ## Offline entry points and interpretation limits
 

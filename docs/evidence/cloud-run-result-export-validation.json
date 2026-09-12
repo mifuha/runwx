@@ -1,0 +1,91 @@
+{
+  "checked_at_utc": "2026-09-12T15:20:00Z",
+  "scope": "One exact Folkestone 2019 fixed snapshot producing a reconciled Cloud Run report and warehouse-input export",
+  "publication": {
+    "pull_request": "https://github.com/mifuha/runwx/pull/16",
+    "source_revision": "6378f4c236aa82bc40bc51443c200549714ae26f",
+    "ci_run": "https://github.com/mifuha/runwx/actions/runs/34701000092",
+    "ci_jobs_passed": 4,
+    "python_tests_passed": 255
+  },
+  "cloud_build": {
+    "id": "414ee1ca-a217-4cbb-8a26-78383a49ddc4",
+    "status": "SUCCESS",
+    "service_account": "runwx-image-builder@runwx-learning-mifuha.iam.gserviceaccount.com",
+    "source_archive_sha256": "73363aa6e912ccf6588e4bdc2f9d11c7db136b7ef51cfe57e0a12d2275f5ecb7",
+    "source_object_generation": "1789225717894134",
+    "image": "europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx@sha256:4a090fe42e24320b1eb169ff4bcd40be8641802e87528ffd90f89c307c333dbd",
+    "logging": "CLOUD_LOGGING_ONLY"
+  },
+  "terraform": {
+    "target": "google_cloud_run_v2_job.report[0]",
+    "plan": {"add": 0, "change": 1, "destroy": 0},
+    "apply": {"add": 0, "change": 1, "destroy": 0},
+    "changed_fields": ["container image", "RUNWX_IMAGE"],
+    "final_targeted_plan": "no changes",
+    "generic_parent_plan_run": false
+  },
+  "inputs": {
+    "race": {
+      "uri": "gs://runwx-learning-mifuha-runwx-inputs/approved/folkestone/2019/race-4bc576fb3658.html",
+      "generation": "1789157021338837",
+      "sha256": "4bc576fb3658f75d6f78080e419eeb3630a7b835c4e0a2aafe8e814806637080"
+    },
+    "weather": {
+      "uri": "gs://runwx-learning-mifuha-runwx-inputs/approved/folkestone/2019/weather-17554d124696.csv",
+      "generation": "1789157025406518",
+      "sha256": "17554d12469688550d11468f54e0e6509177ac7de7b65ff8df35642cee3a2e43"
+    }
+  },
+  "execution": {
+    "name": "runwx-report-6ccdt",
+    "status": "succeeded",
+    "task_count": 1,
+    "succeeded_count": 1,
+    "max_retries": 0,
+    "duration_seconds": 30.54,
+    "runtime_service_account": "runwx-report@runwx-learning-mifuha.iam.gserviceaccount.com"
+  },
+  "outputs": {
+    "report": {
+      "uri": "gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.json",
+      "generation": "1789226380183224",
+      "bytes": 4215,
+      "content_type": "application/json",
+      "cloud_schema_version": 2,
+      "inner_report_schema_version": 1
+    },
+    "result_export": {
+      "uri": "gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.ndjson",
+      "generation": "1789226379967796",
+      "bytes": 551872,
+      "content_type": "application/x-ndjson",
+      "schema_version": 1,
+      "sha256": "f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47"
+    }
+  },
+  "result": {
+    "candidate_count": 459,
+    "accepted_count": 459,
+    "skipped_count": 0,
+    "invalid_count": 0,
+    "weather_matched_count": 459,
+    "weather_unmatched_count": 0,
+    "median_duration_s": 7515,
+    "race_kind": "historical",
+    "weather_kind": "historical_reanalysis",
+    "timing_basis": "chip",
+    "report_matches_frozen_local_except_source_paths": true,
+    "export_matches_frozen_local_bytes": true,
+    "previous_report_objects_retained": true,
+    "job_defaults_remain_synthetic": true
+  },
+  "boundaries": {
+    "new_iam_or_bucket_resources": false,
+    "bigquery_changed_or_loaded": false,
+    "dbt_invoked": false,
+    "scheduled": false,
+    "multi_object_write_atomic": false,
+    "actual_billed_cost_independently_verified": false
+  }
+}
