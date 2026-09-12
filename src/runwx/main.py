@@ -13,7 +13,7 @@ from runwx.adapters.sqlite.storage_sqlite import connect, write_pipeline_result
 from runwx.domain.models import Run, WeatherObs
 from runwx.services.pipeline import enrich_runs
 from runwx.services.offline_report import build_offline_report
-from runwx.services.result_export import build_result_rows
+from runwx.services.result_export import build_result_rows, encode_result_rows
 
 
 def demo_data() -> tuple[list[Run], list[WeatherObs]]:
@@ -140,7 +140,7 @@ def main(argv: list[str] | None = None) -> None:
             race_kind=args.race_kind, weather_kind=args.weather_kind,
             timing_basis=args.timing_basis,
         )
-        print("\n".join(json.dumps(row, sort_keys=True, allow_nan=False) for row in rows))
+        print(encode_result_rows(rows).decode("utf-8"), end="")
         return
 
     if args.cmd == "report":

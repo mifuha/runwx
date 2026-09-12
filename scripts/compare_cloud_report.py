@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def compare_reports(local: dict, cloud: dict) -> None:
-    if cloud["cloud_report_schema_version"] != 1:
+    if cloud["cloud_report_schema_version"] not in {1, 2}:
         raise ValueError("unsupported cloud report schema")
     expected, actual = deepcopy(local), deepcopy(cloud["report"])
     # File locations legitimately differ. Every other report field must match,

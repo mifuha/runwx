@@ -69,9 +69,10 @@ rerunning the historical warehouse needs the snapshots and configured BigQuery a
 A [deployed Cloud Run Job](docs/first-cloud-run.md) keeps **fully synthetic inputs**
 as its defaults and also accepts explicitly allowed fixed snapshots. One execution
 processed the exact Folkestone 2019 race and weather inputs: all 459 results and
-weather matches agreed with the frozen local report. The job still produces a report;
-BigQuery loading and dbt run through their separately verified paths. There is no
-scheduled historical pipeline or hosted comparison UI. See the
+weather matches agreed with the frozen local report, and its candidate-row NDJSON was
+byte-identical to the frozen warehouse input. BigQuery loading and dbt still run
+through their separately verified paths; the cloud-produced export has not yet been
+loaded. There is no scheduled historical pipeline or hosted comparison UI. See the
 [architecture](docs/architecture.md) for the implemented boundaries.
 
 <a id="quickstart"></a>
@@ -171,11 +172,11 @@ with small manual changes or tests to reinforce understanding.
 
 ## Developer documentation
 
-- [Architecture and deployed Cloud Run report path](docs/architecture.md)
+- [Architecture and deployed Cloud Run validation/export path](docs/architecture.md)
 - [Historical source qualification and warehouse inputs](docs/historical-inputs.md)
 - [Comparison statistics, explicit datasets and validation](docs/historical-comparison.md)
 - [dbt staging, fact and mart models](docs/dbt-models.md)
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
 - [Result-row export](docs/result-export.md) and [BigQuery loader](docs/bigquery-staging.md)
-- [Cloud report contract, runtime permissions and verification](docs/first-cloud-run.md)
+- [Cloud artifact contract, runtime permissions and verification](docs/first-cloud-run.md)
 - [Code structure, API, contributing and CSV/SQLite usage](docs/development.md)

@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import timedelta, timezone
 from pathlib import Path
 
 from runwx.adapters.csv.io_weather import parse_weather_csv
 from runwx.adapters.races.eventrac_html import parse_eventrac_results_html
 from runwx.domain.align import build_weather_index, nearest_weather
+
+
+def encode_result_rows(rows: list[dict]) -> bytes:
+    """Return deterministic newline-delimited JSON for a complete export."""
+    if not rows:
+        return b""
+    lines = (json.dumps(row, sort_keys=True, allow_nan=False) for row in rows)
+    return ("\n".join(lines) + "\n").encode("utf-8")
 
 
 def build_result_rows(
