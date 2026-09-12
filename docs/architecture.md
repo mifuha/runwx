@@ -129,6 +129,13 @@ loading and dbt still run through the separately verified local launch path; the
 not invoked by this job. Scheduling, a hosted comparison UI and automatic source
 refresh remain absent; manually supplied fixed snapshots remain the release model.
 
+The next local boundary is implemented as a thin Storage adapter: it requires exact
+report/export generations, verifies the report-last completeness marker and fully
+prepares the downloaded NDJSON before delegating to the existing BigQuery loader.
+The adapter does not load directly from a Storage URI, create warehouse resources or
+choose a destination. Native loading of the cloud-produced Folkestone export remains
+an explicit, separately reviewed execution step.
+
 ## Offline entry points and interpretation limits
 
 The [runnable demo](../README.md#runnable-offline-demo--synthetic-weather) uses saved
