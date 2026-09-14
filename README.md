@@ -70,9 +70,11 @@ A [deployed Cloud Run Job](docs/first-cloud-run.md) keeps **fully synthetic inpu
 as its defaults and also accepts explicitly allowed fixed snapshots. One execution
 processed the exact Folkestone 2019 race and weather inputs: all 459 results and
 weather matches agreed with the frozen local report, and its candidate-row NDJSON was
-byte-identical to the frozen warehouse input. BigQuery loading and dbt still run
-through their separately verified paths; the cloud-produced export has not yet been
-loaded. There is no scheduled historical pipeline or hosted comparison UI. See the
+byte-identical to the frozen warehouse input. The exact cloud artifact generations
+were then verified twice against the existing 459-row BigQuery snapshot through the
+safe loader, with no duplicate load or table change. dbt still runs through its
+separately verified path. There is no scheduled historical pipeline or hosted
+comparison UI. See the
 [architecture](docs/architecture.md) for the implemented boundaries.
 
 <a id="quickstart"></a>
