@@ -1,6 +1,7 @@
 # First BigQuery staging load
 
-Status: **first cloud load and repeat verification passed on 8 September 2026**.
+Status: **first cloud load passed on 8 September; exact Cloud Run artifact-to-table
+verification passed on 14 September 2026**.
 This step puts the [synthetic result export](result-export.md) into one table.
 This load step does not add dbt models or change the existing Cloud Run report job;
 the subsequent [dbt validation](dbt-models.md#verified-cloud-run) is recorded separately.
@@ -139,7 +140,7 @@ python -m runwx.gcs_bigquery_load \
   --result-export-uri gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.ndjson \
   --result-export-generation 1789226379967796 \
   --expected-sha256 f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47 \
-  --table runwx-learning-mifuha.runwx_staging.folkestone_2019_results
+  --table runwx-learning-mifuha.runwx_staging.folkestone_2019_f95b3ae312e3
 ```
 
 The report object is the completeness marker because the Cloud Run job writes it
@@ -149,8 +150,18 @@ truncated export, mismatched URI/hash/byte/row metadata, or disagreement in repo
 counts, settings or source hashes fails before any BigQuery operation. Adding
 `--execute` then delegates the already prepared bytes to the existing safe loader;
 it does not use a direct BigQuery URI load or introduce another loading algorithm.
-The Folkestone pair has passed this local preparation path, but it has not yet been
-loaded from Cloud Storage into BigQuery.
+The Folkestone pair passed this preparation path and was then verified twice against
+the existing protected table. Both executions returned `already_present_verified`,
+submitted no load job and left all 459 rows and the table modification time unchanged.
+This was the correct duplicate-safe result because the Cloud Run export is byte-
+identical to the export used for the table's earlier `WRITE_EMPTY` load.
+
+The native check downloaded the two exact object generations twice and ran two
+uncached verification queries. Each query processed 270,243 bytes and billed BigQuery's
+10 MiB minimum, with the existing 100 MiB cap. The approved developer identity ran
+both successful jobs. No upload, retry, Terraform/IAM change, dbt invocation or live
+conflict mutation occurred. See the
+[Cloud export-to-BigQuery validation record](evidence/cloud-export-bigquery-validation.json).
 
 The loader follows this sequence:
 

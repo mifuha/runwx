@@ -114,6 +114,9 @@ flowchart LR
     inputs[("Private Cloud Storage<br/>approved synthetic or historical inputs")] --> job["Manual Cloud Run validation/export job"]
     job --> reports[("Private Cloud Storage<br/>audit report JSON")]
     job --> exports[("Private Cloud Storage<br/>candidate-result NDJSON")]
+    reports --> loader["Manual exact-generation validation<br/>existing safe loader"]
+    exports --> loader
+    loader --> snapshot[("Explicit BigQuery<br/>snapshot table")]
 ```
 
 Input generations and SHA-256 checks bind the downloaded bytes. Execution-specific
@@ -124,17 +127,21 @@ objects and create output objects; it has
 no BigQuery loader/dbt permissions. A separate least-privilege build identity can
 read Cloud Build source archives, push this repository's image and write build logs.
 
-This verifies real fixed input through the deployed parsing/export boundary. BigQuery
-loading and dbt still run through the separately verified local launch path; they are
-not invoked by this job. Scheduling, a hosted comparison UI and automatic source
-refresh remain absent; manually supplied fixed snapshots remain the release model.
+This verifies real fixed input through the deployed parsing/export boundary. The
+exact Folkestone 2019 artifact pair was also read through the manual Storage adapter
+and fully matched its existing protected BigQuery snapshot twice, without another
+load. dbt remains a separately invoked local launch path; none of these downstream
+steps is invoked by the report job. Scheduling, a hosted comparison UI and automatic
+source refresh remain absent; manually supplied fixed snapshots remain the release
+model.
 
-The next local boundary is implemented as a thin Storage adapter: it requires exact
+The verified downstream boundary is a thin Storage adapter: it requires exact
 report/export generations, verifies the report-last completeness marker and fully
 prepares the downloaded NDJSON before delegating to the existing BigQuery loader.
 The adapter does not load directly from a Storage URI, create warehouse resources or
-choose a destination. Native loading of the cloud-produced Folkestone export remains
-an explicit, separately reviewed execution step.
+choose a destination. Because the target already contained byte-identical rows, the
+safe result was `already_present_verified`; no duplicate table or load was needed.
+See the [native validation record](evidence/cloud-export-bigquery-validation.json).
 
 ## Offline entry points and interpretation limits
 

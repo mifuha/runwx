@@ -1,0 +1,88 @@
+{
+  "checked_at_utc": "2026-09-14T18:16:09.189142+00:00",
+  "status": "verified",
+  "scope": "Verify the exact Folkestone 2019 Cloud Run artifact pair against its existing protected BigQuery snapshot without another load",
+  "application": {
+    "revision": "013155541ceb5736d5249ebf84d0ca802bac88cb",
+    "pull_request": "https://github.com/mifuha/runwx/pull/17",
+    "ci_run": "https://github.com/mifuha/runwx/actions/runs/34718139333",
+    "ci_jobs_passed": 4,
+    "python_tests_passed": 278
+  },
+  "execution": {
+    "identity": "approved developer Application Default Credentials",
+    "server_job_actor_matched_approved_identity": true,
+    "project": "runwx-learning-mifuha",
+    "location": "europe-west1",
+    "configured_default_project": null,
+    "clients_bound_project_explicitly": true
+  },
+  "artifacts": {
+    "report": {
+      "uri": "gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.json",
+      "generation": "1789226380183224",
+      "bytes": 4215,
+      "sha256": "d50d7c350e5268c2fe398a78d797a35bf1b074d75202b596faf4adc5127e34e4",
+      "content_type": "application/json"
+    },
+    "result_export": {
+      "uri": "gs://runwx-learning-mifuha-runwx-reports/reports/runwx-report-6ccdt/task-0-attempt-0.ndjson",
+      "generation": "1789226379967796",
+      "bytes": 551872,
+      "sha256": "f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47",
+      "content_type": "application/x-ndjson"
+    },
+    "generation_pinned_downloads": 4,
+    "download_retries": 0
+  },
+  "destination": {
+    "table_id": "runwx-learning-mifuha.runwx_staging.folkestone_2019_f95b3ae312e3",
+    "table_type": "TABLE",
+    "location": "europe-west1",
+    "schema_matches": true,
+    "rows_before": 459,
+    "rows_after": 459,
+    "modified_before": "2026-09-11T18:46:59.825000+00:00",
+    "modified_after": "2026-09-11T18:46:59.825000+00:00",
+    "unchanged": true
+  },
+  "runs": [
+    {
+      "status": "already_present_verified",
+      "candidate_count": 459,
+      "accepted_count": 459,
+      "matched_count": 459,
+      "load_job_id": null,
+      "verification_job_id": "7c3c72d0-d996-499d-a9fa-71b54c4dccab",
+      "query_bytes_processed": 270243,
+      "query_bytes_billed": 10485760,
+      "cache_hit": false
+    },
+    {
+      "status": "already_present_verified",
+      "candidate_count": 459,
+      "accepted_count": 459,
+      "matched_count": 459,
+      "load_job_id": null,
+      "verification_job_id": "579c06b7-7d62-4615-af67-aca42281ef1a",
+      "query_bytes_processed": 270243,
+      "query_bytes_billed": 10485760,
+      "cache_hit": false
+    }
+  ],
+  "limits_and_boundaries": {
+    "query_jobs": 2,
+    "query_maximum_bytes_billed_each": 104857600,
+    "query_bytes_processed_total": 540486,
+    "query_bytes_billed_total": 20971520,
+    "load_attempts": 0,
+    "load_jobs": 0,
+    "uploads": 0,
+    "resource_changes": 0,
+    "retries": 0,
+    "dbt_invoked": false,
+    "terraform_changed": false,
+    "conflict_manufactured_in_live_data": false,
+    "actual_billed_cost_independently_verified": false
+  }
+}
