@@ -3,6 +3,7 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import sys
 
 import pytest
 
@@ -64,6 +65,7 @@ def test_preview_has_no_execution_or_files(config, tmp_path, monkeypatch, capsys
     assert not out.exists()
     for stage in plan['stages']:
         cmd = stage['command']
+        assert cmd[:3] == [sys.executable, '-m', 'dbt.cli.main']
         variables = json.loads(cmd[cmd.index('--vars') + 1])
         assert variables['source_table'] == 'snapshot_a'
         assert variables['top_n'] == 20

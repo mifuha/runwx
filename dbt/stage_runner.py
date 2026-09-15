@@ -58,7 +58,8 @@ def build_plan(config, output_dir, project_dir):
         if stage == 'comparison':
             variables.update({key: config[key] for key in ('comparison_datasets', 'comparison_baseline')})
         folder = output_dir / stage
-        command = ['dbt', '--no-partial-parse', '--write-json', 'build',
+        command = [sys.executable, '-m', 'dbt.cli.main',
+                   '--no-partial-parse', '--write-json', 'build',
                    '--project-dir', str(project_dir), '--profiles-dir', str(project_dir),
                    '--target', 'cloud', '--target-path', str(folder / 'target'),
                    '--log-path', str(folder / 'logs'), '--vars', json.dumps(variables, sort_keys=True)]
