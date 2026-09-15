@@ -200,7 +200,9 @@ The [stage runner](../dbt/stage_runner.py) invokes the existing dbt project with
 explicit source, edition output, comparison output, comparison inputs, baseline and
 `top_n` settings. It uses the locked dbt environment; it adds no metric definitions.
 The [example configuration](../dbt/stage-config.example.json) uses placeholder IDs.
-Replace every identifier with the intended resources before execution.
+The [example expectations](../dbt/stage-expectations.example.json) show the required
+shape only; they are not real analytical values. Replace both files with reviewed
+resources and frozen expected rows before execution.
 
 Preview validates configuration and prints both commands without invoking dbt,
 requesting credentials or creating an execution directory:
@@ -208,6 +210,7 @@ requesting credentials or creating an execution directory:
 ```bash
 python3 dbt/stage_runner.py \
   --config dbt/stage-config.example.json \
+  --expectations dbt/stage-expectations.example.json \
   --output-dir /tmp/runwx-dbt-example
 ```
 
@@ -216,6 +219,7 @@ With a reviewed configuration, run in the existing dbt environment:
 ```bash
 .venv-dbt/bin/python dbt/stage_runner.py \
   --config /path/to/reviewed-config.json \
+  --expectations /path/to/frozen-expectations.json \
   --output-dir /path/to/new-execution-directory \
   --execute
 ```
@@ -237,9 +241,22 @@ and its tests deliberately. Each subprocess has a 30-minute timeout; the existin
 profile retains one thread, zero job retries, a 300-second query execution timeout
 and a 100 MiB query billing cap. These are not a total-run spending cap.
 
-`execution.json` records either `builds_passed` or `failed`, including completed
-stage summaries and failure details. A failure preserves available artifacts and
-blocks the next build; already-created warehouse views are not rolled back.
+After both builds pass, the runner independently reads the edition mart plus its
+weather distribution and the complete comparison mart. The two queries use explicit
+project/dataset identifiers, disabled cache and retries, a 30-second submission
+timeout, a 300-second server timeout and a 100 MiB maximum each. Their SQL and
+SHA-256 identities, job IDs, byte usage, cache/error metadata and actual rows are
+retained under `reconciliation/`. A canonical copy and hash of the expectations are
+stored at the execution root before dbt starts, so failed builds retain that identity.
+
+Every field and collection shape must match. Finite floating-point values use a
+small numerical tolerance, while timezone-aware start timestamps compare as instants.
+Comparison rows are matched in deterministic snapshot-dataset order. A mismatch
+is saved and fails the invocation without running another query or modifying data.
+
+`execution.json` records `reconciled` only after both builds and both readbacks pass.
+Failures retain completed stage summaries and details. A failure preserves available
+artifacts and blocks later work; already-created warehouse views are not rolled back.
 Inherited `DBT_*` environment overrides are removed for these bounded invocations;
 existing authentication environment variables remain available. Direct `dbt`
 commands and the image's default entry point remain supported.
@@ -249,13 +266,13 @@ The image includes this same runner. An offline container preview uses:
 ```bash
 docker run --rm --network none --read-only --entrypoint python \
   runwx-dbt:local stage_runner.py --config stage-config.example.json \
+  --expectations stage-expectations.example.json \
   --output-dir /tmp/runwx-dbt-preview
 ```
 
 This is local orchestration preparation. No dbt Cloud Run job or IAM grants have
-been deployed for it. `builds_passed` does not assert independent agreement with
-frozen analytical expectations: `analytical_reconciliation` is explicitly
-`not_performed`. Packaging the existing independent readback checks, uploading
-execution artifacts and validating a dedicated cloud identity remain subsequent
-steps. Native unit/data tests execute in BigQuery even with synthetic fixtures;
-offline parsing and process-simulation tests do not establish warehouse correctness.
+been deployed for it. Uploading the execution directory create-only, attaching the
+image digest/source revision and validating a dedicated cloud identity remain
+subsequent steps. Native unit/data tests and analytical reconciliation execute in
+BigQuery; offline parsing and process-simulation tests do not establish warehouse
+correctness.

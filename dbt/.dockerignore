@@ -12,3 +12,4 @@
 !tests/**
 !stage_runner.py
 !stage-config.example.json
+!stage-expectations.example.json
