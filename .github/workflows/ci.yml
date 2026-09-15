@@ -98,3 +98,9 @@ jobs:
           --env RUNWX_DBT_DATASET=runwx_dbt_comparison_ci
           runwx-dbt-ci --no-partial-parse parse --profiles-dir . --target local
           --vars '{"comparison_datasets": ["edition_a", "edition_b"], "comparison_baseline": "edition_a"}'
+
+      - name: Preview staged dbt runner offline
+        run: >-
+          docker run --rm --network none --read-only --entrypoint python
+          runwx-dbt-ci stage_runner.py --config stage-config.example.json
+          --output-dir /tmp/runwx-dbt-preview

@@ -193,3 +193,69 @@ to `source_dataset`/`source_table` variables, defaulting to the existing
 dataset, defaulting to `runwx_dbt_demo`. Run each snapshot into its own output
 dataset to retain both sets of views. The single-export checks and all metric
 definitions are unchanged. See [historical input preparation](historical-inputs.md).
+
+## Staged build runner
+
+The [stage runner](../dbt/stage_runner.py) invokes the existing dbt project with
+explicit source, edition output, comparison output, comparison inputs, baseline and
+`top_n` settings. It uses the locked dbt environment; it adds no metric definitions.
+The [example configuration](../dbt/stage-config.example.json) uses placeholder IDs.
+Replace every identifier with the intended resources before execution.
+
+Preview validates configuration and prints both commands without invoking dbt,
+requesting credentials or creating an execution directory:
+
+```bash
+python3 dbt/stage_runner.py \
+  --config dbt/stage-config.example.json \
+  --output-dir /tmp/runwx-dbt-example
+```
+
+With a reviewed configuration, run in the existing dbt environment:
+
+```bash
+.venv-dbt/bin/python dbt/stage_runner.py \
+  --config /path/to/reviewed-config.json \
+  --output-dir /path/to/new-execution-directory \
+  --execute
+```
+
+The runner builds edition models/tests first, and invokes the comparison selection
+only after successful process exit and verification of the edition artifacts.
+`edition/` and `comparison/` each retain `target/manifest.json`,
+`target/run_results.json`, dbt logs and `console.log`. A new output directory is
+required, so rerunning cannot overwrite earlier execution evidence. Both output
+datasets may be the freshly built edition's dataset, as in the existing workflow;
+the runner rejects comparison writes into another input edition's dataset.
+
+The verifier requires matching artifact invocation IDs, exactly the expected model
+and test results, and successful statuses for every result. The current project
+contract is three edition models, 14 data tests and seven unit tests, followed by
+one materialized comparison model, five data tests and two unit tests. Its two
+intermediate models are ephemeral. If that contract changes, update the verifier
+and its tests deliberately. Each subprocess has a 30-minute timeout; the existing
+profile retains one thread, zero job retries, a 300-second query execution timeout
+and a 100 MiB query billing cap. These are not a total-run spending cap.
+
+`execution.json` records either `builds_passed` or `failed`, including completed
+stage summaries and failure details. A failure preserves available artifacts and
+blocks the next build; already-created warehouse views are not rolled back.
+Inherited `DBT_*` environment overrides are removed for these bounded invocations;
+existing authentication environment variables remain available. Direct `dbt`
+commands and the image's default entry point remain supported.
+
+The image includes this same runner. An offline container preview uses:
+
+```bash
+docker run --rm --network none --read-only --entrypoint python \
+  runwx-dbt:local stage_runner.py --config stage-config.example.json \
+  --output-dir /tmp/runwx-dbt-preview
+```
+
+This is local orchestration preparation. No dbt Cloud Run job or IAM grants have
+been deployed for it. `builds_passed` does not assert independent agreement with
+frozen analytical expectations: `analytical_reconciliation` is explicitly
+`not_performed`. Packaging the existing independent readback checks, uploading
+execution artifacts and validating a dedicated cloud identity remain subsequent
+steps. Native unit/data tests execute in BigQuery even with synthetic fixtures;
+offline parsing and process-simulation tests do not establish warehouse correctness.
