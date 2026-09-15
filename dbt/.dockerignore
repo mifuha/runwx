@@ -10,3 +10,5 @@
 !macros/**
 !tests/
 !tests/**
+!stage_runner.py
+!stage-config.example.json

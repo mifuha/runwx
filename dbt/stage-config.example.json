@@ -1,0 +1,10 @@
+{
+  "project": "runwx-offline-placeholder",
+  "source_dataset": "staging",
+  "source_table": "snapshot_a",
+  "edition_dataset": "edition_a",
+  "comparison_dataset": "edition_a",
+  "comparison_datasets": ["edition_a", "edition_b"],
+  "comparison_baseline": "edition_a",
+  "top_n": 20
+}
