@@ -13,7 +13,8 @@ COPY requirements.txt requirements.lock ./
 RUN python -m pip install --no-cache-dir --no-deps --only-binary=:all: \
     -r requirements.txt -r requirements.lock \
     && python -m pip check
-COPY dbt_project.yml profiles.yml stage_runner.py stage-config.example.json ./
+COPY dbt_project.yml profiles.yml stage_runner.py stage-config.example.json \
+    stage-expectations.example.json ./
 COPY models/ models/
 COPY macros/ macros/
 COPY tests/ tests/

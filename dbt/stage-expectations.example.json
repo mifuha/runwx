@@ -1,0 +1,18 @@
+{
+  "edition": {
+    "mart": {
+      "event_id": "example:edition-a"
+    },
+    "weather": {
+      "enriched_count": 1
+    }
+  },
+  "comparison": [
+    {
+      "snapshot_dataset": "edition_a"
+    },
+    {
+      "snapshot_dataset": "edition_b"
+    }
+  ]
+}

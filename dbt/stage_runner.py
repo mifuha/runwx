@@ -1,10 +1,13 @@
 """Run the existing edition and comparison builds with explicit configuration.
 
-Standard-library only: usable locally and in the locked dbt image. Preview is
-credential-free; --execute invokes dbt using the process's existing credentials.
+Preview uses only the standard library. Execution uses the locked dbt and BigQuery
+client dependencies with the process's existing credentials.
 """
 import argparse
+from datetime import datetime
+from hashlib import sha256
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -13,7 +16,7 @@ import sys
 
 
 FIELDS = {
-    'project', 'source_dataset', 'source_table', 'edition_dataset',
+    'project', 'location', 'source_dataset', 'source_table', 'edition_dataset',
     'comparison_dataset', 'comparison_datasets', 'comparison_baseline', 'top_n',
 }
 MODELS = {
@@ -29,10 +32,17 @@ def validate_config(config):
     project = config['project']
     if not isinstance(project, str) or not re.fullmatch(r'[a-z][a-z0-9-]{4,28}[a-z0-9]', project):
         raise ValueError('Invalid project ID')
+    if not isinstance(config['location'], str) or not re.fullmatch(
+            r'[A-Za-z][A-Za-z0-9-]{0,63}', config['location']):
+        raise ValueError('Invalid BigQuery location')
     datasets = config['comparison_datasets']
     if not isinstance(datasets, list) or len(datasets) < 2:
         raise ValueError('comparison_datasets must list at least two explicit editions')
-    identifiers = [config[k] for k in FIELDS - {'project', 'comparison_datasets', 'top_n'}] + datasets
+    identifier_keys = {
+        'source_dataset', 'source_table', 'edition_dataset',
+        'comparison_dataset', 'comparison_baseline',
+    }
+    identifiers = [config[k] for k in identifier_keys] + datasets
     if any(not isinstance(v, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,1023}', v) for v in identifiers):
         raise ValueError('Invalid dataset or table identifier')
     if len(set(datasets)) != len(datasets):
@@ -46,6 +56,88 @@ def validate_config(config):
     if type(config['top_n']) is not int or config['top_n'] < 1:
         raise ValueError('top_n must be a positive integer')
     return config
+
+
+def validate_expectations(expectations, config):
+    if not isinstance(expectations, dict) or set(expectations) != {'edition', 'comparison'}:
+        raise ValueError('Expectations must contain exactly edition and comparison')
+    edition = expectations['edition']
+    if (not isinstance(edition, dict) or set(edition) != {'mart', 'weather'}
+            or not all(isinstance(value, dict) and value for value in edition.values())):
+        raise ValueError('Edition expectation must contain non-empty mart and weather objects')
+    comparison = expectations['comparison']
+    if (not isinstance(comparison, list) or len(comparison) != len(config['comparison_datasets'])
+            or any(not isinstance(row, dict) or not row for row in comparison)):
+        raise ValueError('Comparison expectations must contain one object per dataset')
+    validate_expected_value(expectations)
+    expected_datasets = [row.get('snapshot_dataset') for row in comparison]
+    if (not all(isinstance(dataset, str) for dataset in expected_datasets)
+            or len(set(expected_datasets)) != len(expected_datasets)
+            or set(expected_datasets) != set(config['comparison_datasets'])):
+        raise ValueError('Comparison expectations must identify every configured dataset once')
+    return expectations
+
+
+def validate_expected_value(value, path='$'):
+    if isinstance(value, dict):
+        if any(not isinstance(key, str) for key in value):
+            raise ValueError(f'Expectation contains a non-string key at {path}')
+        for key, child in value.items():
+            validate_expected_value(child, f'{path}.{key}')
+        return
+    if isinstance(value, list):
+        for index, child in enumerate(value):
+            validate_expected_value(child, f'{path}[{index}]')
+        return
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ValueError(f'Expectation contains a non-finite number at {path}')
+    if path.endswith('.started_at_utc'):
+        if not isinstance(value, str):
+            raise ValueError(f'Expectation contains a non-string timestamp at {path}')
+        try:
+            parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        except ValueError as exc:
+            raise ValueError(f'Expectation contains an invalid timestamp at {path}') from exc
+        if parsed.tzinfo is None:
+            raise ValueError(f'Expectation contains a naive timestamp at {path}')
+    if value is not None and type(value) not in {bool, int, float, str}:
+        raise ValueError(f'Expectation contains an unsupported value at {path}')
+
+
+def canonical_json(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
+
+
+def assert_same(actual, expected, path='$'):
+    if isinstance(expected, dict):
+        if not isinstance(actual, dict) or set(actual) != set(expected):
+            raise ValueError(f'Reconciliation structure mismatch at {path}')
+        for key, value in expected.items():
+            assert_same(actual[key], value, f'{path}.{key}')
+        return
+    if isinstance(expected, list):
+        if not isinstance(actual, list) or len(actual) != len(expected):
+            raise ValueError(f'Reconciliation list mismatch at {path}')
+        for index, (left, right) in enumerate(zip(actual, expected, strict=True)):
+            assert_same(left, right, f'{path}[{index}]')
+        return
+    if path.endswith('.started_at_utc') and isinstance(actual, str) and isinstance(expected, str):
+        try:
+            left = datetime.fromisoformat(actual.replace('Z', '+00:00'))
+            right = datetime.fromisoformat(expected.replace('Z', '+00:00'))
+        except ValueError as exc:
+            raise ValueError(f'Reconciliation value mismatch at {path}') from exc
+        if left.tzinfo is None or right.tzinfo is None or left != right:
+            raise ValueError(f'Reconciliation value mismatch at {path}')
+        return
+    if isinstance(expected, float):
+        if (isinstance(actual, bool) or not isinstance(actual, (int, float))
+                or not math.isfinite(actual)
+                or not math.isclose(actual, expected, rel_tol=1e-12, abs_tol=1e-9)):
+            raise ValueError(f'Reconciliation value mismatch at {path}')
+        return
+    if type(actual) is not type(expected) or actual != expected:
+        raise ValueError(f'Reconciliation value mismatch at {path}')
 
 
 def build_plan(config, output_dir, project_dir):
@@ -68,6 +160,135 @@ def build_plan(config, output_dir, project_dir):
                       'environment': {'RUNWX_DBT_PROJECT': config['project'],
                                       'RUNWX_DBT_DATASET': config[stage + '_dataset']}})
     return plans
+
+
+def build_reconciliation_plan(config, expectations):
+    validate_config(config)
+    validate_expectations(expectations, config)
+    project = config['project']
+    edition = f"`{project}.{config['edition_dataset']}"
+    comparison = f"`{project}.{config['comparison_dataset']}"
+    edition_sql = f"""with matched_weather as (
+    select
+        percentile_cont(weather_temp_c, 0.5) over () as median_temp_c,
+        percentile_cont(weather_wind_mps, 0.5) over () as median_wind_mps,
+        percentile_cont(weather_precipitation_mm, 0.5) over () as median_precipitation_mm,
+        percentile_cont(weather_humidity_pct, 0.5) over () as median_humidity_pct
+    from {edition}.fct_race_results`
+    where weather_match_status = 'matched'
+), weather_summary as (
+    select count(*) as enriched_count,
+        max(median_temp_c) as median_temp_c,
+        max(median_wind_mps) as median_wind_mps,
+        max(median_precipitation_mm) as median_precipitation_mm,
+        max(median_humidity_pct) as median_humidity_pct
+    from matched_weather
+)
+select to_json_string(struct(m as mart, w as weather)) as row_json
+from {edition}.mart_event_summary` as m
+cross join weather_summary as w
+limit 2
+"""
+    comparison_limit = len(expectations['comparison']) + 1
+    comparison_sql = f"""select to_json_string(t) as row_json
+from {comparison}.mart_course_comparison` as t
+order by snapshot_dataset
+limit {comparison_limit}
+"""
+    return [
+        {'stage': 'edition', 'sql': edition_sql, 'expected': [expectations['edition']]},
+        {'stage': 'comparison', 'sql': comparison_sql,
+         'expected': sorted(expectations['comparison'], key=lambda row: row['snapshot_dataset'])},
+    ]
+
+
+def create_bigquery_client(config):
+    from google.cloud import bigquery
+
+    client = bigquery.Client(project=config['project'], location=config['location'])
+    job_config = bigquery.QueryJobConfig(
+        use_legacy_sql=False,
+        use_query_cache=False,
+        maximum_bytes_billed=104857600,
+        job_timeout_ms=300000,
+    )
+    return client, job_config
+
+
+def query_metadata(job):
+    return {
+        'bytes_processed': job.total_bytes_processed,
+        'bytes_billed': job.total_bytes_billed,
+        'cache_hit': job.cache_hit,
+        'errors': job.errors,
+    }
+
+
+def reconcile(config, expectations, output_dir, client_setup=create_bigquery_client):
+    plans = build_reconciliation_plan(config, expectations)
+    folder = Path(output_dir) / 'reconciliation'
+    folder.mkdir()
+    expected_text = canonical_json(expectations)
+    record = {
+        'status': 'running',
+        'expectations_sha256': sha256(expected_text.encode()).hexdigest(),
+        'queries': [],
+    }
+    record_path = folder / 'reconciliation.json'
+    client = None
+    try:
+        client, job_config = client_setup(config)
+        for plan in plans:
+            (folder / f"{plan['stage']}.sql").write_text(plan['sql'])
+            query = {
+                'stage': plan['stage'],
+                'status': 'running',
+                'sql_sha256': sha256(plan['sql'].encode()).hexdigest(),
+            }
+            record['queries'].append(query)
+            record_path.write_text(json.dumps(record, indent=2) + '\n')
+            job = client.query(
+                plan['sql'],
+                job_config=job_config,
+                location=config['location'],
+                retry=None,
+                job_retry=None,
+                timeout=30,
+            )
+            query['job_id'] = job.job_id
+            try:
+                rows = [
+                    json.loads(row['row_json'])
+                    for row in job.result(
+                        timeout=300,
+                        retry=None,
+                        job_retry=None,
+                        max_results=len(plan['expected']) + 1,
+                    )
+                ]
+            except Exception:
+                query.update(query_metadata(job))
+                record_path.write_text(json.dumps(record, indent=2) + '\n')
+                raise
+            query.update({
+                'actual_rows': rows,
+                **query_metadata(job),
+            })
+            record_path.write_text(json.dumps(record, indent=2) + '\n')
+            assert_same(rows, plan['expected'], f"$.{plan['stage']}")
+            query['status'] = 'passed'
+        record['status'] = 'reconciled'
+        return record
+    except Exception as exc:
+        record['status'] = 'failed'
+        if record['queries']:
+            record['queries'][-1]['status'] = 'failed'
+        record['error'] = str(exc)
+        raise ValueError(f'Reconciliation failed: {exc}') from exc
+    finally:
+        record_path.write_text(json.dumps(record, indent=2) + '\n')
+        if client is not None:
+            client.close()
 
 
 def verify_artifacts(folder, stage):
@@ -113,13 +334,19 @@ def verify_artifacts(folder, stage):
             'data_tests': counts[1], 'unit_tests': counts[2]}
 
 
-def execute(config, output_dir, project_dir):
+def execute(config, expectations, output_dir, project_dir, client_setup=create_bigquery_client):
     plans = build_plan(config, output_dir, project_dir)
+    validate_expectations(expectations, config)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=False)
+    expected_text = canonical_json(expectations)
+    (output_dir / 'expectations.json').write_text(expected_text + '\n')
     record = {'status': 'running', 'config': config, 'stages': [],
+              'expectations_sha256': sha256(expected_text.encode()).hexdigest(),
+              'reconciliation_evidence': 'reconciliation/reconciliation.json',
               'analytical_reconciliation': 'not_performed'}
     record_path = output_dir / 'execution.json'
+    phase = 'dbt'
     try:
         for plan in plans:
             folder = Path(plan['directory'])
@@ -142,10 +369,28 @@ def execute(config, output_dir, project_dir):
             stage.update(verify_artifacts(folder, plan['stage']))
             stage['status'] = 'passed'
         record['status'] = 'builds_passed'
+        record_path.write_text(json.dumps(record, indent=2) + '\n')
+        phase = 'reconciliation'
+        reconciliation = reconcile(
+            config, expectations, output_dir, client_setup=client_setup)
+        record['reconciliation'] = {
+            'status': reconciliation['status'],
+            'expectations_sha256': reconciliation['expectations_sha256'],
+            'queries': [
+                {key: query[key] for key in (
+                    'stage', 'status', 'sql_sha256', 'job_id',
+                    'bytes_processed', 'bytes_billed', 'cache_hit', 'errors')}
+                for query in reconciliation['queries']
+            ],
+        }
+        record['analytical_reconciliation'] = 'passed'
+        record['status'] = 'reconciled'
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
         record['status'] = 'failed'
-        if record['stages']:
+        if phase == 'dbt' and record['stages']:
             record['stages'][-1]['status'] = 'failed'
+        if phase == 'reconciliation':
+            record['analytical_reconciliation'] = 'failed'
         record['error'] = str(exc)
         raise
     finally:
@@ -156,14 +401,24 @@ def execute(config, output_dir, project_dir):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
+    parser.add_argument('--expectations', type=Path, required=True)
     parser.add_argument('--output-dir', type=Path, required=True, help='New execution directory; never reused')
     parser.add_argument('--project-dir', type=Path, default=Path(__file__).resolve().parent)
     parser.add_argument('--execute', action='store_true')
     args = parser.parse_args(argv)
     try:
         config = json.loads(args.config.read_text())
-        result = execute(config, args.output_dir, args.project_dir) if args.execute else {
-            'status': 'preview', 'stages': build_plan(config, args.output_dir, args.project_dir)}
+        expectations = json.loads(args.expectations.read_text())
+        validate_expectations(expectations, validate_config(config))
+        result = execute(config, expectations, args.output_dir, args.project_dir) if args.execute else {
+            'status': 'preview',
+            'expectations_sha256': sha256(canonical_json(expectations).encode()).hexdigest(),
+            'stages': build_plan(config, args.output_dir, args.project_dir),
+            'reconciliation': [
+                {'stage': plan['stage'], 'sql': plan['sql']}
+                for plan in build_reconciliation_plan(config, expectations)
+            ],
+        }
         print(json.dumps(result, indent=2))
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
         print(f'dbt stage failed: {exc}', file=sys.stderr)
