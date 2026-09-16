@@ -102,6 +102,12 @@ jobs:
           terraform -chdir=historical init -backend=false -lockfile=readonly -input=false -no-color
           terraform -chdir=historical validate -no-color
 
+      - name: Check isolated orchestration root without cloud credentials
+        run: |
+          terraform -chdir=orchestration init -backend=false -lockfile=readonly -input=false -no-color
+          terraform -chdir=orchestration validate -no-color
+          terraform -chdir=orchestration test -no-color
+
   dbt:
     runs-on: ubuntu-latest
     timeout-minutes: 15

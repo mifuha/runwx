@@ -1,0 +1,12 @@
+# Supply another resolved immutable worker image only when testing a new build.
+ARG COMPOSER_IMAGE=us-docker.pkg.dev/cloud-airflow-releaser/airflow-worker-scheduler-3-1-7/airflow-worker-scheduler-3-1-7@sha256:26b5c28576222198433d80b458b2eacd3499439fc4265490e62d220c8f5d1f9d
+FROM ${COMPOSER_IMAGE}
+COPY orchestration/composer/requirements.txt /tmp/runwx-composer-requirements.txt
+RUN python -m pip install --no-deps -r /tmp/runwx-composer-requirements.txt
+COPY orchestration/smoke_bundle.py /tmp/runwx-smoke-bundle.py
+ENV AIRFLOW_HOME=/tmp/airflow \
+    AIRFLOW__CORE__LOAD_EXAMPLES=False \
+    AIRFLOW__CORE__DAG_IGNORE_FILE_SYNTAX=regexp \
+    AIRFLOW__CORE__HOSTNAME_CALLABLE=socket.gethostname
+ENTRYPOINT ["python", "/tmp/runwx-smoke-bundle.py"]
+CMD ["/bundle"]
