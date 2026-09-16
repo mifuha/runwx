@@ -1,0 +1,5 @@
+**
+!orchestration/
+!orchestration/smoke_bundle.py
+!orchestration/composer/
+!orchestration/composer/requirements.txt

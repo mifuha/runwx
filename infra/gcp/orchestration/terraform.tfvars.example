@@ -1,0 +1,7 @@
+# Candidate only: do not apply before a real plan and cost review.
+orchestration_project_id = "runwx-orchestration-example"
+composer_image           = "composer-3-airflow-3.1.7-build.10"
+pypi_packages = {
+  beautifulsoup4 = "==4.15.0"
+  soupsieve     = "==2.9.2"
+}
