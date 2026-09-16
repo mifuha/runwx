@@ -130,10 +130,11 @@ read Cloud Build source archives, push this repository's image and write build l
 This verifies real fixed input through the deployed parsing/export boundary. The
 exact Folkestone 2019 artifact pair was also read through the manual Storage adapter
 and fully matched its existing protected BigQuery snapshot twice, without another
-load. dbt remains a separately invoked local launch path; none of these downstream
-steps is invoked by the report job. Scheduling, a hosted comparison UI and automatic
-source refresh remain absent; manually supplied fixed snapshots remain the release
-model.
+load. The existing dbt runner and reconciliation now have a prepared Cloud Run
+boundary and least-privilege Terraform configuration, but that job and its IAM have
+not been deployed or executed. None of these downstream steps is invoked by the
+report job. Scheduling, a hosted comparison UI and automatic source refresh remain
+absent; manually supplied fixed snapshots remain the release model.
 
 The verified downstream boundary is a thin Storage adapter: it requires exact
 report/export generations, verifies the report-last completeness marker and fully
@@ -142,6 +143,14 @@ The adapter does not load directly from a Storage URI, create warehouse resource
 choose a destination. Because the target already contained byte-identical rows, the
 safe result was `already_present_verified`; no duplicate table or load was needed.
 See the [native validation record](evidence/cloud-export-bigquery-validation.json).
+
+The prepared dbt job reuses the same locked image, models, tests and reconciliation
+code used locally. A dedicated runtime identity can create query jobs, read the exact
+staging tables and comparison datasets, write only the selected edition output dataset, and
+create evidence objects under one bucket prefix. Successful and failed executions
+retain a create-only archive plus a completion record. Image publication, IAM apply,
+job deployment and the first native execution remain explicit reviewed operations;
+see the [dbt stage contract](dbt-models.md#prepared-cloud-run-stage).
 
 ## Offline entry points and interpretation limits
 

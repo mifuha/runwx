@@ -24,6 +24,30 @@ variable "snapshots" {
   default = {}
 }
 
+variable "dbt_runtime_service_account_email" {
+  type        = string
+  default     = null
+  nullable    = true
+  description = "Dedicated dbt Cloud Run identity created by the parent Terraform root."
+  validation {
+    condition = (
+      var.dbt_runtime_service_account_email == null ? true :
+      can(regex("^runwx-dbt@[^.]+\\.iam\\.gserviceaccount\\.com$", var.dbt_runtime_service_account_email))
+    )
+    error_message = "Use the dedicated runwx-dbt service-account email."
+  }
+}
+
+variable "dbt_runtime_access" {
+  type        = map(string)
+  default     = {}
+  description = "Snapshot keys granted READER or WRITER for one reviewed dbt stage."
+  validation {
+    condition     = alltrue([for role in values(var.dbt_runtime_access) : contains(["READER", "WRITER"], role)])
+    error_message = "dbt_runtime_access values must be READER or WRITER."
+  }
+}
+
 data "google_bigquery_dataset" "staging" {
   project    = var.project_id
   dataset_id = var.staging_dataset_id
@@ -58,7 +82,39 @@ resource "google_bigquery_dataset" "analysis" {
     role          = "OWNER"
     special_group = "projectOwners"
   }
-  lifecycle { prevent_destroy = true }
+  dynamic "access" {
+    for_each = (
+      var.dbt_runtime_service_account_email != null && contains(keys(var.dbt_runtime_access), each.key)
+      ? [var.dbt_runtime_access[each.key]] : []
+    )
+    content {
+      role          = access.value
+      user_by_email = var.dbt_runtime_service_account_email
+    }
+  }
+  lifecycle {
+    prevent_destroy = true
+    precondition {
+      condition     = length(setsubtract(toset(keys(var.dbt_runtime_access)), toset(keys(var.snapshots)))) == 0
+      error_message = "Every dbt_runtime_access key must name a managed snapshot."
+    }
+    precondition {
+      condition = (
+        (var.dbt_runtime_service_account_email == null && length(var.dbt_runtime_access) == 0) ||
+        (var.dbt_runtime_service_account_email != null && length(var.dbt_runtime_access) > 0)
+      )
+      error_message = "The dbt runtime email and a non-empty access map must be configured together."
+    }
+  }
+}
+
+resource "google_bigquery_table_iam_member" "dbt_runtime_reader" {
+  for_each   = var.dbt_runtime_service_account_email == null ? {} : var.dbt_runtime_access
+  project    = google_bigquery_table.results[each.key].project
+  dataset_id = google_bigquery_table.results[each.key].dataset_id
+  table_id   = google_bigquery_table.results[each.key].table_id
+  role       = "roles/bigquery.dataViewer"
+  member     = "serviceAccount:${var.dbt_runtime_service_account_email}"
 }
 
 output "snapshot_tables" {

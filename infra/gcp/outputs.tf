@@ -17,3 +17,11 @@ output "job_name" {
 output "runtime_service_account" {
   value = google_service_account.runtime.email
 }
+
+output "dbt_job_name" {
+  value = one(google_cloud_run_v2_job.dbt[*].name)
+}
+
+output "dbt_runtime_service_account" {
+  value = one(google_service_account.dbt_runtime[*].email)
+}
