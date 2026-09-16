@@ -82,8 +82,8 @@ docker run --rm --network none \
   runwx-composer-smoke
 ```
 
-The check passed offline with Python 3.11.8, Airflow 3.1.7+composer, the expected
-six tasks and source revision `a399e90b6b53c1155b0c5f67916a325246a0afe4`.
+The check passed offline with Python 3.11.8, Airflow 3.1.7+composer and the expected
+six tasks. Its output also reports the exact bundled commit for retained evidence.
 `pip check` reported no broken requirements; BeautifulSoup 4.15.0, soupsieve 2.9.2,
 httpx 0.28.1 and Pydantic 2.12.5 imported at their expected versions. The first run
 also caught a harness error: isolated Python hid Composer's per-user PyPI directory.
