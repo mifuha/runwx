@@ -13,11 +13,15 @@ COPY requirements.txt requirements.lock ./
 RUN python -m pip install --no-cache-dir --no-deps --only-binary=:all: \
     -r requirements.txt -r requirements.lock \
     && python -m pip check
-COPY dbt_project.yml profiles.yml stage_runner.py stage-config.example.json \
+COPY dbt_project.yml profiles.yml stage_runner.py cloud_stage.py stage-config.example.json \
     stage-expectations.example.json ./
 COPY models/ models/
 COPY macros/ macros/
 COPY tests/ tests/
+ARG VCS_REF=unknown
+ENV RUNWX_SOURCE_REVISION=${VCS_REF}
+LABEL org.opencontainers.image.source="https://github.com/mifuha/runwx" \
+      org.opencontainers.image.revision="${VCS_REF}"
 USER 10001:10001
 ENTRYPOINT ["dbt"]
 CMD ["--no-partial-parse", "parse", "--profiles-dir", ".", "--target", "local"]

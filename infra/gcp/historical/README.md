@@ -47,9 +47,18 @@ region, exact names and the packaged results schema. Existing destinations must
 be inspected rather than silently adopted into this new state.
 
 Dataset access follows the existing project-owners model; inherited project IAM
-still applies. Tables have deletion protection, and all managed resources prevent
-destruction through this configuration. Data has no automatic expiry. dbt owns
-the views and its temporary test tables, not Terraform.
+still applies. For the separately reviewed Cloud Run dbt stage, pass the dedicated
+`runwx-dbt` service-account email and an explicit map from snapshot key to `READER`
+or `WRITER`. The first Folkestone validation needs `WRITER` only on `folkestone_2019`
+and `READER` on `folkestone_2022` and `folkestone_2023`; no Lydd dataset is included.
+This root also grants table-level Data Viewer on only those three corresponding
+staging tables. The parent root separately grants permission to create query jobs.
+Keeping dataset access entries in this root avoids competing IAM resources against
+its inline access blocks, while table-level grants avoid exposing unrelated snapshots.
+
+Tables have deletion protection, and all managed resources prevent destruction
+through this configuration. Data has no automatic expiry. dbt owns the views and
+its temporary test tables, not Terraform.
 
 Apply only a reviewed, approved saved plan. Keep the existing loader's exact export
 hashes and distinct output datasets when following the

@@ -11,5 +11,6 @@
 !tests/
 !tests/**
 !stage_runner.py
+!cloud_stage.py
 !stage-config.example.json
 !stage-expectations.example.json

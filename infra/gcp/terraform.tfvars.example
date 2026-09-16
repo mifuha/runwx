@@ -6,6 +6,12 @@ image_uri = null
 # After publishing the approved image, use its actual registry digest:
 # image_uri = "europe-west1-docker.pkg.dev/PROJECT/runwx/runwx@sha256:DIGEST"
 
+# The dbt stage remains absent until its separately built image digest and reviewed
+# configuration/expectations are supplied. These values are not secrets, but they
+# bind one manual job revision to exact warehouse inputs and expected output rows.
+enable_dbt_stage = false
+dbt_image_uri    = null
+
 # Keep the synthetic defaults while allowing explicitly reviewed historical inputs
 # to be supplied as one-execution Cloud Run overrides.
 # additional_input_objects = [

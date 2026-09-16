@@ -270,9 +270,53 @@ docker run --rm --network none --read-only --entrypoint python \
   --output-dir /tmp/runwx-dbt-preview
 ```
 
-This is local orchestration preparation. No dbt Cloud Run job or IAM grants have
-been deployed for it. Uploading the execution directory create-only, attaching the
-image digest/source revision and validating a dedicated cloud identity remain
-subsequent steps. Native unit/data tests and analytical reconciliation execute in
-BigQuery; offline parsing and process-simulation tests do not establish warehouse
-correctness.
+## Prepared Cloud Run stage
+
+The same image now contains `cloud_stage.py`, a thin Cloud Run boundary around the
+runner. It reads reviewed configuration and expectations from job environment values,
+uses the job's attached identity for dbt and reconciliation, and archives the complete
+execution directory. It adds no parser, metric, model or comparison implementation.
+
+Evidence is stored as two create-only objects under
+`dbt-runs/<execution>/task-<index>-attempt-<attempt>`:
+
+- a ZIP containing `execution.json`, canonical expectations, both dbt artifact/log
+  trees, reconciliation SQL/results and a cloud execution record; and
+- a JSON completeness record containing execution, image/source identities, input
+  hashes and the archive URI, SHA-256, size and file count.
+
+The archive uploads first and the JSON record last. Both uploads use generation-zero
+preconditions. A dbt or reconciliation failure is archived when possible and still
+fails the Cloud Run task; already-created BigQuery views are not rolled back.
+
+Terraform prepares a dedicated `runwx-dbt` service account and manual job. Its project
+grant is only BigQuery Job User, plus create-only evidence access restricted to the
+`dbt-runs/` prefix. The historical state grants table-level Data Viewer to only the
+three Folkestone staging tables. It also owns output-dataset access: the first
+validation grants `WRITER` to the 2019 output and `READER` to the 2022/2023 comparison
+dependencies. No Lydd table/dataset or project-wide data editor grant is required.
+
+The job is absent while `enable_dbt_stage` is false. Enabling it requires a separately
+built immutable `runwx-dbt` image digest and exact configuration/expectations, each
+bounded to one Cloud Run environment value. The locked image build uses
+`infra/gcp/cloudbuild.dbt.yaml` and embeds the source commit. The intended first run
+rebuilds the existing Folkestone 2019 edition and its three-edition comparison, then
+reconciles every output field with frozen evidence.
+
+This section describes prepared code and Terraform only. No dbt image has been
+published, IAM change applied, job deployed or cloud execution performed for this
+stage yet. Native BigQuery validation must use a reviewed immutable digest and saved
+Terraform plans; offline parsing and process-simulation tests do not establish
+warehouse correctness.
+
+At the configured 30-minute ceiling, 1 vCPU and 1 GiB would cost about **$0.023**
+for one task before free allowances, using the current
+[Cloud Run rates](https://cloud.google.com/run/pricing). The current 32 dbt model/test
+queries plus two reconciliation reads each retain a 100 MiB limit: their combined
+maximum is about 3.32 GiB, roughly **$0.021** at $6.25/TiB if the account's monthly
+[BigQuery allowance](https://cloud.google.com/bigquery/pricing) is already exhausted.
+The 20-minute Cloud Build timeout is at most about **$0.12** on the documented
+$0.006/min default machine before its promotional allowance; see
+[Cloud Build pricing](https://cloud.google.com/build/pricing). Artifact Registry,
+evidence storage, operations and logging remain separately billable. These are
+conservative bounds, not verified charges or a spending cap.

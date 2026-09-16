@@ -1,0 +1,21 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    env:
+      - DOCKER_BUILDKIT=1
+    args:
+      - build
+      - --build-arg
+      - VCS_REF=${_VCS_REF}
+      - --file
+      - dbt/Dockerfile
+      - --tag
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/runwx/runwx-dbt:${_IMAGE_TAG}
+      - dbt
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/runwx/runwx-dbt:${_IMAGE_TAG}
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/runwx-image-builder@${PROJECT_ID}.iam.gserviceaccount.com
+timeout: 1200s
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _REGION: europe-west1

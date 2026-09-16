@@ -105,3 +105,8 @@ jobs:
           runwx-dbt-ci stage_runner.py --config stage-config.example.json
           --expectations stage-expectations.example.json
           --output-dir /tmp/runwx-dbt-preview
+
+      - name: Check Cloud Run dbt entrypoint packaging
+        run: >-
+          docker run --rm --network none --read-only --entrypoint python
+          runwx-dbt-ci cloud_stage.py --help
