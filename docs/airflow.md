@@ -115,9 +115,11 @@ the expected result. A later explicit second configuration can demonstrate a
 historical multi-edition run. Qualification/capture, destination approval, image
 publication and starting the workflow remain manual.
 
-A short managed Airflow experiment can follow offline verification and a reviewed
-regional cost/teardown plan. Keep its Terraform state separate from retained race
-data and jobs. No continuously running environment is part of this local change.
+A short managed Airflow experiment can follow offline verification. Its proposed
+identity, permissions, cost limit, evidence and teardown boundary are recorded in
+the [first managed Airflow run plan](airflow-live-plan.md). Keep its Terraform
+state separate from retained race data and jobs. No continuously running
+environment is part of this local change.
 
 API references: [Airflow 3.1.6 best practices](https://airflow.apache.org/docs/apache-airflow/3.1.6/best-practices.html),
 [Cloud Run Jobs SDK](https://cloud.google.com/python/docs/reference/run/latest/google.cloud.run_v2.services.jobs.JobsClient).
