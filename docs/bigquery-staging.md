@@ -225,9 +225,9 @@ reconciliation, early rejection and delegation to the same loader.
 
 The [staging → accepted-results fact → event-summary mart](dbt-models.md) SQL
 and tests have now executed in BigQuery and matched the Python baseline.
-Historical comparison still requires a
-suitable second edition and checked course, distance and timing comparability;
-weather remains context rather than a performance adjustment.
+Multiple Lydd and Folkestone editions are now loaded and compared. Course, distance
+and timing compatibility remain explicit, and weather remains context rather than a
+performance adjustment.
 
 ## Metric contract
 

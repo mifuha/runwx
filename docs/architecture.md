@@ -5,8 +5,9 @@
 The current analytical output is a [five-edition Lydd comparison](../README.md#real-historical-comparison):
 1,197 finishers from fixed 2022–2026 race snapshots, with real hourly
 ERA5 weather. Python prepares the inputs; BigQuery and dbt produce the staging,
-accepted-results fact, edition summary and comparison views. This flow has been
-executed by locally launched Python and containerized dbt against BigQuery.
+accepted-results fact, edition summary and comparison views. This flow has run
+against BigQuery from local containers, and the same dbt stage runner has now run
+inside Cloud Run.
 
 ```mermaid
 flowchart LR
@@ -15,12 +16,12 @@ flowchart LR
     python --> export["Candidate-row NDJSON<br/>with hashes and settings"]
     export --> loader["Validate export / load / read back"]
     loader --> source[("BigQuery table<br/>per fixed snapshot")]
-    source --> staging["stg_race_results"]
-    staging --> fact["fct_race_results"]
-    staging --> mart["mart_event_summary"]
-    fact --> mart
-    fact --> comparison["mart_course_comparison"]
-    mart --> comparison
+    source --> runner["Reusable dbt stage runner"]
+    runner --> edition["Edition build"]
+    edition --> comparison["Comparison build"]
+    comparison --> reconciliation["Independent reconciliation"]
+    comparison --> output["Comparison output"]
+    reconciliation --> evidence["Immutable execution evidence"]
 ```
 
 [Source qualification](historical-inputs.md) checks race date/start, timing fields,
@@ -130,11 +131,10 @@ read Cloud Build source archives, push this repository's image and write build l
 This verifies real fixed input through the deployed parsing/export boundary. The
 exact Folkestone 2019 artifact pair was also read through the manual Storage adapter
 and fully matched its existing protected BigQuery snapshot twice, without another
-load. The existing dbt runner and reconciliation now have a prepared Cloud Run
-boundary and least-privilege Terraform configuration, but that job and its IAM have
-not been deployed or executed. None of these downstream steps is invoked by the
-report job. Scheduling, a hosted comparison UI and automatic source refresh remain
-absent; manually supplied fixed snapshots remain the release model.
+load. This validation/export job still does not load BigQuery or invoke dbt. The dbt
+stage is a separate Cloud Run job with its own runtime identity and permissions.
+Scheduling, a hosted comparison UI and automatic source refresh remain absent;
+manually supplied fixed snapshots remain the release model.
 
 The verified downstream boundary is a thin Storage adapter: it requires exact
 report/export generations, verifies the report-last completeness marker and fully
@@ -144,13 +144,23 @@ choose a destination. Because the target already contained byte-identical rows, 
 safe result was `already_present_verified`; no duplicate table or load was needed.
 See the [native validation record](evidence/cloud-export-bigquery-validation.json).
 
-The prepared dbt job reuses the same locked image, models, tests and reconciliation
-code used locally. A dedicated runtime identity can create query jobs, read the exact
-staging tables and comparison datasets, write only the selected edition output dataset, and
-create evidence objects under one bucket prefix. Successful and failed executions
-retain a create-only archive plus a completion record. Image publication, IAM apply,
-job deployment and the first native execution remain explicit reviewed operations;
-see the [dbt stage contract](dbt-models.md#prepared-cloud-run-stage).
+The dbt job reuses the same stage runner, locked image, models, tests and
+reconciliation code used locally:
+
+```text
+dbt stage runner
+  → edition build
+  → comparison build
+  → independent reconciliation
+  → immutable evidence
+```
+
+A failed stage stops the next stage, although BigQuery views created before a later
+failure may remain. Successful and failed executions retain a create-only archive
+and completion record. Execution `runwx-dbt-wwjgk` completed the Folkestone 2019
+edition build, the three-edition comparison build and independent reconciliation;
+its immutable evidence was downloaded and verified. See the
+[dbt stage contract](dbt-models.md#cloud-run-dbt-stage).
 
 ## Offline entry points and interpretation limits
 
