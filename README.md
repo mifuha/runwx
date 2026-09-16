@@ -40,21 +40,25 @@ mean these results **do not isolate weather's causal effect**.
 ## Implemented flow
 
 ```mermaid
-flowchart LR
-    inputs["Saved race HTML + ERA5 weather"] --> python["Python validation,<br/>UTC alignment and row export"]
-    python --> warehouse[("BigQuery snapshot tables")]
-    warehouse --> staging["dbt staging"]
-    staging --> fact["Accepted-results fact"]
-    fact --> mart["Edition summary mart"]
-    fact --> comparison["Historical comparison view"]
-    mart --> comparison
+flowchart TD
+    inputs["Saved race + ERA5 inputs"] --> python["Python validation/export"]
+    python --> snapshots[("BigQuery snapshots")]
+    snapshots --> runner["dbt stage runner"]
+    runner --> edition["Edition build"]
+    edition --> comparison["Comparison build"]
+    comparison --> reconciliation["Independent reconciliation"]
+    comparison --> output["Comparison output"]
+    runner --> evidence["Execution evidence"]
 ```
 
-This path has run using locally launched Python and containerized dbt against
-BigQuery. Each edition has a dedicated source table and output dataset; the
-comparison reads an explicit list of edition datasets and a named baseline.
-Exact export reruns verify existing rows without another upload. A deliberately
-corrected snapshot uses a separate destination and retains its own provenance.
+The same stage runner works locally and inside the Cloud Run dbt job. It runs the
+edition build before the comparison build, stops later work after a failure and
+keeps useful evidence for successful and failed runs. After both builds pass, it
+independently checks the important BigQuery results. Each edition has a dedicated
+source table and output dataset; the comparison reads an explicit list of edition
+datasets and a named baseline. Exact export reruns verify existing rows without
+another upload. A deliberately corrected snapshot uses a separate destination and
+retains its own provenance.
 
 The latest 2025 addition passed **28 native dbt tests**: 21 for the new edition and
 seven for the five-edition comparison. Full result readbacks matched the saved
@@ -66,16 +70,14 @@ retain earlier validation evidence. New raw captures and runner-level exports st
 outside Git; aggregate results can be inspected without a cloud account, but
 rerunning the historical warehouse needs the snapshots and configured BigQuery access.
 
-A [deployed Cloud Run Job](docs/first-cloud-run.md) keeps **fully synthetic inputs**
-as its defaults and also accepts explicitly allowed fixed snapshots. One execution
-processed the exact Folkestone 2019 race and weather inputs: all 459 results and
-weather matches agreed with the frozen local report, and its candidate-row NDJSON was
-byte-identical to the frozen warehouse input. The exact cloud artifact generations
-were then verified twice against the existing 459-row BigQuery snapshot through the
-safe loader, with no duplicate load or table change. dbt still runs through its
-separately verified path. There is no scheduled historical pipeline or hosted
-comparison UI. See the
-[architecture](docs/architecture.md) for the implemented boundaries.
+Two separate Cloud Run jobs now cover the cloud stages. The
+[validation/export job](docs/first-cloud-run.md) keeps **fully synthetic inputs** as
+its defaults and also accepts explicitly allowed fixed snapshots. Its Folkestone
+2019 execution matched all 459 results and weather observations and produced the
+frozen warehouse input. The dbt job then rebuilt the Folkestone 2019 edition and
+three-edition comparison, reconciled the important BigQuery values and saved its
+execution evidence. There is no scheduled historical pipeline or hosted comparison
+UI. See the [architecture](docs/architecture.md) for the implemented boundaries.
 
 <a id="quickstart"></a>
 <a id="example-result"></a>
