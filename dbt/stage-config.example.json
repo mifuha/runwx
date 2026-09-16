@@ -1,5 +1,6 @@
 {
   "project": "runwx-offline-placeholder",
+  "location": "europe-west1",
   "source_dataset": "staging",
   "source_table": "snapshot_a",
   "edition_dataset": "edition_a",
