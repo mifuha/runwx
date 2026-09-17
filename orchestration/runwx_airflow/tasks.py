@@ -56,7 +56,7 @@ def execute_job(config, stage, *, client=None):
     LOG.info("Submitted %s; operation=%s", name, operation.operation.name)
     # An acknowledgement/wait failure must be investigated, never blindly retried.
     result = operation.result(timeout=timeout + 120)
-    if (result.job != name or not result.name.startswith(name + "/executions/")
+    if (result.job != spec["job"] or not result.name.startswith(name + "/executions/")
             or result.task_count != 1 or result.succeeded_count != 1
             or result.failed_count or result.cancelled_count or result.retried_count):
         raise ValueError("Cloud Run execution did not complete its one task successfully")
