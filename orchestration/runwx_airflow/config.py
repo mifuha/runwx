@@ -37,6 +37,7 @@ class ReportSettings(StrictModel):
     race_kind: str
     weather_kind: str
     export_weather_kind: str
+    timing_basis: str
     top_n: Annotated[int, Field(gt=0)]
     max_gap_minutes: Annotated[int, Field(ge=0)]
 
@@ -81,7 +82,8 @@ class Pipeline(StrictModel):
         ZoneInfo(settings.timezone_name)
         if (settings.race_kind != "historical"
                 or settings.weather_kind != "unknown"
-                or settings.export_weather_kind != "historical_reanalysis"):
+                or settings.export_weather_kind != "historical_reanalysis"
+                or settings.timing_basis != "chip"):
             raise ValueError("this DAG requires historical race and weather inputs")
         mart = expected["edition"]["mart"]
         wanted = {
@@ -92,6 +94,7 @@ class Pipeline(StrictModel):
             "timezone_name": settings.timezone_name,
             "race_kind": settings.race_kind,
             "weather_kind": settings.export_weather_kind,
+            "timing_basis": settings.timing_basis,
             "top_n_requested": settings.top_n,
             "max_gap_seconds": settings.max_gap_minutes * 60,
         }

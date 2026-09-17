@@ -38,7 +38,8 @@ the fixed input URIs/hashes, expected export hash, explicit destination, pinned
 images/source revisions and existing frozen dbt expectations. It names existing
 resources; it does not create tables or datasets. Its report override preserves
 the report API's `weather_kind: unknown` label and the export's more specific
-`export_weather_kind: historical_reanalysis` label.
+`export_weather_kind: historical_reanalysis` label, and explicitly preserves chip
+timing as the warehouse export's timing basis.
 
 Configuration validation checks that report settings and hashes agree with the
 edition expectations, and the loader destination is the dbt source table.

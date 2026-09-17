@@ -34,6 +34,7 @@ def test_frozen_configuration_reuses_existing_dbt_case(config):
     lambda c: c["report"].update(image="registry/runwx:latest"),
     lambda c: c["report"]["settings"].update(top_n=100),
     lambda c: c["report"]["settings"].update(distance_m=20000),
+    lambda c: c["report"]["settings"].update(timing_basis="gun"),
     lambda c: c["report"].update(race_sha256="0" * 64),
     lambda c: c["dbt"].update(job=c["report"]["job"]),
     lambda c: c["dbt"]["config"].update(comparison_datasets=[]),
@@ -74,6 +75,7 @@ def test_submit_once_and_return_this_execution(config, stage):
     env = {v["name"]: v["value"] for v in request["overrides"]["container_overrides"][0]["env"]}
     if stage == "report":
         assert json.loads(env["RUNWX_REPORT_SETTINGS"]) == config["report"]["settings"]
+        assert json.loads(env["RUNWX_REPORT_SETTINGS"])["timing_basis"] == "chip"
     else:
         assert json.loads(env["RUNWX_DBT_CONFIG"]) == config["dbt"]["config"]
 
