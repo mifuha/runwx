@@ -1,9 +1,9 @@
 # First managed Airflow run
 
-This is the proposed boundary for the first live Airflow experiment. It is a
-review document, not evidence that the environment or permissions exist. The
-experiment uses the merged DAG against the existing Folkestone 2019 snapshot,
-then removes the managed Airflow resources on the same day.
+This was the reviewed boundary for the first live Airflow experiment. The experiment
+completed on 17 September 2026 and its managed resources were removed the same day.
+The plan is retained to show the pre-execution scope and cost controls; actual results
+are in the [sanitized execution evidence](evidence/composer-airflow-validation.json).
 
 ## What this proves
 
