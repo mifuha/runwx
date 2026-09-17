@@ -12,6 +12,29 @@ resource "google_project_service" "composer" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "compute" {
+  project            = var.orchestration_project_id
+  service            = "compute.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_compute_network" "environment" {
+  project                 = var.orchestration_project_id
+  name                    = "runwx-airflow"
+  auto_create_subnetworks = false
+  routing_mode            = "REGIONAL"
+  depends_on              = [google_project_service.compute]
+}
+
+resource "google_compute_subnetwork" "environment" {
+  project                  = var.orchestration_project_id
+  name                     = "runwx-airflow-europe-west1"
+  region                   = local.region
+  network                  = google_compute_network.environment.id
+  ip_cidr_range            = "10.80.0.0/24"
+  private_ip_google_access = true
+}
+
 resource "google_service_account" "orchestrator" {
   project      = var.orchestration_project_id
   account_id   = "runwx-orchestrator"
@@ -109,7 +132,11 @@ resource "google_composer_environment" "experiment" {
   config {
     environment_size = "ENVIRONMENT_SIZE_SMALL"
     resilience_mode  = "STANDARD_RESILIENCE"
-    node_config { service_account = google_service_account.orchestrator.email }
+    node_config {
+      service_account = google_service_account.orchestrator.email
+      network         = "projects/${var.orchestration_project_id}/global/networks/${google_compute_network.environment.name}"
+      subnetwork      = "projects/${var.orchestration_project_id}/regions/${local.region}/subnetworks/${google_compute_subnetwork.environment.name}"
+    }
     software_config {
       image_version = var.composer_image
       pypi_packages = var.pypi_packages

@@ -11,11 +11,16 @@ and operations, read the report/dbt evidence prefixes, and query the existing
 Folkestone 2019 snapshot. It has no warehouse write role. The report and dbt jobs
 keep their own identities and permissions. Operation status reads are project-wide.
 
-The root declares the Composer API, runtime identity, environment bucket, small
-Composer environment, three custom roles and the required IAM memberships. It does
-not change either existing job or its image. One worker is allowed; DAG scheduling
-is manual, with one active run/task and zero retries. These settings do not enforce
-a spending cap. The bucket refuses deletion while nonempty; cleanup stays explicit.
+The root declares the Composer and Compute APIs, a custom-mode VPC with one
+`europe-west1` subnet, runtime identity, environment bucket, small Composer
+environment, three custom roles and the required IAM memberships. Composer names
+that VPC and subnet explicitly; it does not use the auto-created default network or
+its public ingress rules. The custom VPC declares no ingress firewall rules.
+
+The root does not change either existing job or its image. One worker is allowed;
+DAG scheduling is manual, with one active run/task and zero retries. These settings
+do not enforce a spending cap. The bucket refuses deletion while nonempty; cleanup
+stays explicit.
 
 ## Offline checks
 
@@ -28,9 +33,10 @@ terraform validate
 terraform test
 ```
 
-The tests use a mocked provider. They check project separation, exact job/table
-grants, worker bounds and rejected configuration. They do not prove live IAM,
-regional availability, service-agent readiness or successful provisioning.
+The tests use a mocked provider. They check project separation, the explicit custom
+network/subnet, exact job/table grants, worker bounds and rejected configuration.
+They do not prove live IAM, regional capacity, service-agent readiness or successful
+provisioning.
 
 ## Committed DAG bundle
 
@@ -91,9 +97,10 @@ The container invocation now uses Composer's normal package path while the smoke
 script still proves every `runwx`, `runwx_airflow` and `stage_runner` import comes
 from the read-only bundle. This smoke imports code; it does not execute a managed DAG.
 
-Before a real plan, confirm the separate project, deployer/service-agent access,
-regional image availability, current europe-west1 pricing and remaining credit.
-Then prepare a saved plan with the reviewed variables and inspect every resource.
-Apply, upload, three supervised runs and teardown require the concrete approval
-boundary described in the proposal. No actual cloud plan or execution is claimed
+The separate project, billing link, regional image and request quotas have been
+checked. The first real plan exposed an auto-created default network with public
+ingress rules, which led to this explicit network boundary. Regenerate and inspect
+the saved real plan after this change. Applying it, uploading the DAG, the three
+supervised runs, teardown, and cleanup of the unmanaged default network each remain
+inside their explicit review/approval boundaries. No managed execution is claimed
 by these offline checks.
