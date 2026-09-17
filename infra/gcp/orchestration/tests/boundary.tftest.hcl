@@ -23,6 +23,18 @@ run "separate_project_and_narrow_access" {
     condition     = google_composer_environment.experiment.config[0].workloads_config[0].worker[0].max_count == 1 && !google_storage_bucket.environment.force_destroy
     error_message = "Keep one worker and require explicit bucket cleanup."
   }
+  assert {
+    condition     = !google_compute_network.environment.auto_create_subnetworks && google_compute_network.environment.routing_mode == "REGIONAL"
+    error_message = "The experiment must use a custom-mode regional VPC, not the unmanaged default network."
+  }
+  assert {
+    condition     = google_compute_subnetwork.environment.region == "europe-west1" && google_compute_subnetwork.environment.ip_cidr_range == "10.80.0.0/24" && google_compute_subnetwork.environment.private_ip_google_access
+    error_message = "Keep one explicit Belgium subnet with private Google API access."
+  }
+  assert {
+    condition     = google_composer_environment.experiment.config[0].node_config[0].network == "projects/runwx-orchestration-example/global/networks/runwx-airflow" && google_composer_environment.experiment.config[0].node_config[0].subnetwork == "projects/runwx-orchestration-example/regions/europe-west1/subnetworks/runwx-airflow-europe-west1"
+    error_message = "Composer must be attached to the managed experiment VPC and subnet."
+  }
 }
 
 run "reject_data_project" {

@@ -126,8 +126,10 @@ environment destroy plan.
 
 The new state owns only:
 
-- the Composer API declaration in the approved orchestration project with
-  `disable_on_destroy = false`;
+- the Composer and Compute API declarations in the approved orchestration project
+  with `disable_on_destroy = false`;
+- one custom-mode VPC and one `europe-west1` subnet, explicitly selected by Composer,
+  with no ingress firewall rules;
 - `runwx-orchestrator`, custom roles and additive experiment-only role bindings;
 - one regional environment bucket with public access prevention and
   `force_destroy = false`;
@@ -204,9 +206,10 @@ Teardown is part of the experiment, not optional cleanup:
    explicitly approved teardown scope.
 6. Remove the cross-project IAM bindings, experiment custom roles and
    `runwx-orchestrator` account.
-7. Leave the Composer API enabled, as recommended for recently used environments.
-   Detach billing from the now-empty project only through the separately reviewed
-   project-bootstrap boundary.
+7. Remove the experiment VPC/subnet through this state. Leave the Composer and
+   Compute APIs enabled. The auto-created default network and its firewall rules are
+   outside this state and require a separately reviewed cleanup action. Detach
+   billing only through the reviewed project-bootstrap boundary.
 8. Verify that no Composer environment, experiment bucket, runtime grant or paid
    runtime resource remains and that all retained runwx jobs, buckets and BigQuery
    data are unchanged.
