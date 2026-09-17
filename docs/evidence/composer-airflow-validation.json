@@ -1,0 +1,117 @@
+{
+  "checked_at_utc": "2026-09-17T18:04:00Z",
+  "scope": "Bounded Cloud Composer validation of the frozen Folkestone 2019 pipeline",
+  "publication": {
+    "final_source_revision": "29c59878233bb0b28936e3099e393435a8039a1d",
+    "final_pull_request": "https://github.com/mifuha/runwx/pull/29",
+    "final_ci_run": "https://github.com/mifuha/runwx/actions/runs/35252497229",
+    "composer_image": "composer-3-airflow-3.1.7-build.10",
+    "bundle_sha256": "a2580f8995d31ea9282271cd232c7a7d44dcadee5579ef2517e43a2257810731"
+  },
+  "failure_evidence": {
+    "validation_run": {
+      "dag_run_id": "runwx-invalid-20260917T1229Z",
+      "outcome": "validate_configuration failed and all five downstream tasks were upstream_failed",
+      "cloud_run_jobs_submitted": 0
+    },
+    "integration_findings": [
+      {
+        "dag_run_id": "runwx-success-20260917T1233Z",
+        "finding": "Cloud Run returned Execution.job as the short job name",
+        "outcome": "Airflow stopped after the successful report execution; no blind resubmission",
+        "fix_pull_request": "https://github.com/mifuha/runwx/pull/28"
+      },
+      {
+        "dag_run_id": "runwx-success2-20260917T1710Z",
+        "finding": "the report override omitted the chip timing basis",
+        "outcome": "the exact export hash check stopped the DAG before BigQuery and dbt",
+        "fix_pull_request": "https://github.com/mifuha/runwx/pull/29"
+      }
+    ]
+  },
+  "successful_run": {
+    "dag_run_id": "runwx-success3-20260917T1734Z",
+    "dag_status": "success",
+    "tasks_passed": 6,
+    "report_execution": "runwx-report-7cpln",
+    "report_generation": "1789666506740433",
+    "export_generation": "1789666506634410",
+    "export_rows": 459,
+    "export_bytes": 551872,
+    "export_sha256": "f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47",
+    "warehouse_status": "already_present_verified",
+    "warehouse_load_job_id": null,
+    "warehouse_verification_job_id": "46af0213-1563-4114-aa31-6742b24c4a14",
+    "warehouse_bytes_processed": 270243,
+    "dbt_execution": "runwx-dbt-txs8j",
+    "dbt_status": "reconciled",
+    "dbt_analytical_reconciliation": "passed",
+    "dbt_manifest_generation": "1789666626651552",
+    "dbt_archive_generation": "1789666626567537",
+    "dbt_archive_sha256": "69daa43917184bc3812c5f0260618326fb7349e4c52426dc569b1e2272a20bda"
+  },
+  "identical_rerun": {
+    "dag_run_id": "runwx-rerun-20260917T1740Z",
+    "dag_status": "success",
+    "tasks_passed": 6,
+    "report_execution": "runwx-report-gbnq6",
+    "report_generation": "1789666890961716",
+    "export_generation": "1789666890879837",
+    "export_rows": 459,
+    "export_bytes": 551872,
+    "export_sha256": "f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47",
+    "warehouse_status": "already_present_verified",
+    "warehouse_load_job_id": null,
+    "warehouse_verification_job_id": "2c7006fb-939a-40cf-ac6a-946c02dcbebb",
+    "warehouse_bytes_processed": 270243,
+    "dbt_execution": "runwx-dbt-qlz5p",
+    "dbt_status": "reconciled",
+    "dbt_analytical_reconciliation": "passed",
+    "dbt_manifest_generation": "1789667019896315",
+    "dbt_archive_generation": "1789667019823714",
+    "dbt_archive_sha256": "f512a70c0f61a14c77e68207c9ddb693a39f4495ef58cc6dde87ed55453185ca"
+  },
+  "teardown": {
+    "composer_environment_plan": {
+      "add": 0,
+      "change": 0,
+      "destroy": 1
+    },
+    "composer_environment_deletion_duration": "9m10s",
+    "remaining_resources_plan": {
+      "add": 0,
+      "change": 0,
+      "destroy": 17
+    },
+    "terraform_state_resources_after": 0,
+    "final_destroy_plan": "no changes",
+    "environment_absent": true,
+    "bucket_absent": true,
+    "custom_network_and_subnet_absent": true,
+    "runtime_service_account_absent": true,
+    "runtime_grants_absent": true,
+    "source_cloud_run_jobs_retained": true,
+    "snapshot_rows_after": 459,
+    "default_network_changed": false,
+    "enabled_apis_retained": true,
+    "orchestration_project_or_billing_link_removed": false
+  },
+  "cost": {
+    "environment_runtime_approx_hours": 5.7,
+    "catalog_scenario_usd_12_to_15_dcu": [
+      4.5,
+      5.7
+    ],
+    "operational_ceiling_usd": 10,
+    "actual_billed_cost_verified": false,
+    "limitations": "The estimate excludes small ancillary Storage, Logging, Cloud Run and BigQuery charges; billing data is delayed."
+  },
+  "limitations": {
+    "fresh_snapshot_load_proven": false,
+    "multi_edition_backfill_proven": false,
+    "automatic_retry_or_backoff_proven": false,
+    "dbt_rollback_provided": false,
+    "table_metadata_timestamp_changed_during_iam_teardown": true,
+    "table_rows_and_typed_contents_verified_before_teardown": true
+  }
+}

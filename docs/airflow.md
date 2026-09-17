@@ -1,8 +1,9 @@
 # Historical pipeline orchestration
 
 The first Airflow DAG connects the existing stages for one explicitly configured
-historical snapshot. It is implemented and tested offline; it has not yet run
-against GCP. No managed Airflow environment or new IAM has been deployed.
+historical snapshot. It is tested offline and completed a bounded Cloud Composer
+experiment against the frozen Folkestone 2019 snapshot. The temporary environment
+and its runtime permissions were removed after validation.
 
 ```text
 validate_configuration
@@ -89,38 +90,47 @@ Ordinary application tests remain `pytest -q tests`.
 
 The new CI job runs the same offline checks. Keep the repository's `orchestration`
 and `dbt` directories on the worker Python path; neither dbt nor SQL is executed
-in the Airflow worker. Pin the eventual managed image/provider combination during
-deployment review rather than assuming this local lock installs into Composer.
+in the Airflow worker. The managed experiment separately pinned Composer
+3 / Airflow 3.1.7 and its provider set rather than installing this local lock.
 
-## Live validation remains a separate step
+## Managed validation
 
-Before a real trigger, review the configuration and narrow runtime permissions:
+The temporary Composer worker used the deleted `runwx-orchestrator` service account:
 
 | Operation | Execution location and identity |
 |---|---|
-| Invoke/wait and read evidence | Airflow worker credentials; coordinator identity and grants still to prepare |
+| Invoke/wait and read evidence | Airflow worker credentials; temporary `runwx-orchestrator` |
 | Validate/export | Existing `runwx-report` service account in Cloud Run |
-| Load/verify snapshot | Existing Python loader in the Airflow worker, using that worker's ADC in this first adapter |
+| Load/verify snapshot | Existing Python loader using the worker's attached credentials; query jobs and read access to the exact table only |
 | dbt and independent queries | Existing `runwx-dbt` service account in Cloud Run |
 
-This first adapter uses Application Default Credentials; it does not yet establish
-a separately impersonated loader identity. A native run must identify the actual
-actor. Do not grant the report job BigQuery access or claim least-privilege
-orchestration validation from these offline tests. No Terraform resources change
-in this slice.
+Run `runwx-invalid-20260917T1229Z` failed configuration validation and all five
+downstream tasks were blocked without a Cloud Run submission. Two subsequent runs
+exposed integration assumptions at real boundaries: Cloud Run returned a short job
+name, and the report override initially omitted chip timing. The exact checks stopped
+both runs before unsafe downstream work; PRs #28 and #29 fixed the assumptions before
+a fresh execution.
 
-The next live milestone should demonstrate one success, invalid-input failure and
-an identical rerun against the existing Folkestone snapshot. The first load from
-this GCS path is still unproven; the snapshot already exists, so verification is
-the expected result. A later explicit second configuration can demonstrate a
-historical multi-edition run. Qualification/capture, destination approval, image
-publication and starting the workflow remain manual.
+Run `runwx-success3-20260917T1734Z` and identical rerun
+`runwx-rerun-20260917T1740Z` each passed all six tasks. They created distinct
+execution-specific artifacts, but both exports contained 459 rows, 551872 bytes and
+SHA-256 `f95b3ae312e3131279a8a5ebbe77f58d3967d70bc7007b6c268f0bd4492eef47`.
+Both loader tasks returned `already_present_verified` with a null load job ID, and
+both dbt runs passed edition/comparison reconciliation and immutable evidence checks.
 
-A short managed Airflow experiment can follow offline verification. Its proposed
-identity, permissions, cost limit, evidence and teardown boundary are recorded in
-the [first managed Airflow run plan](airflow-live-plan.md). Keep its Terraform
-state separate from retained race data and jobs. No continuously running
-environment is part of this local change.
+The experiment proves managed sequencing, failure propagation and duplicate-safe
+verification of an existing snapshot. It does not prove the first write to an empty
+table, automatic retries or a multi-edition backfill. dbt views can still be changed
+before a later test fails; the DAG does not provide rollback.
+
+Teardown removed the Composer environment, its bucket, custom network/subnet, runtime
+identity and every runtime grant. Terraform state is empty and a destroy plan is
+no-op. The orchestration project, billing link, enabled APIs and unmanaged default
+network remain; the existing Cloud Run jobs, immutable evidence and 459-row table are
+retained, and the table data remains the 459 rows verified by both runs. See the
+[sanitized execution evidence](evidence/composer-airflow-validation.json)
+and the original [managed run plan](airflow-live-plan.md). No continuously running
+Airflow environment remains.
 
 API references: [Airflow 3.1.6 best practices](https://airflow.apache.org/docs/apache-airflow/3.1.6/best-practices.html),
 [Cloud Run Jobs SDK](https://cloud.google.com/python/docs/reference/run/latest/google.cloud.run_v2.services.jobs.JobsClient).

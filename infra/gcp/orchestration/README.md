@@ -1,12 +1,13 @@
-# Temporary Airflow environment preparation
+# Temporary Airflow environment
 
 This root prepares the [supervised Composer experiment](../../../docs/airflow-live-plan.md).
-It has not been applied. It uses its own state and an already bootstrapped, separately
-approved orchestration project. It does not create a project or attach billing.
-Do not import resources from the parent or historical roots.
+It was applied for the bounded 17 September 2026 validation and then fully destroyed.
+Its state is empty and a destroy plan is no-op. It uses its own state and an already
+bootstrapped, separately approved orchestration project. It does not create a project
+or attach billing. Do not import resources from the parent or historical roots.
 
-`runwx-orchestrator` gets Composer Worker only in that separate project. In the
-data project it can invoke the two existing Cloud Run jobs, read their executions
+When applied, `runwx-orchestrator` gets Composer Worker only in that separate project.
+In the data project it can invoke the two existing Cloud Run jobs, read their executions
 and operations, read the report/dbt evidence prefixes, and query the existing
 Folkestone 2019 snapshot. It has no warehouse write role. The report and dbt jobs
 keep their own identities and permissions. Operation status reads are project-wide.
@@ -98,10 +99,11 @@ The container invocation now uses Composer's normal package path while the smoke
 script still proves every `runwx`, `runwx_airflow` and `stage_runner` import comes
 from the read-only bundle. This smoke imports code; it does not execute a managed DAG.
 
-The separate project, billing link, regional image and request quotas have been
-checked. The first real plan exposed an auto-created default network with public
-ingress rules, which led to this explicit network boundary. Regenerate and inspect
-the saved real plan after this change. Applying it, uploading the DAG, the three
-supervised runs, teardown, and cleanup of the unmanaged default network each remain
-inside their explicit review/approval boundaries. No managed execution is claimed
-by these offline checks.
+The separate project, billing link, regional image and request quotas were checked.
+The first real plan exposed an auto-created default network with public ingress rules,
+which led to this explicit network boundary. The reviewed environment then completed
+managed failure and success validation before teardown removed the Composer resource,
+bucket, custom network/subnet, runtime identity and grants. The unmanaged default
+network was outside that teardown scope and remains. The live results are recorded in
+the [sanitized execution evidence](../../../docs/evidence/composer-airflow-validation.json);
+the smoke checks above remain offline evidence only.
