@@ -126,8 +126,8 @@ environment destroy plan.
 
 The new state owns only:
 
-- the Composer and Compute API declarations in the approved orchestration project
-  with `disable_on_destroy = false`;
+- the Composer, Compute and IAM Service Account Credentials API declarations in the
+  approved orchestration project with `disable_on_destroy = false`;
 - one custom-mode VPC and one `europe-west1` subnet, explicitly selected by Composer,
   with no ingress firewall rules;
 - `runwx-orchestrator`, custom roles and additive experiment-only role bindings;

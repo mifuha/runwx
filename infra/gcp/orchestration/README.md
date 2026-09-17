@@ -11,11 +11,12 @@ and operations, read the report/dbt evidence prefixes, and query the existing
 Folkestone 2019 snapshot. It has no warehouse write role. The report and dbt jobs
 keep their own identities and permissions. Operation status reads are project-wide.
 
-The root declares the Composer and Compute APIs, a custom-mode VPC with one
-`europe-west1` subnet, runtime identity, environment bucket, small Composer
-environment, three custom roles and the required IAM memberships. Composer names
-that VPC and subnet explicitly; it does not use the auto-created default network or
-its public ingress rules. The custom VPC declares no ingress firewall rules.
+The root declares the Composer, Compute and IAM Service Account Credentials APIs, a
+custom-mode VPC with one `europe-west1` subnet, runtime identity, environment bucket,
+small Composer environment, three custom roles and the required IAM memberships.
+Composer names that VPC and subnet explicitly; it does not use the auto-created
+default network or its public ingress rules. The custom VPC declares no ingress
+firewall rules.
 
 The root does not change either existing job or its image. One worker is allowed;
 DAG scheduling is manual, with one active run/task and zero retries. These settings
