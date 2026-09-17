@@ -53,7 +53,7 @@ def cloud_client(config, stage):
     op.operation.name = "operations/submitted-once"
     name = execution(config, stage)["name"]
     op.result.return_value = SimpleNamespace(
-        name=name, job=name.split("/executions/")[0], task_count=1, succeeded_count=1,
+        name=name, job=config[stage]["job"], task_count=1, succeeded_count=1,
         failed_count=0, cancelled_count=0, retried_count=0,
     )
     return client
@@ -84,6 +84,13 @@ def test_wrong_deployed_image_blocks_submission(config):
     with pytest.raises(ValueError, match="pinned image"):
         tasks.execute_job(config, "report", client=client)
     client.run_job.assert_not_called()
+
+
+def test_execution_parent_job_must_match(config):
+    client = cloud_client(config, "report")
+    client.run_job.return_value.result.return_value.job = "another-job"
+    with pytest.raises(ValueError, match="successfully"):
+        tasks.execute_job(config, "report", client=client)
 
 
 def test_wait_failure_does_not_resubmit_and_logs_operation(config, caplog):
