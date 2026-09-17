@@ -35,6 +35,10 @@ run "separate_project_and_narrow_access" {
     condition     = google_composer_environment.experiment.config[0].node_config[0].network == "projects/runwx-orchestration-example/global/networks/runwx-airflow" && google_composer_environment.experiment.config[0].node_config[0].subnetwork == "projects/runwx-orchestration-example/regions/europe-west1/subnetworks/runwx-airflow-europe-west1"
     error_message = "Composer must be attached to the managed experiment VPC and subnet."
   }
+  assert {
+    condition     = google_project_service.iamcredentials.service == "iamcredentials.googleapis.com" && !google_project_service.iamcredentials.disable_on_destroy
+    error_message = "Composer's IAM Credentials dependency must be managed and retained with the other project APIs."
+  }
 }
 
 run "reject_data_project" {

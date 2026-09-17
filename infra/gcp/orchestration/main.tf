@@ -18,6 +18,12 @@ resource "google_project_service" "compute" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "iamcredentials" {
+  project            = var.orchestration_project_id
+  service            = "iamcredentials.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_compute_network" "environment" {
   project                 = var.orchestration_project_id
   name                    = "runwx-airflow"
@@ -177,7 +183,8 @@ resource "google_composer_environment" "experiment" {
       }
     }
   }
-  depends_on = [google_project_service.composer, google_project_iam_member.composer_worker,
+  depends_on = [google_project_service.composer, google_project_service.iamcredentials,
+    google_project_iam_member.composer_worker,
     google_cloud_run_v2_job_iam_member.invoke, google_project_iam_member.poll_operation,
     google_storage_bucket_iam_member.read_artifact, google_project_iam_member.query_job,
   google_bigquery_table_iam_member.snapshot_reader]
