@@ -20,6 +20,7 @@
         "weather_kind": "unknown",
         "race_kind": "historical",
         "export_weather_kind": "historical_reanalysis",
+        "timing_basis": "chip",
         "top_n": 20,
         "max_gap_minutes": 30
       }
