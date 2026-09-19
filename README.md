@@ -146,11 +146,11 @@ this documentation update. The secondary
 
 ## Tests
 
-After activation, install pytest and the BigQuery extra, then run the suite.
+After activation, install pytest and the BigQuery/API extras, then run the suite.
 Warehouse tests use a fake API; no cloud account is needed:
 
 ```bash
-python -m pip install -e '.[bigquery]' pytest
+python -m pip install -e '.[bigquery,api]' pytest
 python -m pytest -q
 ```
 
@@ -179,6 +179,7 @@ with small manual changes or tests to reinforce understanding.
 - [Architecture and deployed Cloud Run validation/export path](docs/architecture.md)
 - [Historical source qualification and warehouse inputs](docs/historical-inputs.md)
 - [Comparison statistics, explicit datasets and validation](docs/historical-comparison.md)
+- [Read-only historical comparison API](docs/api.md)
 - [dbt staging, fact and mart models](docs/dbt-models.md)
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
 - [Result-row export](docs/result-export.md) and [BigQuery loader](docs/bigquery-staging.md)
