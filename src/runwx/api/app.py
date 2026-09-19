@@ -1,9 +1,11 @@
 """FastAPI application for the read-only runwx MVP."""
 
 from functools import lru_cache
+from importlib.resources import files
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import HTMLResponse, Response
 from google.cloud import bigquery
 from starlette.concurrency import run_in_threadpool
 
@@ -13,6 +15,12 @@ from runwx.api.repository import (
     ComparisonUnavailableError,
     UnknownCourseError,
 )
+
+
+STATIC = files("runwx.api").joinpath("static")
+INDEX_HTML = STATIC.joinpath("index.html").read_text(encoding="utf-8")
+STYLESHEET = STATIC.joinpath("styles.css").read_text(encoding="utf-8")
+JAVASCRIPT = STATIC.joinpath("app.js").read_text(encoding="utf-8")
 
 
 class ComparisonService:
@@ -40,6 +48,32 @@ app = FastAPI(
     title="runwx historical comparison API",
     version="0.1.0",
 )
+
+
+@app.get("/", include_in_schema=False, response_class=HTMLResponse)
+async def index() -> HTMLResponse:
+    return HTMLResponse(
+        INDEX_HTML,
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.get("/assets/styles.css", include_in_schema=False)
+async def styles() -> Response:
+    return Response(
+        STYLESHEET,
+        media_type="text/css",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@app.get("/assets/app.js", include_in_schema=False)
+async def javascript() -> Response:
+    return Response(
+        JAVASCRIPT,
+        media_type="text/javascript",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
 
 
 @app.get(
