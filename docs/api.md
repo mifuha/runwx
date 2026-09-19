@@ -3,6 +3,12 @@
 The first MVP endpoint reads the existing dbt comparison marts. It does not parse
 race data, align weather or calculate new statistics.
 
+The service root (`/`) serves the small comparison page. It uses the endpoint below
+to populate course, pace and weather selectors, two aligned accessible SVG trend
+plots and a compact edition table. Pace stays visible beside the selected weather
+measure. The HTML, CSS and JavaScript are packaged with the API; the page has no
+external frontend or chart dependency.
+
 ```text
 GET /api/courses/{course_slug}/comparison
 ```
@@ -30,5 +36,6 @@ uvicorn runwx.api.app:app --host 127.0.0.1 --port 8000
 curl http://127.0.0.1:8000/api/courses/lydd-half/comparison
 ```
 
-This slice defines and tests the local API boundary. A container, runtime identity,
-Terraform and public deployment are separate work.
+Open `http://127.0.0.1:8000/` to use the local page. The page and API are local only
+at this stage. A container, runtime identity, Terraform and public deployment are
+separate work.

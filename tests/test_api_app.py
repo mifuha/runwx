@@ -173,3 +173,42 @@ def test_production_service_dispatches_the_bigquery_reader_off_the_event_loop(
 
     assert result == response()
     assert calls == [(repository.get_course_comparison, ("lydd-half",))]
+
+
+def test_home_page_serves_the_minimal_comparison_interface():
+    result = asyncio.run(request(Repository(), "/"))
+
+    assert result.status_code == 200
+    assert result.headers["content-type"].startswith("text/html")
+    assert result.headers["cache-control"] == "no-cache"
+    assert 'id="course-select"' in result.text
+    assert 'id="pace-metric-select"' in result.text
+    assert 'id="weather-metric-select"' in result.text
+    assert 'id="pace-chart"' in result.text
+    assert 'id="weather-chart"' in result.text
+    assert 'class="charts-timeline"' in result.text
+    assert 'id="comparison-rows"' in result.text
+    assert "Simple statistics, fixed historical snapshots, no prediction." in result.text
+    assert 'src="http' not in result.text
+    assert 'href="http' not in result.text
+
+
+def test_frontend_assets_are_local_packaged_and_cache_bounded():
+    stylesheet = asyncio.run(request(Repository(), "/assets/styles.css"))
+    javascript = asyncio.run(request(Repository(), "/assets/app.js"))
+
+    assert stylesheet.status_code == 200
+    assert stylesheet.headers["content-type"].startswith("text/css")
+    assert stylesheet.headers["cache-control"] == "public, max-age=3600"
+    assert "--accent: #176b4c" in stylesheet.text
+    assert "@media (max-width: 720px)" in stylesheet.text
+
+    assert javascript.status_code == 200
+    assert javascript.headers["content-type"].startswith("text/javascript")
+    assert javascript.headers["cache-control"] == "public, max-age=3600"
+    assert "/api/courses/" in javascript.text
+    assert "median-pace" in javascript.text
+    assert "precipitation" in javascript.text
+    assert "renderCharts" in javascript.text
+    assert "textContent" in javascript.text
+    assert "innerHTML" not in javascript.text
