@@ -186,6 +186,7 @@ def test_home_page_serves_the_minimal_comparison_interface():
     assert 'id="weather-metric-select"' in result.text
     assert 'id="pace-chart"' in result.text
     assert 'id="weather-chart"' in result.text
+    assert 'class="charts-timeline"' in result.text
     assert 'id="comparison-rows"' in result.text
     assert "Simple statistics, fixed historical snapshots, no prediction." in result.text
     assert 'src="http' not in result.text

@@ -230,6 +230,14 @@ select:focus-visible {
   font-size: 0.83rem;
 }
 
+.charts-scroll {
+  overflow-x: auto;
+}
+
+.charts-timeline {
+  min-width: 620px;
+}
+
 .chart-block + .chart-block {
   margin-top: 28px;
   padding-top: 28px;
@@ -252,13 +260,11 @@ select:focus-visible {
 
 .chart {
   min-height: 230px;
-  overflow-x: auto;
 }
 
 .chart svg {
   display: block;
   width: 100%;
-  min-width: 620px;
   height: auto;
 }
 
