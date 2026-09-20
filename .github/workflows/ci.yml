@@ -101,7 +101,7 @@ jobs:
           test "$(docker inspect --format '{{.State.Health.Status}}' runwx-api-ci-smoke)" = healthy
           test "$(docker exec runwx-api-ci-smoke id -u)" = 10001
           docker exec runwx-api-ci-smoke python -c \
-            "import urllib.request; page = urllib.request.urlopen('http://127.0.0.1:8080/', timeout=2).read(); assert b'Pace, in context.' in page; assert urllib.request.urlopen('http://127.0.0.1:8080/assets/app.js', timeout=2).status == 200"
+            "import urllib.request; base = 'http://127.0.0.1:8080'; page = urllib.request.urlopen(base + '/', timeout=2).read(); assert b'Pace, in context.' in page; assert all(urllib.request.urlopen(base + path, timeout=2).status == 200 for path in ('/assets/styles.css', '/assets/app.js'))"
 
   terraform:
     runs-on: ubuntu-latest

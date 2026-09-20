@@ -66,11 +66,12 @@ request timeout. These are proposed demo limits, not deployed settings. The runt
 identity and exact BigQuery permissions still need a reviewed Terraform plan; no
 service-account key belongs in this image.
 
-`requirements/api-container.lock` is separate from the report and dbt locks because
-the serving image additionally needs FastAPI, Uvicorn and BigQuery. Refresh it only
-in a disposable Python 3.12 Linux environment, then rebuild the image, run `pip
-check` and repeat the offline container smoke check. Exact version pins improve
-repeatability, while the immutable registry digest remains the deployment identity.
+`requirements/api-container.lock` and `requirements/api-build.lock` are separate
+from the report and dbt locks because the serving image additionally needs FastAPI,
+Uvicorn and BigQuery. Refresh them only in a disposable Python 3.12 Linux environment,
+then rebuild the image, run `pip check` and repeat the offline container smoke check.
+Exact version pins improve repeatability, while the immutable registry digest remains
+the deployment identity.
 
 The offline smoke check starts the real Uvicorn entrypoint and verifies `/healthz`,
 the page and both packaged assets with container networking disabled. It cannot call

@@ -1,0 +1,4 @@
+# Exact tools and support package for building the API image without isolation.
+packaging==26.0
+setuptools==84.0.0
+wheel==0.48.0

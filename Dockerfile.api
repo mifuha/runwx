@@ -10,7 +10,7 @@ WORKDIR /app
 
 COPY requirements/ requirements/
 RUN python -m pip install --no-cache-dir --no-deps --only-binary=:all: \
-    -r requirements/api-container.lock -r requirements/build.lock
+    -r requirements/api-container.lock -r requirements/api-build.lock
 
 COPY pyproject.toml setup.cfg ./
 COPY src/runwx/ ./src/runwx/
