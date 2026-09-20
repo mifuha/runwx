@@ -69,6 +69,40 @@ jobs:
       - name: Check report command offline
         run: docker run --rm --network none --read-only runwx-report-ci --help
 
+  api-container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build --file Dockerfile.api --tag runwx-api-ci .
+
+      - name: Check API process and packaged page offline
+        run: |
+          set -euo pipefail
+          docker run --detach --name runwx-api-ci-smoke \
+            --network none --read-only --tmpfs /tmp:rw,nosuid,nodev,size=16m \
+            runwx-api-ci
+          trap 'docker logs runwx-api-ci-smoke; docker rm --force runwx-api-ci-smoke' EXIT
+
+          for attempt in {1..20}; do
+            state="$(docker inspect --format '{{.State.Health.Status}}' runwx-api-ci-smoke)"
+            if [ "$state" = healthy ]; then
+              break
+            fi
+            if [ "$state" = unhealthy ]; then
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$(docker inspect --format '{{.State.Health.Status}}' runwx-api-ci-smoke)" = healthy
+          test "$(docker exec runwx-api-ci-smoke id -u)" = 10001
+          docker exec runwx-api-ci-smoke python -c \
+            "import urllib.request; page = urllib.request.urlopen('http://127.0.0.1:8080/', timeout=2).read(); assert b'Pace, in context.' in page; assert urllib.request.urlopen('http://127.0.0.1:8080/assets/app.js', timeout=2).status == 200"
+
   terraform:
     runs-on: ubuntu-latest
     timeout-minutes: 10

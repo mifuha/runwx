@@ -50,6 +50,12 @@ app = FastAPI(
 )
 
 
+@app.get("/healthz", include_in_schema=False)
+async def health(response: Response) -> dict[str, str]:
+    response.headers["Cache-Control"] = "no-store"
+    return {"status": "ok"}
+
+
 @app.get("/", include_in_schema=False, response_class=HTMLResponse)
 async def index() -> HTMLResponse:
     return HTMLResponse(
@@ -83,14 +89,22 @@ async def javascript() -> Response:
 )
 async def get_course_comparison(
     course_slug: str,
+    response: Response,
     repository: Annotated[ComparisonService, Depends(get_repository)],
 ) -> CourseComparison:
     try:
-        return await repository.get_course_comparison(course_slug)
+        comparison = await repository.get_course_comparison(course_slug)
+        response.headers["Cache-Control"] = "public, max-age=300"
+        return comparison
     except UnknownCourseError as error:
-        raise HTTPException(status_code=404, detail="course not found") from error
+        raise HTTPException(
+            status_code=404,
+            detail="course not found",
+            headers={"Cache-Control": "no-store"},
+        ) from error
     except ComparisonUnavailableError as error:
         raise HTTPException(
             status_code=503,
             detail="comparison data is temporarily unavailable",
+            headers={"Cache-Control": "no-store"},
         ) from error

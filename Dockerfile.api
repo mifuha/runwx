@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1
+
+FROM python:3.12-slim-bookworm@sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+COPY requirements/ requirements/
+RUN python -m pip install --no-cache-dir --no-deps --only-binary=:all: \
+    -r requirements/api-container.lock -r requirements/build.lock
+
+COPY pyproject.toml setup.cfg ./
+COPY src/runwx/ ./src/runwx/
+RUN --network=none python -m pip install --no-cache-dir --no-deps --no-build-isolation ".[bigquery,api]" \
+    && python -m pip check \
+    && python -c "import fastapi, google.cloud.bigquery, uvicorn"
+
+ARG VCS_REF=unknown
+ENV RUNWX_SOURCE_REVISION=${VCS_REF}
+LABEL org.opencontainers.image.source="https://github.com/mifuha/runwx" \
+      org.opencontainers.image.revision="${VCS_REF}"
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; response = urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2); assert response.status == 200; response.close()"]
+
+USER 10001:10001
+ENTRYPOINT ["uvicorn", "runwx.api.app:app"]
+CMD ["--host=0.0.0.0", "--port=8080", "--workers=1", "--timeout-keep-alive=5"]
