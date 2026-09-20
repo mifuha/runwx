@@ -142,6 +142,12 @@ jobs:
           terraform -chdir=orchestration validate -no-color
           terraform -chdir=orchestration test -no-color
 
+      - name: Check isolated API service root without cloud credentials
+        run: |
+          terraform -chdir=api init -backend=false -lockfile=readonly -input=false -no-color
+          terraform -chdir=api validate -no-color
+          terraform -chdir=api test -no-color
+
   dbt:
     runs-on: ubuntu-latest
     timeout-minutes: 15
