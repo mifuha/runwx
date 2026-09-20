@@ -37,8 +37,10 @@ curl http://127.0.0.1:8000/api/courses/lydd-half/comparison
 ```
 
 Open `http://127.0.0.1:8000/` to use the local page. The page and API are local only
-at this stage. The dedicated container below is also local; runtime identity,
-Terraform and public deployment remain separate work.
+at this stage. The dedicated container below is also local. The
+[separate Terraform root](../infra/gcp/api/README.md) now prepares the public Cloud
+Run service and its runtime identity, but it has not been applied and no API image
+has been published.
 
 ## API container
 
@@ -60,11 +62,15 @@ itself is revalidated. Query submission and result waits remain bounded at 10 an
 seconds respectively.
 
 The image defaults to one Uvicorn worker on port 8080, runs as numeric user 10001 and
-supports a read-only root filesystem. The next infrastructure review should start
-with zero minimum instances, one maximum instance, concurrency 8 and a 60-second
-request timeout. These are proposed demo limits, not deployed settings. The runtime
-identity and exact BigQuery permissions still need a reviewed Terraform plan; no
-service-account key belongs in this image.
+supports a read-only root filesystem. The prepared service uses zero minimum
+instances, one maximum instance, concurrency 8, a 60-second request timeout and HTTP
+startup/liveness probes against `/healthz`. These remain planned settings until
+Terraform is applied.
+
+The dedicated runtime identity can create BigQuery query jobs and read only the
+named tables and views in the two approved comparison dependency chains. It has no
+dataset-wide data role, storage role or service-account key. The service uses an
+immutable `runwx-api@sha256:...` image and stays disabled until that digest is set.
 
 `requirements/api-container.lock` and `requirements/api-build.lock` are separate
 from the report and dbt locks because the serving image additionally needs FastAPI,
