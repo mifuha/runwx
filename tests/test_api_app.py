@@ -91,6 +91,7 @@ def test_comparison_endpoint_returns_the_public_contract():
     )
 
     assert result.status_code == 200
+    assert result.headers["cache-control"] == "public, max-age=300"
     assert repository.requests == ["lydd-half"]
     assert result.json() == {
         "course_slug": "lydd-half",
@@ -132,6 +133,17 @@ def test_comparison_endpoint_returns_the_public_contract():
     }
 
 
+def test_health_check_is_process_only_and_not_cached():
+    repository = Repository(error=AssertionError("warehouse must not be checked"))
+
+    result = asyncio.run(request(repository, "/healthz"))
+
+    assert result.status_code == 200
+    assert result.json() == {"status": "ok"}
+    assert result.headers["cache-control"] == "no-store"
+    assert repository.requests == []
+
+
 def test_unknown_course_is_404_without_internal_detail():
     result = asyncio.run(
         request(
@@ -142,6 +154,7 @@ def test_unknown_course_is_404_without_internal_detail():
 
     assert result.status_code == 404
     assert result.json() == {"detail": "course not found"}
+    assert result.headers["cache-control"] == "no-store"
 
 
 def test_warehouse_failure_is_503_without_internal_detail():
@@ -154,6 +167,7 @@ def test_warehouse_failure_is_503_without_internal_detail():
 
     assert result.status_code == 503
     assert result.json() == {"detail": "comparison data is temporarily unavailable"}
+    assert result.headers["cache-control"] == "no-store"
 
 
 def test_production_service_dispatches_the_bigquery_reader_off_the_event_loop(

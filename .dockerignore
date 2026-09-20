@@ -1,6 +1,7 @@
 # Send only package code and build metadata to the builder.
 **
 !Dockerfile
+!Dockerfile.api
 !pyproject.toml
 !setup.cfg
 !requirements/
