@@ -50,7 +50,7 @@ app = FastAPI(
 )
 
 
-@app.get("/healthz", include_in_schema=False)
+@app.get("/health", include_in_schema=False)
 async def health(response: Response) -> dict[str, str]:
     response.headers["Cache-Control"] = "no-store"
     return {"status": "ok"}

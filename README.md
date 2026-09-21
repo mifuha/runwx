@@ -76,10 +76,12 @@ its defaults and also accepts explicitly allowed fixed snapshots. Its Folkestone
 2019 execution matched all 459 results and weather observations and produced the
 frozen warehouse input. The dbt job then rebuilt the Folkestone 2019 edition and
 three-edition comparison, reconciled the important BigQuery values and saved its
-execution evidence. A local read-only API and minimal comparison page present the
-prepared Lydd and Folkestone marts. They are not deployed yet, and there is no
-scheduled historical pipeline. See the [architecture](docs/architecture.md) for the
-implemented boundaries.
+execution evidence. A read-only API and minimal comparison page expose the
+prepared Lydd and Folkestone marts. The separate public Cloud Run service serves
+the page, but its first data requests hit the query billing limit. A bounded fix
+is prepared; successful public data reconciliation is still pending. There is no
+scheduled historical pipeline. See the
+[architecture](docs/architecture.md) for the implemented boundaries.
 
 <a id="quickstart"></a>
 <a id="example-result"></a>

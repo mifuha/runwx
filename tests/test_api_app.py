@@ -136,7 +136,7 @@ def test_comparison_endpoint_returns_the_public_contract():
 def test_health_check_is_process_only_and_not_cached():
     repository = Repository(error=AssertionError("warehouse must not be checked"))
 
-    result = asyncio.run(request(repository, "/healthz"))
+    result = asyncio.run(request(repository, "/health"))
 
     assert result.status_code == 200
     assert result.json() == {"status": "ok"}

@@ -133,8 +133,10 @@ exact Folkestone 2019 artifact pair was also read through the manual Storage ada
 and fully matched its existing protected BigQuery snapshot twice, without another
 load. This validation/export job still does not load BigQuery or invoke dbt. The dbt
 stage is a separate Cloud Run job with its own runtime identity and permissions.
-Scheduling, a hosted comparison UI and automatic source refresh remain absent;
-manually supplied fixed snapshots remain the release model.
+A separate read-only API and minimal page expose the prepared comparison marts.
+The public service serves the page; a fix for the query billing limit and health
+path awaits deployment and public data reconciliation. Scheduling and automatic
+source refresh remain absent; manually supplied fixed snapshots remain the release model.
 
 The verified downstream boundary is a thin Storage adapter: it requires exact
 report/export generations, verifies the report-last completeness marker and fully
