@@ -15,3 +15,8 @@ terraform plan \
 
 Review a complete plan before applying. The first live validation must request both
 configured courses and reconcile them with the frozen comparison evidence.
+
+The process-only health endpoint is `/health`. Cloud Run's
+[known issues](https://docs.cloud.google.com/run/docs/known-issues) document conflicts
+with some public paths ending in `z`, so the service and container probes avoid those
+paths.

@@ -16,7 +16,10 @@ GET /api/courses/{course_slug}/comparison
 The current reviewed course slugs are `lydd-half` and `folkestone-half`. Each maps
 to one explicit BigQuery comparison view. The URL cannot select a table or submit
 SQL. The query selects the fixed public columns, binds the expected course ID as a
-parameter, reads at most 50 editions and refuses to bill more than 10 MiB.
+parameter, reads at most 50 editions and refuses to bill more than 64 MiB. The
+first deployed queries required 50 MiB for Lydd and 30 MiB for Folkestone because
+of BigQuery's minimum billing per referenced table. The previous 10 MiB cap rejected
+both; 64 MiB leaves a small margin above the current requirement.
 
 The response contains the course and baseline identity, followed by editions in
 date order. Each edition includes finishers; median, mean, p25–p75 and fastest-N
@@ -36,11 +39,12 @@ uvicorn runwx.api.app:app --host 127.0.0.1 --port 8000
 curl http://127.0.0.1:8000/api/courses/lydd-half/comparison
 ```
 
-Open `http://127.0.0.1:8000/` to use the local page. The page and API are local only
-at this stage. The dedicated container below is also local. The
-[separate Terraform root](../infra/gcp/api/README.md) now prepares the public Cloud
-Run service and its runtime identity, but it has not been applied and no API image
-has been published.
+Open `http://127.0.0.1:8000/` to use the local page. The
+[separate Terraform root](../infra/gcp/api/README.md) owns the public Cloud Run
+service, its immutable image reference and its dedicated runtime identity. The
+page is deployed, but both data endpoints returned `503` at the original 10 MiB
+cap. The corrected image and probe configuration still need deployment, followed
+by reconciliation of both public responses with the comparison marts.
 
 ## API container
 
@@ -55,22 +59,21 @@ docker run --rm --name runwx-api-local --read-only -p 8080:8080 \
   runwx-api:local
 ```
 
-Open `http://127.0.0.1:8080/`. `/healthz` checks only that the HTTP process is ready;
+Open `http://127.0.0.1:8080/`. `/health` checks only that the HTTP process is ready;
 it deliberately does not query BigQuery. A successful comparison response is
 publicly cacheable for five minutes, the packaged assets for one hour, and the page
-itself is revalidated. Query submission and result waits remain bounded at 10 and 30
-seconds respectively.
+itself is revalidated. Query submission uses a 10-second RPC timeout and result
+waiting uses a 30-second timeout; client retries can extend the total request time.
 
 The image defaults to one Uvicorn worker on port 8080, runs as numeric user 10001 and
-supports a read-only root filesystem. The prepared service uses zero minimum
+supports a read-only root filesystem. The service configuration uses zero minimum
 instances, one maximum instance, concurrency 8, a 60-second request timeout and HTTP
-startup/liveness probes against `/healthz`. These remain planned settings until
-Terraform is applied.
+startup/liveness probes against `/health`.
 
 The dedicated runtime identity can create BigQuery query jobs and read only the
 named tables and views in the two approved comparison dependency chains. It has no
 dataset-wide data role, storage role or service-account key. The service uses an
-immutable `runwx-api@sha256:...` image and stays disabled until that digest is set.
+immutable `runwx-api@sha256:...` image.
 
 `requirements/api-container.lock` and `requirements/api-build.lock` are separate
 from the report and dbt locks because the serving image additionally needs FastAPI,
@@ -79,7 +82,7 @@ then rebuild the image, run `pip check` and repeat the offline container smoke c
 Exact version pins improve repeatability, while the immutable registry digest remains
 the deployment identity.
 
-The offline smoke check starts the real Uvicorn entrypoint and verifies `/healthz`,
+The offline smoke check starts the real Uvicorn entrypoint and verifies `/health`,
 the page and both packaged assets with container networking disabled. It cannot call
 a configured comparison mart because the offline container deliberately has neither
 Application Default Credentials nor BigQuery access. Repository tests cover those

@@ -49,8 +49,8 @@ run "public_api_has_bounded_runtime_and_exact_reads" {
 
   assert {
     condition = (
-      google_cloud_run_v2_service.api.template[0].containers[0].startup_probe[0].http_get[0].path == "/healthz" &&
-      google_cloud_run_v2_service.api.template[0].containers[0].liveness_probe[0].http_get[0].path == "/healthz"
+      google_cloud_run_v2_service.api.template[0].containers[0].startup_probe[0].http_get[0].path == "/health" &&
+      google_cloud_run_v2_service.api.template[0].containers[0].liveness_probe[0].http_get[0].path == "/health"
     )
     error_message = "Cloud Run must probe the process-only health endpoint."
   }

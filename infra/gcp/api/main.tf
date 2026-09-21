@@ -109,7 +109,7 @@ resource "google_cloud_run_v2_service" "api" {
         period_seconds        = 2
         initial_delay_seconds = 0
         http_get {
-          path = "/healthz"
+          path = "/health"
           port = 8080
         }
       }
@@ -120,7 +120,7 @@ resource "google_cloud_run_v2_service" "api" {
         period_seconds        = 30
         initial_delay_seconds = 10
         http_get {
-          path = "/healthz"
+          path = "/health"
           port = 8080
         }
       }

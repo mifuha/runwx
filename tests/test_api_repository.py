@@ -2,13 +2,13 @@ from datetime import datetime, timezone
 from unittest.mock import Mock
 
 import pytest
+from google.api_core.exceptions import BadRequest
 
 from runwx.api.repository import (
     BigQueryComparisonRepository,
     COURSES,
     ComparisonUnavailableError,
     CourseSource,
-    MAXIMUM_BYTES_BILLED,
     UnknownCourseError,
 )
 
@@ -73,7 +73,7 @@ def test_query_uses_only_catalog_table_and_parameterized_course():
     assert "LIMIT 50" in query
     assert SOURCE.course_id not in query
     assert config.use_legacy_sql is False
-    assert config.maximum_bytes_billed == MAXIMUM_BYTES_BILLED
+    assert config.maximum_bytes_billed == 64 * 1024 * 1024
     assert [(parameter.name, parameter.type_, parameter.value)
             for parameter in config.query_parameters] == [
         ("course_id", "STRING", SOURCE.course_id)
@@ -123,6 +123,24 @@ def test_known_course_with_no_rows_has_an_empty_edition_list():
     assert result.distance_m == 21097
     assert result.baseline_event_id == "eventrac:123"
     assert result.editions == []
+
+
+def test_query_failure_logs_course_and_original_exception(caplog):
+    client = Mock()
+    failure = BadRequest("Query exceeded limit for bytes billed")
+    client.query.side_effect = failure
+    repo = BigQueryComparisonRepository(client, courses={SOURCE.slug: SOURCE})
+
+    with caplog.at_level("ERROR", logger="runwx.api.repository"):
+        with pytest.raises(ComparisonUnavailableError, match="example-half") as caught:
+            repo.get_course_comparison(SOURCE.slug)
+
+    record, = caplog.records
+    assert record.getMessage() == "Comparison query failed for course example-half"
+    assert record.exc_info is not None
+    assert record.exc_info[1] is failure
+    assert record.exc_info[2] is not None
+    assert caught.value.__cause__ is failure
 
 
 def test_course_catalog_rejects_a_query_fragment_as_a_table():

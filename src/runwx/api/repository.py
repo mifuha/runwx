@@ -1,6 +1,7 @@
 """Read the small public comparison contract from explicit BigQuery marts."""
 
 from dataclasses import dataclass
+import logging
 import re
 from typing import Mapping
 
@@ -18,8 +19,10 @@ from runwx.api.models import (
 
 
 LOCATION = "europe-west1"
-MAXIMUM_BYTES_BILLED = 10 * 1024 * 1024
+# BigQuery bills at least 10 MiB per referenced table; Lydd currently reaches five.
+MAXIMUM_BYTES_BILLED = 64 * 1024 * 1024
 MAX_EDITIONS = 50
+LOGGER = logging.getLogger(__name__)
 TABLE_ID = re.compile(
     r"[a-z][a-z0-9-]{4,61}[a-z0-9]\."
     r"[A-Za-z_][A-Za-z0-9_]*\."
@@ -168,6 +171,7 @@ class BigQueryComparisonRepository:
             ValidationError,
             ValueError,
         ) as error:
+            LOGGER.exception("Comparison query failed for course %s", source.slug)
             raise ComparisonUnavailableError(
                 f"comparison mart unavailable for {source.slug}"
             ) from error
