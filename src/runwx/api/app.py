@@ -1,6 +1,7 @@
 """FastAPI application for the read-only runwx MVP."""
 
 from functools import lru_cache
+from hashlib import sha256
 from importlib.resources import files
 from typing import Annotated
 
@@ -18,9 +19,20 @@ from runwx.api.repository import (
 
 
 STATIC = files("runwx.api").joinpath("static")
-INDEX_HTML = STATIC.joinpath("index.html").read_text(encoding="utf-8")
 STYLESHEET = STATIC.joinpath("styles.css").read_text(encoding="utf-8")
 JAVASCRIPT = STATIC.joinpath("app.js").read_text(encoding="utf-8")
+INDEX_HTML = (
+    STATIC.joinpath("index.html")
+    .read_text(encoding="utf-8")
+    .replace(
+        'href="/assets/styles.css"',
+        f'href="/assets/styles.css?v={sha256(STYLESHEET.encode()).hexdigest()}"',
+    )
+    .replace(
+        'src="/assets/app.js"',
+        f'src="/assets/app.js?v={sha256(JAVASCRIPT.encode()).hexdigest()}"',
+    )
+)
 
 
 class ComparisonService:
