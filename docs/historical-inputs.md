@@ -7,7 +7,7 @@ BigQuery load and dbt path; the measured results are below.
 
 ## Prepare one explicitly chosen snapshot
 
-Use the saved race HTML and derived weather CSV, with their exact hashes and
+Use the saved race input and derived weather CSV, with their exact hashes and
 source references. Preserve the original weather response, request parameters,
 provider/model, units and capture time alongside the CSV. An export hashes the
 bytes it parses; the companion provenance record connects the CSV to its raw
@@ -28,7 +28,12 @@ python -m runwx.bigquery_load \
 
 Choose distance and timing interpretation from the selected sources; the values
 above illustrate the flags. `--timing-basis` describes the existing `Time` column;
-it does not switch columns. The parser retains its whole-second conversion.
+it does not switch columns for Eventrac. A frozen Sporthive JSON bundle instead uses
+`--race-input /path/to/snapshot.json --race-format sporthive_json` and requires the
+timing flag to select its chip or gun field. The bundle retains the provider race
+metadata, all ordered result pages and their response hashes, plus explicit event
+time/location metadata from retained evidence. Sporthive fractions are rounded up
+to match the whole-second convention used by the published results.
 For a source already rounded to whole seconds, document its upstream rounding
 separately. Omit the flag when the timing basis remains unknown.
 

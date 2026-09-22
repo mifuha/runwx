@@ -6,7 +6,7 @@ from datetime import timedelta, timezone
 from pathlib import Path
 
 from runwx.adapters.csv.io_weather import parse_weather_csv
-from runwx.adapters.races.eventrac_html import parse_eventrac_results_html
+from runwx.adapters.races.saved_results import parse_saved_race_results
 from runwx.domain.align import build_weather_index, nearest_weather
 
 
@@ -19,7 +19,7 @@ def encode_result_rows(rows: list[dict]) -> bytes:
 
 
 def build_result_rows(
-    race_html: Path,
+    race_input: Path,
     weather_csv: Path,
     *,
     course_id: str,
@@ -29,8 +29,9 @@ def build_result_rows(
     race_kind: str = "unknown",
     weather_kind: str = "unknown",
     timing_basis: str | None = None,
+    race_format: str = "eventrac_html",
 ) -> list[dict]:
-    """Export one row per candidate in a saved Eventrac snapshot, in source order.
+    """Export one row per candidate in a saved race snapshot, in source order.
 
     Source row IDs identify snapshot rows, not athletes or analysis revisions.
     Build the complete output before the CLI prints anything. Page, weather and
@@ -45,13 +46,17 @@ def build_result_rows(
     if timing_basis not in {None, "chip", "gun"}:
         raise ValueError("timing_basis must be chip, gun or None")
 
-    race_bytes = race_html.read_bytes()
+    race_bytes = race_input.read_bytes()
     weather_bytes = weather_csv.read_bytes()
     race_hash = hashlib.sha256(race_bytes).hexdigest()
     weather_hash = hashlib.sha256(weather_bytes).hexdigest()
-    parsed = parse_eventrac_results_html(
-        race_bytes.decode("utf-8"), course_id=course_id,
-        distance_m=distance_m, timezone_name=timezone_name,
+    parsed = parse_saved_race_results(
+        race_bytes,
+        race_format=race_format,
+        course_id=course_id,
+        distance_m=distance_m,
+        timezone_name=timezone_name,
+        timing_basis=timing_basis,
     )
     event = parsed.event.to_domain()
     weather_index = build_weather_index(parse_weather_csv(weather_bytes.decode("utf-8")))
@@ -61,7 +66,7 @@ def build_result_rows(
     invalid = {row.row_number: row for row in parsed.errors}
     locators = [*parsed.accepted_row_numbers, *skipped, *invalid]
     if sorted(locators) != list(range(1, parsed.candidate_count + 1)):
-        raise RuntimeError("Eventrac source row locators do not reconcile")
+        raise RuntimeError("source row locators do not reconcile")
 
     rows = []
     for row_number in range(1, parsed.candidate_count + 1):
@@ -85,8 +90,8 @@ def build_result_rows(
                 "max_gap_seconds": max_gap.total_seconds(),
                 "alignment": "nearest observation to run midpoint",
                 "tie_break": "earlier observation",
-                "duration_precision": "whole seconds; fractions truncated",
-                "timing_basis": timing_basis,
+                "duration_precision": parsed.duration_precision,
+                "timing_basis": parsed.timing_basis,
             },
             "validation_status": None,
             "validation_reason": None,

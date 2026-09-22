@@ -1,7 +1,8 @@
 # Local race-result export
 
 `export-results` prints one JSON object per line (NDJSON), ready to inspect as rows.
-It uses the existing Eventrac parser, race-to-run conversion and weather matcher.
+It accepts saved Eventrac HTML or an explicitly selected Sporthive JSON bundle,
+then uses the same race-to-run conversion and weather matcher.
 The summary report and the separate CSV/SQLite activity workflow remain available.
 
 ## Run the synthetic example
@@ -79,13 +80,19 @@ Page/schema errors, malformed weather and unexpected processing errors fail the
 whole export before it prints rows. Expected result-row rejections stay visible.
 The complete output is built and serialised in memory before printing.
 
-The exporter does not independently verify timing basis, source completeness or
-weather location.
-`timing_basis` defaults to null. Supply `--timing-basis chip` or `gun` only after
-checking what the source's `Time` column means. This records interpretation; it
-does not select a different time column or change durations. These labels and
-hashes do not verify source accuracy. Retain provider/request and raw-response
-provenance alongside the export; see [historical inputs](historical-inputs.md).
+The exporter does not independently verify timing meaning, external event
+completeness or weather location.
+`timing_basis` defaults to null for Eventrac. Supply `--timing-basis chip` or `gun`
+only after checking what the source's `Time` column means. For Eventrac this records
+the interpretation without changing the parsed column. A Sporthive bundle requires
+the flag and uses it to select the provider's chip or gun field.
+
+Use `--race-input snapshot.json --race-format sporthive_json` for a frozen Sporthive
+bundle. The adapter checks complete ordered pages, provider counts, event/race IDs,
+participant-result IDs and one retained response-hash record per race/page before
+producing row outcomes. These labels and hashes do not verify source accuracy.
+Retain provider/request and raw-response provenance alongside the export; see
+[historical inputs](historical-inputs.md).
 Code/dependency versions and the original start-time text are not captured in this
 export. Repeatability assumes the same code and environment; companion provenance
 is needed when preparing real historical inputs. The synthetic export has passed a
@@ -118,7 +125,7 @@ They are not implemented by this local export.
 ## Tests
 
 ```bash
-python -m pytest -q tests/test_result_export.py
+python -m pytest -q tests/test_result_export.py tests/test_sporthive_json.py
 ```
 
 The tests block network connections, reconcile the synthetic rows with the existing

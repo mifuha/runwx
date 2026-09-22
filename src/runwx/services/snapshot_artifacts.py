@@ -19,7 +19,7 @@ class SnapshotArtifacts:
 
 
 def build_snapshot_artifacts(
-    race_html: Path,
+    race_input: Path,
     weather_csv: Path,
     *,
     course_id: str,
@@ -31,6 +31,7 @@ def build_snapshot_artifacts(
     race_kind: str | None = None,
     export_weather_kind: str | None = None,
     timing_basis: str | None = None,
+    race_format: str = "eventrac_html",
 ) -> SnapshotArtifacts:
     """Reuse the local builders, then reject any disagreement between them."""
     if race_kind is None:
@@ -39,7 +40,7 @@ def build_snapshot_artifacts(
         export_weather_kind = weather_kind
 
     report = build_offline_report(
-        race_html,
+        race_input,
         weather_csv,
         course_id=course_id,
         distance_m=distance_m,
@@ -47,9 +48,11 @@ def build_snapshot_artifacts(
         top_n=top_n,
         max_gap=max_gap,
         weather_kind=weather_kind,
+        race_format=race_format,
+        timing_basis=timing_basis,
     )
     rows = build_result_rows(
-        race_html,
+        race_input,
         weather_csv,
         course_id=course_id,
         distance_m=distance_m,
@@ -58,6 +61,7 @@ def build_snapshot_artifacts(
         race_kind=race_kind,
         weather_kind=export_weather_kind,
         timing_basis=timing_basis,
+        race_format=race_format,
     )
     if not rows:
         raise ValueError("result export has no candidate rows")

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from runwx.adapters.csv.io_runs import load_runs_csv
 from runwx.adapters.csv.io_weather import load_weather_csv
+from runwx.adapters.races.saved_results import RACE_FORMATS
 from runwx.adapters.sqlite.query_sqlite import fetch_latest_enriched
 from runwx.adapters.sqlite.storage_sqlite import connect, write_pipeline_result
 from runwx.domain.models import Run, WeatherObs
@@ -92,22 +93,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     help="Suppress human-readable output (logs only).",
 )
     # Both saved-input commands use the same interpretation flags.
-    report_p = sub.add_parser("report", help="Report on saved race HTML and weather CSV without network access.")
+    report_p = sub.add_parser("report", help="Report on saved race results and weather CSV without network access.")
     export_p = sub.add_parser("export-results", help="Export one JSON line per saved race result row offline.")
     for saved_p in (report_p, export_p):
-        saved_p.add_argument("--race-html", type=Path, required=True)
+        saved_p.add_argument("--race-html", "--race-input", dest="race_input", type=Path, required=True)
+        saved_p.add_argument("--race-format", choices=RACE_FORMATS, default="eventrac_html")
         saved_p.add_argument("--weather-csv", type=Path, required=True)
         saved_p.add_argument("--course-id", required=True)
         saved_p.add_argument("--distance-m", type=int, required=True)
         saved_p.add_argument("--timezone", dest="timezone_name", required=True)
         saved_p.add_argument("--max-gap-min", type=int, default=30)
+        saved_p.add_argument("--timing-basis", choices=("chip", "gun"),
+                             help="Documented timing basis used by the saved result source.")
         saved_p.set_defaults(log_level="WARNING")
     report_p.add_argument("--top-n", type=int, default=20)
-    report_p.add_argument("--weather-kind", choices=("synthetic", "unknown"), default="unknown")
+    report_p.add_argument("--weather-kind", choices=("synthetic", "historical_reanalysis", "unknown"), default="unknown")
     export_p.add_argument("--race-kind", choices=("synthetic", "historical", "unknown"), default="unknown")
     export_p.add_argument("--weather-kind", choices=("synthetic", "historical_reanalysis", "unknown"), default="unknown")
-    export_p.add_argument("--timing-basis", choices=("chip", "gun"),
-                          help="Documented basis of the Time column; does not select a different column.")
 
     args = p.parse_args(argv)
 
@@ -134,21 +136,23 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.cmd == "export-results":
         rows = build_result_rows(
-            args.race_html, args.weather_csv, course_id=args.course_id,
+            args.race_input, args.weather_csv, course_id=args.course_id,
             distance_m=args.distance_m, timezone_name=args.timezone_name,
             max_gap=timedelta(minutes=args.max_gap_min),
             race_kind=args.race_kind, weather_kind=args.weather_kind,
             timing_basis=args.timing_basis,
+            race_format=args.race_format,
         )
         print(encode_result_rows(rows).decode("utf-8"), end="")
         return
 
     if args.cmd == "report":
         report = build_offline_report(
-            args.race_html, args.weather_csv, course_id=args.course_id,
+            args.race_input, args.weather_csv, course_id=args.course_id,
             distance_m=args.distance_m, timezone_name=args.timezone_name,
             top_n=args.top_n, max_gap=timedelta(minutes=args.max_gap_min),
             weather_kind=args.weather_kind,
+            race_format=args.race_format, timing_basis=args.timing_basis,
         )
         print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
         return
