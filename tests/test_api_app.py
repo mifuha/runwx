@@ -1,5 +1,6 @@
 import asyncio
 from datetime import date, datetime, timezone
+from hashlib import sha256
 from unittest.mock import Mock
 
 import httpx
@@ -289,3 +290,15 @@ def test_frontend_assets_are_local_packaged_and_cache_bounded():
     assert "renderCharts" in javascript.text
     assert "textContent" in javascript.text
     assert "innerHTML" not in javascript.text
+
+
+def test_page_urls_identify_the_exact_packaged_assets():
+    page = asyncio.run(request(Repository(), "/"))
+    stylesheet = asyncio.run(request(Repository(), "/assets/styles.css"))
+    javascript = asyncio.run(request(Repository(), "/assets/app.js"))
+
+    css_url = f"/assets/styles.css?v={sha256(stylesheet.content).hexdigest()}"
+    js_url = f"/assets/app.js?v={sha256(javascript.content).hexdigest()}"
+    assert f'href="{css_url}"' in page.text
+    assert f'src="{js_url}"' in page.text
+    assert asyncio.run(request(Repository(), js_url)).content == javascript.content

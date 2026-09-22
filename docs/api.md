@@ -77,7 +77,9 @@ docker run --rm --name runwx-api-local --read-only -p 8080:8080 \
 Open `http://127.0.0.1:8080/`. `/health` checks only that the HTTP process is ready;
 it deliberately does not query BigQuery. A successful comparison response is
 publicly cacheable for five minutes, the packaged assets for one hour, and the page
-itself is revalidated. Query submission uses a 10-second RPC timeout and result
+itself is revalidated. The page uses content-hashed asset URLs, so a new deployment
+does not pair its HTML with an older cached script. Query submission uses a
+10-second RPC timeout and result
 waiting uses a 30-second timeout; client retries can extend the total request time.
 
 The image defaults to one Uvicorn worker on port 8080, runs as numeric user 10001 and
