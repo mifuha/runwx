@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from unittest.mock import Mock
 
 import httpx
@@ -10,6 +10,10 @@ from runwx.api.models import (
     CourseComparison,
     EditionComparison,
     PaceSummary,
+    SampledCourseComparison,
+    SampledEditionComparison,
+    SampledWeatherSummary,
+    TimingCounts,
     WeatherSummary,
 )
 from runwx.api.repository import ComparisonUnavailableError, UnknownCourseError
@@ -65,6 +69,42 @@ def response():
                 ),
             )
         ],
+    )
+
+
+def sampled_response():
+    return SampledCourseComparison(
+        course_slug="great-north-run",
+        course_name="Great North Run",
+        course_id="great-north-run-traditional",
+        distance_m=21100,
+        baseline_event_id="greatrun:881",
+        sample_label="Top 1,000 only*",
+        sample_note="Fastest 1,000 running results; not all finishers.",
+        editions=[SampledEditionComparison(
+            event_id="greatrun:881",
+            year=2019,
+            race_date=date(2019, 9, 8),
+            comparison_status="descriptive_sample",
+            sample_size=1000,
+            pace=PaceSummary(
+                median_s_per_km=246.9,
+                mean_s_per_km=243.4,
+                p25_s_per_km=235.0,
+                p75_s_per_km=259.0,
+                fastest_n=20,
+                fastest_n_median_s_per_km=206.6,
+            ),
+            weather=SampledWeatherSummary(
+                median_temperature_c=13.9,
+                median_wind_mps=1.04,
+                median_humidity_pct=69.0,
+                precipitation_mm=0.0,
+                context_note="Fixed 10:00–14:00 local start-area ERA5 window.",
+            ),
+            timing=TimingCounts(chip=994, gun=6, unknown=0, note="Published timing flags retained."),
+            median_pace_change_pct=0.0,
+        )],
     )
 
 
@@ -131,6 +171,27 @@ def test_comparison_endpoint_returns_the_public_contract():
             }
         ],
     }
+
+
+def test_sampled_endpoint_exposes_sample_and_fixed_weather_without_full_field_claims():
+    repository = Repository(result=sampled_response())
+
+    result = asyncio.run(request(repository, "/api/courses/great-north-run/comparison"))
+
+    assert result.status_code == 200
+    assert repository.requests == ["great-north-run"]
+    body = result.json()
+    assert body["scope"] == "top_1000"
+    assert body["sample_label"] == "Top 1,000 only*"
+    assert body["editions"][0]["sample_size"] == 1000
+    assert body["editions"][0]["race_date"] == "2019-09-08"
+    assert body["editions"][0]["timing"] == {
+        "chip": 994, "gun": 6, "unknown": 0,
+        "note": "Published timing flags retained.",
+    }
+    assert body["editions"][0]["weather"]["context_note"].startswith("Fixed")
+    assert "finishers" not in body["editions"][0]
+    assert "started_at_utc" not in body["editions"][0]
 
 
 def test_health_check_is_process_only_and_not_cached():
@@ -202,6 +263,8 @@ def test_home_page_serves_the_minimal_comparison_interface():
     assert 'id="weather-chart"' in result.text
     assert 'class="charts-timeline"' in result.text
     assert 'id="comparison-rows"' in result.text
+    assert 'value="great-north-run"' in result.text
+    assert 'id="timing-heading"' in result.text
     assert "Simple statistics, fixed historical snapshots, no prediction." in result.text
     assert 'src="http' not in result.text
     assert 'href="http' not in result.text

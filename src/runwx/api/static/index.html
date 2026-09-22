@@ -29,6 +29,7 @@
             <select id="course-select" name="course">
               <option value="lydd-half">Lydd Half Marathon</option>
               <option value="folkestone-half">Folkestone Half Marathon</option>
+              <option value="great-north-run">Great North Run</option>
             </select>
           </label>
           <label>
@@ -71,7 +72,7 @@
             <p class="chart-direction">The same editions are aligned across both plots.</p>
           </div>
           <div class="charts-scroll">
-            <div class="charts-timeline">
+            <div class="charts-timeline" id="charts-timeline">
               <div class="chart-block">
                 <div class="chart-subheading">
                   <h4 id="pace-chart-title">Median pace</h4>
@@ -104,7 +105,8 @@
               <thead>
                 <tr>
                   <th scope="col">Edition</th>
-                  <th scope="col">Finishers</th>
+                  <th scope="col" id="count-heading">Finishers</th>
+                  <th scope="col" id="timing-heading" hidden>Chip / gun / unknown</th>
                   <th scope="col">Median</th>
                   <th scope="col">Mean</th>
                   <th scope="col">Middle 50%</th>
@@ -123,7 +125,7 @@
 
         <aside class="interpretation" aria-labelledby="interpretation-title">
           <h3 id="interpretation-title">How to read this</h3>
-          <p>
+          <p id="interpretation-text">
             Weather values are ERA5 estimates matched to runner midpoints. Editions contain
             different runners, so differences are descriptive and do not prove a weather effect.
           </p>

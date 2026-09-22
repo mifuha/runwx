@@ -39,6 +39,14 @@ locals {
       dataset_id = "runwx_dbt_folkestone_2019_f95b3ae312e3"
       table_id   = "mart_course_comparison"
     }
+    "runwx_dbt_gnr_top1000_v1.mart_gnr_edition_summary" = {
+      dataset_id = "runwx_dbt_gnr_top1000_v1"
+      table_id   = "mart_gnr_edition_summary"
+    }
+    "runwx_dbt_gnr_top1000_v1.mart_gnr_sample_comparison" = {
+      dataset_id = "runwx_dbt_gnr_top1000_v1"
+      table_id   = "mart_gnr_sample_comparison"
+    }
   }
 
   query_dependencies = merge(

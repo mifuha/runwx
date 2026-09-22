@@ -14,25 +14,36 @@ external frontend or chart dependency.
 GET /api/courses/{course_slug}/comparison
 ```
 
-The current reviewed course slugs are `lydd-half` and `folkestone-half`. Each maps
-to one explicit BigQuery comparison view. The URL cannot select a table or submit
-SQL. The query selects the fixed public columns, binds the expected course ID as a
-parameter, reads at most 50 editions and refuses to bill more than 64 MiB. The
-first deployed queries required 50 MiB for Lydd and 30 MiB for Folkestone because
+The reviewed course slugs in this code are `lydd-half`, `folkestone-half` and
+`great-north-run`. Each maps to one explicit BigQuery comparison view. The URL
+cannot select a table or submit SQL. The query selects fixed public columns, binds
+the expected course ID as a parameter, reads at most 50 editions and refuses to
+bill more than 64 MiB. The first deployed queries required 50 MiB for Lydd and
+30 MiB for Folkestone because
 of BigQuery's minimum billing per referenced table. The previous 10 MiB cap rejected
 both; 64 MiB leaves a small margin above the current requirement.
 
-The response contains the course and baseline identity, followed by editions in
-date order. Each edition includes finishers; median, mean, p25–p75 and fastest-N
+The full-field response contains the course and baseline identity, followed by
+editions in date order. Each edition includes finishers; median, mean, p25–p75 and fastest-N
 pace; matched-weather coverage and medians; its compatibility status; and its
 pace/speed change from the stated baseline. Pace values are seconds per kilometre.
 
-An unknown course returns `404`. A configured course with no rows returns an empty
-`editions` list. A warehouse timeout or invalid mart row returns `503` without
-exposing internal details.
+Great North Run has a separate sampled response. Its 19 editions use the fastest
+1,000 available running results per year, not the full race field. The response
+uses `sample_size` rather than `finishers`, keeps chip/gun/unknown timing counts,
+and gives one fixed 10:00–14:00 local start-area ERA5 weather context per edition.
+That weather is not matched to individual runners. The page labels this clearly
+and plots the years with the gaps for 2020 and the different-route 2021 edition.
+The differences from the 2019 baseline are descriptive, not weather effects.
+The GNR query has been checked against the real mart locally; the new API image
+and read grants are not deployed yet, so the live page still has two courses.
 
-Install and run locally with Application Default Credentials that can query the two
-views:
+An unknown course returns `404`. A full-field course with no rows returns an empty
+`editions` list. A missing GNR sample, warehouse timeout or invalid mart row returns
+`503` without exposing internal details.
+
+Install and run locally with Application Default Credentials that can query the
+selected view and its dependencies:
 
 ```bash
 python -m pip install -e '.[bigquery,api]'
@@ -75,7 +86,8 @@ instances, one maximum instance, concurrency 8, a 60-second request timeout and 
 startup/liveness probes against `/health`.
 
 The dedicated runtime identity can create BigQuery query jobs and read only the
-named tables and views in the two approved comparison dependency chains. It has no
+named tables and views in the deployed comparison dependency chains. The GNR
+change prepares two more exact table/view read grants. The identity has no
 dataset-wide data role, storage role or service-account key. The service uses an
 immutable `runwx-api@sha256:...` image.
 

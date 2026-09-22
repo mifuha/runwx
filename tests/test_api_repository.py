@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from unittest.mock import Mock
 
 import pytest
@@ -60,6 +60,50 @@ def repository(rows):
     return BigQueryComparisonRepository(client, courses={SOURCE.slug: SOURCE}), client, job
 
 
+def sampled_row(**changes):
+    row = {
+        "event_id": "greatrun:881",
+        "course_id": "great-north-run-traditional",
+        "race_date": date(2019, 9, 8),
+        "distance_m": 21100,
+        "sample_size": 1000,
+        "sample_label": "Top 1,000 only*",
+        "sample_note": "Fastest 1,000 running results; not all finishers.",
+        "timing_note": "Published timing flags retained.",
+        "chip_count": 994,
+        "gun_count": 6,
+        "unknown_count": 0,
+        "mean_pace_s_per_km": 243.4,
+        "median_pace_s_per_km": 246.9,
+        "pace_p25_s_per_km": 235.0,
+        "pace_p75_s_per_km": 259.0,
+        "top_n_effective": 20,
+        "top_n_median_pace_s_per_km": 206.6,
+        "weather_context_basis": "fixed_event_window",
+        "weather_context_note": "Fixed 10:00–14:00 local start-area ERA5 window.",
+        "weather_start_local": "10:00",
+        "weather_end_local": "14:00",
+        "median_temp_c": 13.9,
+        "median_wind_mps": 1.04,
+        "median_humidity_pct": 69.0,
+        "precipitation_mm": 0.0,
+        "baseline_event_id": "greatrun:881",
+        "comparison_status": "descriptive_sample",
+        "median_pace_change_pct": 0.0,
+    }
+    row.update(changes)
+    return row
+
+
+def sampled_repository(rows):
+    job = Mock()
+    job.result.return_value = rows
+    client = Mock()
+    client.query.return_value = job
+    source = COURSES["great-north-run"]
+    return BigQueryComparisonRepository(client, courses={source.slug: source}), client
+
+
 def test_query_uses_only_catalog_table_and_parameterized_course():
     repo, client, job = repository([comparison_row()])
 
@@ -86,6 +130,42 @@ def test_query_uses_only_catalog_table_and_parameterized_course():
     assert result.editions[0].year == 2022
     assert result.editions[0].pace.fastest_n == 20
     assert result.editions[0].weather.median_temperature_c == 5.8
+
+
+def test_sampled_query_keeps_sample_weather_and_timing_distinct_from_full_field():
+    repo, client = sampled_repository([sampled_row()])
+
+    result = repo.get_course_comparison("great-north-run")
+
+    query = client.query.call_args.args[0]
+    config = client.query.call_args.kwargs["job_config"]
+    assert "FROM `runwx-learning-mifuha.runwx_dbt_gnr_top1000_v1.mart_gnr_sample_comparison`" in query
+    assert "WHERE course_id = @course_id" in query
+    assert "ORDER BY race_date, event_id" in query
+    assert config.maximum_bytes_billed == 64 * 1024 * 1024
+    assert config.query_parameters[0].value == "great-north-run-traditional"
+    assert result.scope == "top_1000"
+    assert result.sample_label == "Top 1,000 only*"
+    assert result.editions[0].sample_size == 1000
+    assert result.editions[0].timing.chip == 994
+    assert result.editions[0].weather.precipitation_mm == 0.0
+    assert result.editions[0].median_pace_change_pct == 0.0
+
+
+@pytest.mark.parametrize("rows", [
+    [],
+    [sampled_row(sample_size=999)],
+    [sampled_row(chip_count=993)],
+    [sampled_row(weather_context_basis="runner_midpoint")],
+    [sampled_row(weather_end_local="16:00")],
+    [sampled_row(median_pace_change_pct=None)],
+    [sampled_row(event_id="greatrun:other")],
+])
+def test_invalid_sampled_mart_is_unavailable(rows):
+    repo, _ = sampled_repository(rows)
+
+    with pytest.raises(ComparisonUnavailableError, match="great-north-run"):
+        repo.get_course_comparison("great-north-run")
 
 
 def test_unknown_course_never_queries_bigquery():
@@ -176,5 +256,11 @@ def test_public_catalog_matches_the_verified_comparison_views():
             21097,
             "eventrac:36835",
             "runwx-learning-mifuha.runwx_dbt_folkestone_2019_f95b3ae312e3.mart_course_comparison",
+        ),
+        "great-north-run": (
+            "great-north-run-traditional",
+            21100,
+            "greatrun:881",
+            "runwx-learning-mifuha.runwx_dbt_gnr_top1000_v1.mart_gnr_sample_comparison",
         ),
     }
