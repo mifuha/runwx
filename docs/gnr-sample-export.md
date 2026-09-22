@@ -68,7 +68,7 @@ timing basis, source hashes, weather-request hash and window/location settings.
 It reuses the deterministic NDJSON encoder. The existing full-field export and
 Cloud Run commands remain supported as before.
 
-This step prepares files only. The current BigQuery loader rejects this contract;
-sample-aware loading, dbt models and public presentation are the next integration
-work. Do not rename its fields to force it through the full-field loader. No cloud
-load or public GNR comparison is claimed by this command.
+This step prepares files only. The [sample-aware BigQuery loader](gnr-sample-load.md)
+checks this contract separately; the full-result loader still rejects it. dbt
+models and public presentation need their own integration work. No cloud load or
+public GNR comparison is claimed by this command.

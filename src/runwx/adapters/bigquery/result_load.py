@@ -2,7 +2,7 @@
 
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from hashlib import sha256
 from importlib.resources import files
 from io import BytesIO
@@ -40,6 +40,10 @@ def _normalise_fields(row, schema=SCHEMA):
             if timestamp.utcoffset() is None:
                 raise ValueError(f"{name} must include a timezone")
             value = timestamp.astimezone(timezone.utc).isoformat()
+        elif kind == "DATE":
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+                raise ValueError(f"{name} must be an ISO date")
+            date.fromisoformat(value)
         elif kind == "STRING" and not isinstance(value, str):
             raise ValueError(f"{name} must be a string")
         elif kind == "INTEGER" and (type(value) is not int or abs(value) >= 2**53):
@@ -63,6 +67,14 @@ class PreparedLoad:
     rows: list[dict]
     table_id: str
     location: str
+
+    @property
+    def schema(self):
+        return SCHEMA
+
+    @property
+    def order_column(self):
+        return "source_row_number"
 
     def summary(self):
         outcomes = Counter(row["validation_status"] for row in self.rows)
@@ -136,7 +148,7 @@ def prepare_load(payload: bytes, *, table_id: str, expected_sha256: str,
     return PreparedLoad(payload, rows, table_id, location)
 
 
-def load_prepared(client, prepared: PreparedLoad) -> dict:
+def load_prepared(client, prepared) -> dict:
     """Write only to an empty, pre-created table; verify equal rows on each rerun.
 
     Intended for one controlled, sequential submission path. Failed or uncertain
@@ -149,14 +161,14 @@ def load_prepared(client, prepared: PreparedLoad) -> dict:
     if client.project != project:
         raise ValueError("client project must match destination project")
     table = client.get_table(prepared.table_id, retry=None, timeout=30)
-    expected_schema = [bigquery.SchemaField.from_api_repr(field) for field in SCHEMA]
+    expected_schema = [bigquery.SchemaField.from_api_repr(field) for field in prepared.schema]
     if table.location != prepared.location or table.table_type != "TABLE" or table.schema != expected_schema:
         raise ValueError("destination location, type or schema differs from the prepared load")
 
     verification_jobs = []
 
     def read_rows():
-        query = f"SELECT TO_JSON_STRING(t) AS row_json FROM `{prepared.table_id}` AS t ORDER BY source_row_number LIMIT @row_limit"
+        query = f"SELECT TO_JSON_STRING(t) AS row_json FROM `{prepared.table_id}` AS t ORDER BY {prepared.order_column} LIMIT @row_limit"
         config = bigquery.QueryJobConfig(
             use_legacy_sql=False, use_query_cache=False,
             maximum_bytes_billed=MAXIMUM_BYTES_BILLED,
@@ -164,7 +176,7 @@ def load_prepared(client, prepared: PreparedLoad) -> dict:
         )
         job = client.query(query, location=prepared.location, job_config=config,
                            retry=None, job_retry=None, timeout=30)
-        rows = [_normalise_fields(json.loads(row["row_json"])) for row in
+        rows = [_normalise_fields(json.loads(row["row_json"]), prepared.schema) for row in
                 job.result(timeout=300, retry=None, job_retry=None, max_results=len(prepared.rows) + 1)]
         verification_jobs.append({
             "job_id": job.job_id, "bytes_processed": job.total_bytes_processed,
