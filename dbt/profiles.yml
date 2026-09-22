@@ -11,7 +11,7 @@ runwx:
       threads: 1
       job_retries: 0
       job_execution_timeout_seconds: 300
-      maximum_bytes_billed: 104857600
+      maximum_bytes_billed: "{{ env_var('RUNWX_DBT_MAXIMUM_BYTES_BILLED', '104857600') | int }}"
     cloud:
       type: bigquery
       method: oauth
@@ -21,4 +21,4 @@ runwx:
       threads: 1
       job_retries: 0
       job_execution_timeout_seconds: 300
-      maximum_bytes_billed: 104857600
+      maximum_bytes_billed: "{{ env_var('RUNWX_DBT_MAXIMUM_BYTES_BILLED', '104857600') | int }}"

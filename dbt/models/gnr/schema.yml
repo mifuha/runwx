@@ -1,0 +1,33 @@
+version: 2
+models:
+  - name: stg_gnr_sample_results
+    description: Explicit union of saved top-1,000 GNR snapshots; weather is one event-window context per edition.
+  - name: mart_gnr_edition_summary
+    description: One sampled-edition row with pace statistics, timing counts, source hashes and fixed-window ERA5 context.
+    columns:
+      - name: snapshot_table
+        data_tests:
+          - not_null
+          - unique
+      - name: event_id
+        data_tests:
+          - not_null
+          - unique
+      - name: sample_size
+        description: Number of sampled results, never the full race finisher count.
+      - name: median_temp_c
+        description: Median of the fixed 10:00–14:00 start-area ERA5 window, not runner exposure.
+  - name: mart_gnr_sample_comparison
+    description: Descriptive same-course comparison of sampled editions against one explicit baseline; not a weather-effect estimate.
+    columns:
+      - name: snapshot_table
+        data_tests:
+          - not_null
+          - unique
+      - name: comparison_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [descriptive_sample, different_course_or_scope]
+      - name: median_pace_change_pct
+        description: Descriptive change in sampled median pace, not a causal weather adjustment.

@@ -195,6 +195,29 @@ dataset, defaulting to `runwx_dbt_demo`. Run each snapshot into its own output
 dataset to retain both sets of views. The single-export checks and all metric
 definitions are unchanged. See [historical input preparation](historical-inputs.md).
 
+## Great North Run sampled comparison
+
+GNR uses a separate dbt path because its saved results are a **Top 1,000 only**
+sample, with one fixed 10:00–14:00 start-area ERA5 weather context per edition.
+The existing Lydd and Folkestone models still describe full fields and runner-level
+weather matches. The GNR build takes an explicit `gnr_sample_tables` list and
+`gnr_baseline_event_id`; it does not discover or mix in other snapshots.
+
+`mart_gnr_edition_summary` stores one row per sampled edition with pace spread,
+fastest-20, timing counts, source hashes and the weather context.
+`mart_gnr_sample_comparison` compares those rows with the stated baseline. Its pace
+differences are descriptive; they are not weather effects. The sample label and
+published chip/gun/unknown timing counts stay visible in the mart.
+
+The verified local dbt build against the real BigQuery snapshots used the separate
+`runwx_dbt_gnr_top1000_v1` dataset and the 2019 baseline. Two models and ten tests
+passed, and an independent readback matched all 19 editions and 19,000 sampled rows
+against the saved exports. The build needed a per-query billing cap above the
+default 100 MiB because it read 19 source tables; `RUNWX_DBT_MAXIMUM_BYTES_BILLED`
+sets that cap for a reviewed run. Terraform is no-op after creating the output
+dataset. This GNR path has run locally with developer credentials; it has not run in
+the Cloud Run dbt job, and the public API/page does not show it yet.
+
 ## Staged build runner
 
 The [stage runner](../dbt/stage_runner.py) invokes the existing dbt project with

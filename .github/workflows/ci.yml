@@ -173,6 +173,14 @@ jobs:
           runwx-dbt-ci --no-partial-parse parse --profiles-dir . --target local
           --vars '{"comparison_datasets": ["edition_a", "edition_b"], "comparison_baseline": "edition_a"}'
 
+      - name: Parse sampled GNR models offline
+        run: >-
+          docker run --rm --network none --read-only
+          --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777
+          --env RUNWX_DBT_DATASET=runwx_dbt_gnr_ci
+          runwx-dbt-ci --no-partial-parse parse --profiles-dir . --target local
+          --vars '{"gnr_sample_tables": ["runwx-offline-placeholder.runwx_staging.gnr_2019_7243482b06bc", "runwx-offline-placeholder.runwx_staging.gnr_2022_b16167fb62dc"], "gnr_baseline_event_id": "greatrun:881"}'
+
       - name: Preview staged dbt runner offline
         run: >-
           docker run --rm --network none --read-only --entrypoint python
