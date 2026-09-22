@@ -8,7 +8,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from runwx.adapters.csv.io_weather import parse_weather_csv
-from runwx.adapters.races.eventrac_html import parse_eventrac_results_html
+from runwx.adapters.races.saved_results import parse_saved_race_results
 from runwx.services.event_weather_summary import summarize_event_weather
 from runwx.services.pipeline import enrich_runs
 from runwx.services.race_convert import results_to_runs
@@ -16,7 +16,7 @@ from runwx.services.race_summary import summarize_results
 
 
 def build_offline_report(
-    race_html: Path,
+    race_input: Path,
     weather_csv: Path,
     *,
     course_id: str,
@@ -25,6 +25,8 @@ def build_offline_report(
     top_n: int = 20,
     max_gap: timedelta = timedelta(minutes=30),
     weather_kind: str = "unknown",
+    race_format: str = "eventrac_html",
+    timing_basis: str | None = None,
 ) -> dict:
     """Hash and parse the same bytes, then reuse existing analysis functions.
 
@@ -36,14 +38,18 @@ def build_offline_report(
         raise ValueError("top_n must be positive")
     if max_gap < timedelta(0):
         raise ValueError("max_gap must be non-negative")
-    if weather_kind not in {"synthetic", "unknown"}:
-        raise ValueError("weather_kind must be synthetic or unknown")
+    if weather_kind not in {"synthetic", "historical_reanalysis", "unknown"}:
+        raise ValueError("weather_kind must be synthetic, historical_reanalysis or unknown")
 
-    race_bytes = race_html.read_bytes()
+    race_bytes = race_input.read_bytes()
     weather_bytes = weather_csv.read_bytes()
-    parsed = parse_eventrac_results_html(
-        race_bytes.decode("utf-8"), course_id=course_id,
-        distance_m=distance_m, timezone_name=timezone_name,
+    parsed = parse_saved_race_results(
+        race_bytes,
+        race_format=race_format,
+        course_id=course_id,
+        distance_m=distance_m,
+        timezone_name=timezone_name,
+        timing_basis=timing_basis,
     )
     weather = parse_weather_csv(weather_bytes.decode("utf-8"))
     event = parsed.event.to_domain()
@@ -67,9 +73,12 @@ def build_offline_report(
     else:
         coverage_status = "complete"
 
+    timing_note = "Every runner uses the event start; individual starts are unknown."
+    if parsed.timing_basis is None:
+        timing_note += " The chip/gun timing basis is unknown."
     limitations = [
         "Counts describe the saved result rows; full event completeness is unverified.",
-        "Every runner uses the event start; individual starts and chip/gun timing basis are unknown.",
+        timing_note,
         "Weather coverage measures time matching, not spatial suitability or whole-race conditions.",
         "Weather medians are across matched runners; the same observation may be reused.",
         "Weather CSV has no verified location, provider or capture metadata.",
@@ -77,6 +86,8 @@ def build_offline_report(
     ]
     if weather_kind == "synthetic":
         limitations.insert(0, "Weather values are synthetic demo data, not historical race conditions.")
+    elif weather_kind == "historical_reanalysis":
+        limitations.insert(0, "Weather is historical reanalysis, not an on-course measurement.")
     else:
         limitations.insert(0, "Weather origin is unknown; historical accuracy is unverified.")
 
@@ -117,7 +128,7 @@ def build_offline_report(
         "weather_summary": asdict(weather_summary) if weather_summary else None,
         "sources": {
             "race": {
-                "file": str(race_html), "sha256": sha256(race_bytes).hexdigest(),
+                "file": str(race_input), "sha256": sha256(race_bytes).hexdigest(),
                 "provider": event.source, "source_event_id": event.source_event_id,
             },
             "weather": {
@@ -134,8 +145,8 @@ def build_offline_report(
             "max_gap_seconds": max_gap.total_seconds(),
             "alignment": "nearest observation to run midpoint",
             "tie_break": "earlier observation",
-            "duration_precision": "whole seconds; fractions truncated",
-            "timing_basis": None,
+            "duration_precision": parsed.duration_precision,
+            "timing_basis": parsed.timing_basis,
         },
         "limitations": limitations,
     }

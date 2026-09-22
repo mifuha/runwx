@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -10,41 +9,14 @@ from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from pydantic import ValidationError
 
+from runwx.adapters.races.outcomes import InvalidRaceRow, RaceParseResult, SkippedRaceRow
 from runwx.adapters.races.schemas import RaceEventIn, RaceResultIn
 
 
-@dataclass(frozen=True)
-class SkippedEventracRow:
-    """An expected skip, numbered from 1 among candidate result rows."""
-
-    row_number: int
-    reason: str
-
-
-@dataclass(frozen=True)
-class InvalidEventracRow:
-    """A rejected source row and its stripped cell values in source order."""
-
-    row_number: int
-    reason: str
-    values: tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class EventracParseResult:
-    """Reconciled outcomes for a structurally valid Eventrac results page."""
-
-    event: RaceEventIn
-    accepted: tuple[RaceResultIn, ...]
-    skipped: tuple[SkippedEventracRow, ...]
-    errors: tuple[InvalidEventracRow, ...] = ()
-    # Source locators in the same order as accepted; never finishing places.
-    accepted_row_numbers: tuple[int, ...] = ()
-
-    @property
-    def candidate_count(self) -> int:
-        """Total outcomes, checked against the input row count by the parser."""
-        return len(self.accepted) + len(self.skipped) + len(self.errors)
+# Keep the established provider-specific import names compatible.
+SkippedEventracRow = SkippedRaceRow
+InvalidEventracRow = InvalidRaceRow
+EventracParseResult = RaceParseResult
 
 
 def load_eventrac_results_html(
