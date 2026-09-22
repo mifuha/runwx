@@ -5,6 +5,10 @@ per explicitly chosen export. It reads the existing staging dataset as a data
 source. It does not upload results, build views, create a project, enable APIs,
 change billing or grant runtime roles.
 
+The optional `gnr_sample_tables` map creates only explicit GNR top-1,000 staging
+tables with the separate sample schema. It does not create dbt output datasets or
+grant runtime roles. Add one reviewed hash-derived table name per edition.
+
 Run Terraform from this directory, with its own state. The parent root's state
 also owns earlier cloud demonstrations and a parked revision spike. Reusing that
 state with the simplified configuration could plan removal of omitted resources.
