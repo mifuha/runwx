@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from runwx.adapters.csv.io_runs import load_runs_csv
@@ -15,6 +15,7 @@ from runwx.domain.models import Run, WeatherObs
 from runwx.services.pipeline import enrich_runs
 from runwx.services.offline_report import build_offline_report
 from runwx.services.result_export import build_result_rows, encode_result_rows
+from runwx.services.gnr_sample_export import build_gnr_sample_rows
 
 
 def demo_data() -> tuple[list[Run], list[WeatherObs]]:
@@ -111,6 +112,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     export_p.add_argument("--race-kind", choices=("synthetic", "historical", "unknown"), default="unknown")
     export_p.add_argument("--weather-kind", choices=("synthetic", "historical_reanalysis", "unknown"), default="unknown")
 
+    gnr_p = sub.add_parser("export-gnr-sample", help="Export a saved GNR top-1,000 sample with event-window weather.")
+    for name in ("race-json", "categories-json", "weather-json", "weather-request"):
+        gnr_p.add_argument(f"--{name}", type=Path, required=True)
+    for name in ("race-sha256", "categories-sha256", "weather-sha256"):
+        gnr_p.add_argument(f"--{name}", required=True)
+    gnr_p.add_argument("--race-id", type=int, required=True)
+    gnr_p.add_argument("--race-date", type=date.fromisoformat, required=True)
+    gnr_p.set_defaults(log_level="WARNING")
+
     args = p.parse_args(argv)
 
     # default: if no subcommand, behave like "run"
@@ -133,6 +143,15 @@ def main(argv: list[str] | None = None) -> None:
     def out(msg: str) -> None:
         if not getattr(args, "quiet", False):
             print(msg)
+
+    if args.cmd == "export-gnr-sample":
+        rows = build_gnr_sample_rows(
+            args.race_json, args.categories_json, args.weather_json, args.weather_request,
+            race_id=args.race_id, race_date=args.race_date, race_sha256=args.race_sha256,
+            categories_sha256=args.categories_sha256, weather_sha256=args.weather_sha256,
+        )
+        print(encode_result_rows(rows).decode("utf-8"), end="")
+        return
 
     if args.cmd == "export-results":
         rows = build_result_rows(

@@ -5,6 +5,10 @@ It accepts saved Eventrac HTML or an explicitly selected Sporthive JSON bundle,
 then uses the same race-to-run conversion and weather matcher.
 The summary report and the separate CSV/SQLite activity workflow remain available.
 
+Great North Run has a separate [sample export](gnr-sample-export.md), with the
+`Top 1,000 only*` label and shared event-window weather. It does not use the
+full-field/midpoint contract described here.
+
 ## Run the synthetic example
 
 From the repository root, after [setup and activation](../README.md#quickstart):
