@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from runwx.adapters.bigquery.result_load import load_prepared, prepare_load
+from runwx.adapters.bigquery.gnr_sample_load import prepare_sample_load
 
 
 def main(argv=None, *, client=None):
@@ -13,10 +14,13 @@ def main(argv=None, *, client=None):
     parser.add_argument("--table", required=True, help="project.dataset.table")
     parser.add_argument("--expected-sha256", required=True)
     parser.add_argument("--location", default="europe-west1")
+    parser.add_argument("--input-format", choices=("full-results", "gnr-sample"),
+                        default="full-results", help="Explicit export contract (default: full-results).")
     parser.add_argument("--execute", action="store_true", help="Upload data and run verification queries.")
     args = parser.parse_args(argv)
-    prepared = prepare_load(args.input.read_bytes(), table_id=args.table,
-                            expected_sha256=args.expected_sha256, location=args.location)
+    prepare = prepare_sample_load if args.input_format == "gnr-sample" else prepare_load
+    prepared = prepare(args.input.read_bytes(), table_id=args.table,
+                       expected_sha256=args.expected_sha256, location=args.location)
     if args.execute:
         if client is None:
             from google.cloud import bigquery
