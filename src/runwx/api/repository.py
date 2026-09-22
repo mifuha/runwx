@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 import logging
 import re
-from typing import Mapping
+from typing import Literal, Mapping
 
 from google.api_core.exceptions import GoogleAPICallError, RetryError
 from google.cloud import bigquery
@@ -14,6 +14,10 @@ from runwx.api.models import (
     CourseComparison,
     EditionComparison,
     PaceSummary,
+    SampledCourseComparison,
+    SampledEditionComparison,
+    SampledWeatherSummary,
+    TimingCounts,
     WeatherSummary,
 )
 
@@ -46,6 +50,7 @@ class CourseSource:
     table_id: str
     distance_m: int
     baseline_event_id: str
+    scope: Literal["full_field", "top_1000"] = "full_field"
 
     def __post_init__(self):
         if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", self.slug):
@@ -87,6 +92,19 @@ COURSES: dict[str, CourseSource] = {
         distance_m=21097,
         baseline_event_id="eventrac:36835",
     ),
+    "great-north-run": CourseSource(
+        slug="great-north-run",
+        name="Great North Run",
+        course_id="great-north-run-traditional",
+        table_id=(
+            "runwx-learning-mifuha."
+            "runwx_dbt_gnr_top1000_v1."
+            "mart_gnr_sample_comparison"
+        ),
+        distance_m=21100,
+        baseline_event_id="greatrun:881",
+        scope="top_1000",
+    ),
 }
 
 
@@ -115,6 +133,37 @@ SELECT_COLUMNS = """
     speed_at_median_duration_change_pct
 """.strip()
 
+SAMPLED_SELECT_COLUMNS = """
+    event_id,
+    course_id,
+    race_date,
+    distance_m,
+    sample_size,
+    sample_label,
+    sample_note,
+    timing_note,
+    chip_count,
+    gun_count,
+    unknown_count,
+    mean_pace_s_per_km,
+    median_pace_s_per_km,
+    pace_p25_s_per_km,
+    pace_p75_s_per_km,
+    top_n_effective,
+    top_n_median_pace_s_per_km,
+    weather_context_basis,
+    weather_context_note,
+    weather_start_local,
+    weather_end_local,
+    median_temp_c,
+    median_wind_mps,
+    median_humidity_pct,
+    precipitation_mm,
+    baseline_event_id,
+    comparison_status,
+    median_pace_change_pct
+""".strip()
+
 
 class BigQueryComparisonRepository:
     def __init__(
@@ -132,11 +181,16 @@ class BigQueryComparisonRepository:
         self._courses = dict(courses)
         self._location = location
 
-    def get_course_comparison(self, course_slug: str) -> CourseComparison:
+    def get_course_comparison(
+        self, course_slug: str
+    ) -> CourseComparison | SampledCourseComparison:
         try:
             source = self._courses[course_slug]
         except KeyError as error:
             raise UnknownCourseError(course_slug) from error
+
+        if source.scope == "top_1000":
+            return self._get_sampled_comparison(source)
 
         query = f"""
             SELECT {SELECT_COLUMNS}
@@ -239,4 +293,119 @@ class BigQueryComparisonRepository:
             distance_m=next(iter(distances)),
             baseline_event_id=next(iter(baselines)),
             editions=editions,
+        )
+
+    def _get_sampled_comparison(self, source: CourseSource) -> SampledCourseComparison:
+        query = f"""
+            SELECT {SAMPLED_SELECT_COLUMNS}
+            FROM `{source.table_id}`
+            WHERE course_id = @course_id
+            ORDER BY race_date, event_id
+            LIMIT {MAX_EDITIONS}
+        """
+        job_config = bigquery.QueryJobConfig(
+            use_legacy_sql=False,
+            maximum_bytes_billed=MAXIMUM_BYTES_BILLED,
+            query_parameters=[
+                bigquery.ScalarQueryParameter("course_id", "STRING", source.course_id)
+            ],
+        )
+        try:
+            job = self._client.query(
+                query,
+                job_config=job_config,
+                location=self._location,
+                timeout=10,
+            )
+            rows = [dict(row) for row in job.result(timeout=30)]
+            return self._build_sampled_response(source, rows)
+        except (
+            AttributeError,
+            GoogleAPICallError,
+            KeyError,
+            RetryError,
+            TimeoutError,
+            TypeError,
+            ValidationError,
+            ValueError,
+        ) as error:
+            LOGGER.exception("Comparison query failed for course %s", source.slug)
+            raise ComparisonUnavailableError(
+                f"comparison mart unavailable for {source.slug}"
+            ) from error
+
+    @staticmethod
+    def _build_sampled_response(
+        source: CourseSource, rows: list[dict]
+    ) -> SampledCourseComparison:
+        if not rows:
+            raise ValueError("sampled comparison has no editions")
+        event_ids = [row["event_id"] for row in rows]
+        years = [row["race_date"].year for row in rows]
+        labels = {row["sample_label"] for row in rows}
+        notes = {row["sample_note"] for row in rows}
+        if (
+            {row["course_id"] for row in rows} != {source.course_id}
+            or {row["distance_m"] for row in rows} != {source.distance_m}
+            or {row["baseline_event_id"] for row in rows} != {source.baseline_event_id}
+            or len(event_ids) != len(set(event_ids))
+            or event_ids.count(source.baseline_event_id) != 1
+            or len(years) != len(set(years))
+            or labels != {"Top 1,000 only*"}
+            or len(notes) != 1
+            or {row["weather_context_basis"] for row in rows} != {"fixed_event_window"}
+            or {row["weather_start_local"] for row in rows} != {"10:00"}
+            or {row["weather_end_local"] for row in rows} != {"14:00"}
+        ):
+            raise ValueError("sampled comparison scope or identity disagrees")
+        for row in rows:
+            if (
+                row["sample_size"] != 1000
+                or row["chip_count"] + row["gun_count"] + row["unknown_count"]
+                != row["sample_size"]
+                or (row["comparison_status"] == "descriptive_sample")
+                != (row["median_pace_change_pct"] is not None)
+            ):
+                raise ValueError("sampled comparison counts or baseline disagree")
+
+        return SampledCourseComparison(
+            course_slug=source.slug,
+            course_name=source.name,
+            course_id=source.course_id,
+            distance_m=source.distance_m,
+            baseline_event_id=source.baseline_event_id,
+            sample_label=next(iter(labels)),
+            sample_note=next(iter(notes)),
+            editions=[
+                SampledEditionComparison(
+                    event_id=row["event_id"],
+                    year=row["race_date"].year,
+                    race_date=row["race_date"],
+                    comparison_status=row["comparison_status"],
+                    sample_size=row["sample_size"],
+                    pace=PaceSummary(
+                        median_s_per_km=row["median_pace_s_per_km"],
+                        mean_s_per_km=row["mean_pace_s_per_km"],
+                        p25_s_per_km=row["pace_p25_s_per_km"],
+                        p75_s_per_km=row["pace_p75_s_per_km"],
+                        fastest_n=row["top_n_effective"],
+                        fastest_n_median_s_per_km=row["top_n_median_pace_s_per_km"],
+                    ),
+                    weather=SampledWeatherSummary(
+                        median_temperature_c=row["median_temp_c"],
+                        median_wind_mps=row["median_wind_mps"],
+                        median_humidity_pct=row["median_humidity_pct"],
+                        precipitation_mm=row["precipitation_mm"],
+                        context_note=row["weather_context_note"],
+                    ),
+                    timing=TimingCounts(
+                        chip=row["chip_count"],
+                        gun=row["gun_count"],
+                        unknown=row["unknown_count"],
+                        note=row["timing_note"],
+                    ),
+                    median_pace_change_pct=row["median_pace_change_pct"],
+                )
+                for row in rows
+            ],
         )

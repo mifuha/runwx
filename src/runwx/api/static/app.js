@@ -50,7 +50,7 @@ const weatherMetrics = {
   },
   precipitation: {
     label: "Median precipitation",
-    value: (edition) => edition.weather.median_precipitation_mm,
+    value: (edition) => edition.weather.precipitation_mm ?? edition.weather.median_precipitation_mm,
     format: (value) => formatNumber(value, " mm", 1),
     axis: (value) => formatNumber(value, "", 1),
     direction: "Higher means more rain.",
@@ -66,6 +66,10 @@ const elements = {
   comparison: document.querySelector("#comparison"),
   courseName: document.querySelector("#course-name"),
   courseMeta: document.querySelector("#course-meta"),
+  timeline: document.querySelector("#charts-timeline"),
+  countHeading: document.querySelector("#count-heading"),
+  timingHeading: document.querySelector("#timing-heading"),
+  interpretation: document.querySelector("#interpretation-text"),
   paceChartTitle: document.querySelector("#pace-chart-title"),
   paceChartDirection: document.querySelector("#pace-chart-direction"),
   paceChart: document.querySelector("#pace-chart"),
@@ -79,6 +83,10 @@ const elements = {
 
 let comparison = null;
 let loadSequence = 0;
+
+function isSampled(data) {
+  return data.scope === "top_1000";
+}
 
 function formatPace(value) {
   if (!Number.isFinite(value)) return "—";
@@ -116,16 +124,23 @@ function appendCell(row, text, className = "") {
 
 function renderTable(data) {
   elements.rows.replaceChildren();
+  elements.countHeading.textContent = isSampled(data) ? "Sampled results" : "Finishers";
+  elements.timingHeading.hidden = !isSampled(data);
   for (const edition of data.editions) {
     const row = document.createElement("tr");
     const year = appendCell(row, String(edition.year), "edition-year");
-    if (edition.comparison_status !== "comparable") {
+    if (!["comparable", "descriptive_sample"].includes(edition.comparison_status)) {
       const note = document.createElement("span");
       note.className = "comparison-note";
       note.textContent = edition.comparison_status.replaceAll("_", " ");
       year.append(note);
     }
-    appendCell(row, formatInteger(edition.finishers));
+    appendCell(row, formatInteger(isSampled(data) ? edition.sample_size : edition.finishers));
+    if (isSampled(data)) {
+      const timing = edition.timing;
+      const cell = appendCell(row, `${timing.chip} / ${timing.gun} / ${timing.unknown}`);
+      cell.title = timing.note;
+    }
     appendCell(row, formatPace(edition.pace.median_s_per_km));
     appendCell(row, formatPace(edition.pace.mean_s_per_km));
     appendCell(
@@ -136,8 +151,13 @@ function renderTable(data) {
     appendCell(row, formatNumber(edition.weather.median_temperature_c, "°C", 1));
     appendCell(row, formatNumber(edition.weather.median_wind_mps, " m/s", 2));
     appendCell(row, formatNumber(edition.weather.median_humidity_pct, "%", 0));
-    appendCell(row, formatNumber(edition.weather.median_precipitation_mm, " mm", 1));
-    const change = formatChange(edition.change_from_baseline.median_pace_pct);
+    appendCell(row, formatNumber(
+      isSampled(data) ? edition.weather.precipitation_mm : edition.weather.median_precipitation_mm,
+      " mm", 1,
+    ));
+    const change = formatChange(isSampled(data)
+      ? edition.median_pace_change_pct
+      : edition.change_from_baseline.median_pace_pct);
     appendCell(row, change.text, change.className);
     elements.rows.append(row);
   }
@@ -181,8 +201,11 @@ function renderChart(data, metric, target) {
   const min = rawMin - spread * 0.14;
   const max = rawMax + spread * 0.14;
 
-  const x = (index) =>
-    margin.left + (points.length === 1 ? plotWidth / 2 : (plotWidth * index) / (points.length - 1));
+  const years = data.editions.map((edition) => edition.year);
+  const firstYear = Math.min(...years);
+  const lastYear = Math.max(...years);
+  const x = (year) => margin.left + (firstYear === lastYear
+    ? plotWidth / 2 : (plotWidth * (year - firstYear)) / (lastYear - firstYear));
   const y = (value) => {
     const ratio = (value - min) / (max - min);
     return margin.top + (metric.lowerIsBetter ? ratio : 1 - ratio) * plotHeight;
@@ -217,13 +240,13 @@ function renderChart(data, metric, target) {
   }
 
   const path = points
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(index)} ${y(point.value)}`)
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.edition.year)} ${y(point.value)}`)
     .join(" ");
   svg.append(svgElement("path", { d: path, class: "chart-path" }));
 
-  points.forEach((point, index) => {
+  points.forEach((point) => {
     const year = svgElement("text", {
-      x: x(index),
+      x: x(point.edition.year),
       y: height - 18,
       "text-anchor": "middle",
       class: "chart-year",
@@ -232,7 +255,7 @@ function renderChart(data, metric, target) {
     svg.append(year);
 
     const circle = svgElement("circle", {
-      cx: x(index),
+      cx: x(point.edition.year),
       cy: y(point.value),
       r: 5,
       class: "chart-point",
@@ -251,13 +274,19 @@ function renderChart(data, metric, target) {
 }
 
 function renderCharts(data) {
+  const years = data.editions.map((edition) => edition.year);
+  const yearSpan = years.length ? Math.max(...years) - Math.min(...years) : 0;
+  elements.timeline.style.minWidth = `${Math.max(620, 90 + yearSpan * 46)}px`;
   renderChart(data, paceMetrics[elements.paceMetric.value], {
     chart: elements.paceChart,
     title: elements.paceChartTitle,
     direction: elements.paceChartDirection,
     caption: elements.paceChartCaption,
   });
-  renderChart(data, weatherMetrics[elements.weatherMetric.value], {
+  const weatherMetric = weatherMetrics[elements.weatherMetric.value];
+  renderChart(data, isSampled(data) && elements.weatherMetric.value === "precipitation"
+    ? { ...weatherMetric, label: "10:00–14:00 precipitation" }
+    : weatherMetric, {
     chart: elements.weatherChart,
     title: elements.weatherChartTitle,
     direction: elements.weatherChartDirection,
@@ -279,7 +308,10 @@ function render(data) {
   elements.courseName.textContent = data.course_name;
   const baseline = data.editions.find((edition) => edition.event_id === data.baseline_event_id);
   const baselineLabel = baseline ? baseline.year : "stated event";
-  elements.courseMeta.textContent = `${data.editions.length} editions · ${(data.distance_m / 1000).toFixed(1)} km · baseline ${baselineLabel}`;
+  elements.courseMeta.textContent = `${data.editions.length} editions · ${(data.distance_m / 1000).toFixed(1)} km · baseline ${baselineLabel}${isSampled(data) ? ` · ${data.sample_label}` : ""}`;
+  elements.interpretation.textContent = isSampled(data)
+    ? `${data.sample_note} Weather is a fixed 10:00–14:00 local ERA5 estimate at an approximate start-area point, not each runner's exposure or whole-course weather. Published times may use chip, gun or unknown timing bases; the table shows their counts. Pace differences do not prove a weather effect.`
+    : "Weather values are ERA5 estimates matched to runner midpoints. Editions contain different runners, so differences are descriptive and do not prove a weather effect.";
   renderTable(data);
   renderCharts(data);
   elements.comparison.hidden = false;
