@@ -19,3 +19,6 @@ models:
     comparison:
       +enabled: "{{ var('comparison_datasets', []) | length > 0 }}"
       +tags: [comparison]
+    gnr:
+      +enabled: "{{ var('gnr_sample_tables', []) | length > 0 }}"
+      +tags: [gnr]

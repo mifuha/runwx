@@ -30,6 +30,20 @@ variable "gnr_sample_tables" {
   default     = {}
 }
 
+variable "gnr_analysis_dataset_id" {
+  description = "Optional dataset for the sampled GNR edition and comparison marts."
+  type        = string
+  default     = null
+  nullable    = true
+  validation {
+    condition = (
+      var.gnr_analysis_dataset_id == null ? true :
+      can(regex("^runwx_dbt_gnr_[A-Za-z0-9_]+$", var.gnr_analysis_dataset_id))
+    )
+    error_message = "Use a runwx_dbt_gnr_ dataset ID."
+  }
+}
+
 variable "dbt_runtime_service_account_email" {
   type        = string
   default     = null
@@ -132,6 +146,22 @@ resource "google_bigquery_dataset" "analysis" {
   }
 }
 
+resource "google_bigquery_dataset" "gnr_analysis" {
+  count                      = var.gnr_analysis_dataset_id == null ? 0 : 1
+  project                    = var.project_id
+  dataset_id                 = var.gnr_analysis_dataset_id
+  location                   = var.region
+  description                = "Sampled Great North Run edition summaries and comparison."
+  delete_contents_on_destroy = false
+  access {
+    role          = "OWNER"
+    special_group = "projectOwners"
+  }
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
 resource "google_bigquery_table_iam_member" "dbt_runtime_reader" {
   for_each   = var.dbt_runtime_service_account_email == null ? {} : var.dbt_runtime_access
   project    = google_bigquery_table.results[each.key].project
@@ -147,6 +177,10 @@ output "snapshot_tables" {
 
 output "gnr_sample_tables" {
   value = { for name, table in google_bigquery_table.gnr_samples : name => "${table.project}.${table.dataset_id}.${table.table_id}" }
+}
+
+output "gnr_analysis_dataset" {
+  value = var.gnr_analysis_dataset_id
 }
 
 output "analysis_datasets" {

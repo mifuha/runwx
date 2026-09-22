@@ -9,6 +9,9 @@ The optional `gnr_sample_tables` map creates only explicit GNR top-1,000 staging
 tables with the separate sample schema. It does not create dbt output datasets or
 grant runtime roles. Add one reviewed hash-derived table name per edition.
 
+The optional `gnr_analysis_dataset_id` creates a separate dataset for the sampled
+GNR dbt summaries and comparison. It grants no new runtime access.
+
 Run Terraform from this directory, with its own state. The parent root's state
 also owns earlier cloud demonstrations and a parked revision spike. Reusing that
 state with the simplified configuration could plan removal of omitted resources.

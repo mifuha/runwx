@@ -1,0 +1,20 @@
+version: 2
+unit_tests:
+  - name: gnr_comparison_keeps_raw_pace_but_nulls_incompatible_difference
+    model: mart_gnr_sample_comparison
+    config:
+      enabled: "{{ var('gnr_sample_tables', []) | length > 0 }}"
+    overrides:
+      vars:
+        gnr_baseline_event_id: greatrun:1
+    given:
+      - input: ref('mart_gnr_edition_summary')
+        rows:
+          - {event_id: 'greatrun:1', course_id: great-north-run-traditional, distance_m: 21100, sample_label: 'Top 1,000 only*', sample_selection: published, declared_sample_size: 1000, weather_context_basis: fixed_event_window, weather_start_local: '10:00', weather_end_local: '14:00', median_pace_s_per_km: 300.0}
+          - {event_id: 'greatrun:2', course_id: great-north-run-traditional, distance_m: 21100, sample_label: 'Top 1,000 only*', sample_selection: published, declared_sample_size: 1000, weather_context_basis: fixed_event_window, weather_start_local: '10:00', weather_end_local: '14:00', median_pace_s_per_km: 330.0}
+          - {event_id: 'greatrun:3', course_id: different-course, distance_m: 21100, sample_label: 'Top 1,000 only*', sample_selection: published, declared_sample_size: 1000, weather_context_basis: fixed_event_window, weather_start_local: '10:00', weather_end_local: '14:00', median_pace_s_per_km: 340.0}
+    expect:
+      rows:
+        - {event_id: 'greatrun:1', comparison_status: descriptive_sample, median_pace_change_pct: 0.0}
+        - {event_id: 'greatrun:2', comparison_status: descriptive_sample, median_pace_change_pct: 10.0}
+        - {event_id: 'greatrun:3', comparison_status: different_course_or_scope, median_pace_change_pct: null}
