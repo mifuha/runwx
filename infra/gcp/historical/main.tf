@@ -24,6 +24,12 @@ variable "snapshots" {
   default = {}
 }
 
+variable "gnr_sample_tables" {
+  description = "Explicit fixed GNR sample tables; dbt outputs are scoped separately."
+  type        = map(string)
+  default     = {}
+}
+
 variable "dbt_runtime_service_account_email" {
   type        = string
   default     = null
@@ -60,6 +66,24 @@ resource "google_bigquery_table" "results" {
   table_id            = each.value.table_id
   description         = "One fixed historical race/weather export, schema version 1."
   schema              = file("${path.module}/../../../src/runwx/adapters/bigquery/result_rows.schema.json")
+  deletion_protection = true
+
+  lifecycle {
+    prevent_destroy = true
+    precondition {
+      condition     = data.google_bigquery_dataset.staging.location == var.region
+      error_message = "The existing staging dataset must be in the chosen region."
+    }
+  }
+}
+
+resource "google_bigquery_table" "gnr_samples" {
+  for_each            = var.gnr_sample_tables
+  project             = var.project_id
+  dataset_id          = data.google_bigquery_dataset.staging.dataset_id
+  table_id            = each.value
+  description         = "One fixed Great North Run top-1,000 sample with event-window ERA5 context."
+  schema              = file("${path.module}/../../../src/runwx/adapters/bigquery/gnr_sample_rows.schema.json")
   deletion_protection = true
 
   lifecycle {
@@ -119,6 +143,10 @@ resource "google_bigquery_table_iam_member" "dbt_runtime_reader" {
 
 output "snapshot_tables" {
   value = { for name, table in google_bigquery_table.results : name => "${table.project}.${table.dataset_id}.${table.table_id}" }
+}
+
+output "gnr_sample_tables" {
+  value = { for name, table in google_bigquery_table.gnr_samples : name => "${table.project}.${table.dataset_id}.${table.table_id}" }
 }
 
 output "analysis_datasets" {
