@@ -13,8 +13,12 @@ terraform plan \
   -var='image_uri=europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx-api@sha256:...'
 ```
 
-Review a complete plan before applying. The first live validation must request both
-configured courses and reconcile them with the frozen comparison evidence.
+Review a complete plan before applying. After deployment, check `/health` and
+compare both public course responses with the saved analytical results.
+
+The 22 September 2026 deployment updated the existing service's image and health
+probes. Both course responses matched, and Terraform then reported no remaining
+changes. See the [deployment record](../../../docs/evidence/public-api-validation.json).
 
 The process-only health endpoint is `/health`. Cloud Run's
 [known issues](https://docs.cloud.google.com/run/docs/known-issues) document conflicts

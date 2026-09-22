@@ -1,0 +1,62 @@
+{
+  "checked_at_utc": "2026-09-22T12:18:54.331312+00:00",
+  "status": "deployed_and_reconciled",
+  "source_revision": "ca39eea4d2124ad7eecf88211051cb6a272d3933",
+  "service_url": "https://runwx-api-f6n35ol7sa-ew.a.run.app",
+  "image": "europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx-api@sha256:121d4a9e72aca4ab4748ca3281478a4a979d4a7005cf1452def91d010e7bf660",
+  "cloud_run_revision": "runwx-api-00002-5xd",
+  "runtime_identity": "runwx-api@runwx-learning-mifuha.iam.gserviceaccount.com",
+  "terraform_apply": {
+    "added": 0,
+    "changed": 1,
+    "destroyed": 0
+  },
+  "post_apply_plan": "no_changes",
+  "http_checks": {
+    "/health": 200,
+    "/": 200,
+    "/assets/styles.css": 200,
+    "/assets/app.js": 200,
+    "/api/courses/lydd-half/comparison": 200,
+    "/api/courses/folkestone-half/comparison": 200,
+    "/api/courses/not-a-course/comparison": 404
+  },
+  "courses": {
+    "lydd-half": {
+      "years": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "finishers": 1197,
+      "all_public_fields_matched": true,
+      "query_bytes_billed": 52428800,
+      "response_sha256": "fd3cc7c398b88464aa0c57e195b88471dd62bce615e2aa929e4f687b8c239e44"
+    },
+    "folkestone-half": {
+      "years": [
+        2019,
+        2022,
+        2023
+      ],
+      "finishers": 1215,
+      "all_public_fields_matched": true,
+      "query_bytes_billed": 31457280,
+      "response_sha256": "48918c03766eb27f2e7fef55fd1dd7a21baf3a8b1c86b291e3575d5483245acb"
+    }
+  },
+  "comparison_method": "Checked every public field against frozen expectations and their previously verified BigQuery results, without using the API repository code to build the expected response.",
+  "float_tolerance": {
+    "relative": 1e-12,
+    "absolute": 1e-09
+  },
+  "query_maximum_bytes_billed": 67108864,
+  "retained_deployment_record_sha256": "4593d3e9246c677863826d36fb4fc4f66761ecaf6c8c1ddc0d4d39fd16b76875",
+  "limits": [
+    "These were public HTTP and data checks. No new browser visual review was done in this deployment step.",
+    "The query cap applies to each query; it is not a total spending limit.",
+    "No race snapshots, dbt models or IAM grants changed in this deployment."
+  ]
+}

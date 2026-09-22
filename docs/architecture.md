@@ -2,10 +2,11 @@
 
 ## Historical analysis implemented today
 
-The current analytical output is a [five-edition Lydd comparison](../README.md#real-historical-comparison):
-1,197 finishers from fixed 2022–2026 race snapshots, with real hourly
-ERA5 weather. Python prepares the inputs; BigQuery and dbt produce the staging,
-accepted-results fact, edition summary and comparison views. This flow has run
+The current output covers [five Lydd editions](../README.md#real-historical-comparison)
+with 1,197 finishers and three Folkestone editions with 1,215 finishers, using fixed
+race snapshots and real hourly ERA5 weather. Python prepares the inputs; BigQuery
+and dbt produce the staging, accepted-results fact, edition summary and comparison
+views. This flow has run
 against BigQuery from local containers, and the same dbt stage runner has now run
 inside Cloud Run.
 
@@ -21,6 +22,8 @@ flowchart LR
     edition --> comparison["Comparison build"]
     comparison --> reconciliation["Independent reconciliation"]
     comparison --> output["Comparison output"]
+    output --> api["Read-only API"]
+    api --> page["Public comparison page"]
     reconciliation --> evidence["Immutable execution evidence"]
 ```
 
@@ -133,10 +136,11 @@ exact Folkestone 2019 artifact pair was also read through the manual Storage ada
 and fully matched its existing protected BigQuery snapshot twice, without another
 load. This validation/export job still does not load BigQuery or invoke dbt. The dbt
 stage is a separate Cloud Run job with its own runtime identity and permissions.
-A separate read-only API and minimal page expose the prepared comparison marts.
-The public service serves the page; a fix for the query billing limit and health
-path awaits deployment and public data reconciliation. Scheduling and automatic
-source refresh remain absent; manually supplied fixed snapshots remain the release model.
+A separate Cloud Run service serves the [public comparison page](https://runwx-api-f6n35ol7sa-ew.a.run.app/)
+and read-only API. It reads the existing comparison marts; the statistics stay in
+dbt. On 22 September 2026, both public course responses matched the saved results
+for all eight editions. The [deployment check](evidence/public-api-validation.json)
+records the image and checks. Inputs are still captured and runs started manually.
 
 The verified downstream boundary is a thin Storage adapter: it requires exact
 report/export generations, verifies the report-last completeness marker and fully
