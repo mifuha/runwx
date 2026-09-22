@@ -6,6 +6,9 @@ BigQuery and dbt into a comparison view with explicit snapshot provenance.
 
 I'm building it to practise data engineering using something I care about: running.
 
+Try the [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/): choose Lydd or
+Folkestone and view pace beside the weather for each edition.
+
 ## Real historical comparison
 
 The **Lydd Half Marathon 2022–2026** snapshots are verified in
@@ -48,6 +51,8 @@ flowchart TD
     edition --> comparison["Comparison build"]
     comparison --> reconciliation["Independent reconciliation"]
     comparison --> output["Comparison output"]
+    output --> api["Read-only API"]
+    api --> page["Public comparison page"]
     runner --> evidence["Execution evidence"]
 ```
 
@@ -76,12 +81,11 @@ its defaults and also accepts explicitly allowed fixed snapshots. Its Folkestone
 2019 execution matched all 459 results and weather observations and produced the
 frozen warehouse input. The dbt job then rebuilt the Folkestone 2019 edition and
 three-edition comparison, reconciled the important BigQuery values and saved its
-execution evidence. A read-only API and minimal comparison page expose the
-prepared Lydd and Folkestone marts. The separate public Cloud Run service serves
-the page, but its first data requests hit the query billing limit. A bounded fix
-is prepared; successful public data reconciliation is still pending. There is no
-scheduled historical pipeline. See the
-[architecture](docs/architecture.md) for the implemented boundaries.
+execution evidence. A separate Cloud Run service now serves the read-only API and
+comparison page. Both course responses match the saved results for five Lydd and
+three Folkestone editions; see the [deployment check](docs/evidence/public-api-validation.json).
+There is no scheduled historical pipeline. See the [architecture](docs/architecture.md)
+for how the parts fit together.
 
 <a id="quickstart"></a>
 <a id="example-result"></a>
@@ -164,8 +168,8 @@ For the offline report checks alone:
 python -m pytest -q tests/test_offline_report.py
 ```
 
-CI runs Python tests, builds both containers, checks the report command, validates
-both Terraform roots and parses default/comparison dbt configurations offline.
+CI runs Python and Airflow tests, checks the report and API containers, validates
+the Terraform roots and checks the dbt image and models offline.
 It does not deploy infrastructure or execute BigQuery SQL. Native warehouse
 validation is recorded separately in the linked execution evidence.
 

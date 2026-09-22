@@ -1,7 +1,8 @@
 # Read-only comparison API
 
-The first MVP endpoint reads the existing dbt comparison marts. It does not parse
-race data, align weather or calculate new statistics.
+The [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/) reads the existing
+dbt comparison marts through this API. It does not parse race data, align weather
+or calculate new statistics.
 
 The service root (`/`) serves the small comparison page. It uses the endpoint below
 to populate course, pace and weather selectors, two aligned accessible SVG trend
@@ -42,9 +43,12 @@ curl http://127.0.0.1:8000/api/courses/lydd-half/comparison
 Open `http://127.0.0.1:8000/` to use the local page. The
 [separate Terraform root](../infra/gcp/api/README.md) owns the public Cloud Run
 service, its immutable image reference and its dedicated runtime identity. The
-page is deployed, but both data endpoints returned `503` at the original 10 MiB
-cap. The corrected image and probe configuration still need deployment, followed
-by reconciliation of both public responses with the comparison marts.
+corrected image and `/health` probes were deployed on 22 September 2026. Health,
+page, assets and both course endpoints returned `200`; an unknown course returned
+`404`. All returned values matched the saved results: five Lydd editions with
+1,197 finishers and three Folkestone editions with 1,215 finishers. The
+[deployment record](evidence/public-api-validation.json) includes the image digest
+and checks. Terraform reported no remaining changes after the update.
 
 ## API container
 
@@ -66,7 +70,7 @@ itself is revalidated. Query submission uses a 10-second RPC timeout and result
 waiting uses a 30-second timeout; client retries can extend the total request time.
 
 The image defaults to one Uvicorn worker on port 8080, runs as numeric user 10001 and
-supports a read-only root filesystem. The service configuration uses zero minimum
+supports a read-only root filesystem. Each revision is configured for zero minimum
 instances, one maximum instance, concurrency 8, a 60-second request timeout and HTTP
 startup/liveness probes against `/health`.
 
@@ -86,5 +90,5 @@ The offline smoke check starts the real Uvicorn entrypoint and verifies `/health
 the page and both packaged assets with container networking disabled. It cannot call
 a configured comparison mart because the offline container deliberately has neither
 Application Default Credentials nor BigQuery access. Repository tests cover those
-success and failure contracts; the first deployed validation must still request both
-configured courses through the service identity and reconcile their returned values.
+success and failure cases. The separate deployment check called both public course
+endpoints and compared every returned field with the saved analytical results.
