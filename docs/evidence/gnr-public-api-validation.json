@@ -1,0 +1,79 @@
+{
+  "checked_on_utc": "2026-09-22",
+  "status": "deployed_and_reconciled",
+  "source_revision": "5892a8731c3c6e80813ed3e786233f21ec79b54e",
+  "service_url": "https://runwx-api-f6n35ol7sa-ew.a.run.app",
+  "image": "europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx-api@sha256:aca9d5eae265b9cebcc9e3fcb37fec6b92989f83f078e2033695b23c8477bbb5",
+  "cloud_run_revision": "runwx-api-00003-vvv",
+  "runtime_identity": "runwx-api@runwx-learning-mifuha.iam.gserviceaccount.com",
+  "terraform_apply": {
+    "added": 2,
+    "changed": 1,
+    "destroyed": 0
+  },
+  "changes": "Read grants for the GNR summary table and comparison view, and the existing API service image.",
+  "post_apply_plan": "no_changes",
+  "http_checks": {
+    "/health": 200,
+    "/": 200,
+    "/assets/app.js": 200,
+    "/assets/styles.css": 200,
+    "/api/courses/lydd-half/comparison": 200,
+    "/api/courses/folkestone-half/comparison": 200,
+    "/api/courses/great-north-run/comparison": 200,
+    "/api/courses/not-a-course/comparison": 404
+  },
+  "versioned_assets_match_served_bytes": true,
+  "courses": {
+    "great-north-run": {
+      "years": [
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "sample_size_per_edition": 1000,
+      "total_sample_rows": 19000,
+      "baseline_event_id": "greatrun:881",
+      "all_public_analytical_values_matched": true,
+      "response_sha256": "d4b6ac16c1007b3c66a745a6136626b81b64778245f4c01114db3e3729f663fc"
+    },
+    "lydd-half": {
+      "editions": 5,
+      "finishers": 1197,
+      "response_unchanged_from_previous_deployment": true
+    },
+    "folkestone-half": {
+      "editions": 3,
+      "finishers": 1215,
+      "response_unchanged_from_previous_deployment": true
+    }
+  },
+  "comparison_method": "GNR identity, dates, sample sizes, pace distributions, fastest-20, weather, timing counts and baseline differences were checked against hash-verified local exports. Lydd and Folkestone responses were byte-for-byte equal to the earlier validated responses.",
+  "previous_deployment_record": "public-api-validation.json",
+  "float_tolerance": {
+    "relative": 1e-12,
+    "absolute": 1e-09
+  },
+  "retained_deployment_record_sha256": "0c772c68d2efbfa910464d6ae064b389e16722b966e940fe1221db9c5e504ea5",
+  "limits": [
+    "GNR statistics cover the fastest 1,000 available running results per edition, not the full field.",
+    "GNR weather is fixed start-area ERA5 context; timing basis and runner populations vary. Differences do not isolate weather effects.",
+    "Public HTTP, asset and data checks passed. No browser visual review was performed."
+  ]
+}
