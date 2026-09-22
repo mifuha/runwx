@@ -138,9 +138,11 @@ load. This validation/export job still does not load BigQuery or invoke dbt. The
 stage is a separate Cloud Run job with its own runtime identity and permissions.
 A separate Cloud Run service serves the [public comparison page](https://runwx-api-f6n35ol7sa-ew.a.run.app/)
 and read-only API. It reads the existing comparison marts; the statistics stay in
-dbt. On 22 September 2026, both public course responses matched the saved results
-for all eight editions. The [deployment check](evidence/public-api-validation.json)
-records the image and checks. Inputs are still captured and runs started manually.
+dbt. The live service now covers five Lydd, three Folkestone and 19 sampled Great
+North Run editions. GNR uses the fastest 1,000 available running results per edition
+and fixed start-area weather context. The [deployment check](evidence/gnr-public-api-validation.json)
+records the verified image and public responses. Inputs are still captured and runs
+started manually.
 
 The verified downstream boundary is a thin Storage adapter: it requires exact
 report/export generations, verifies the report-last completeness marker and fully

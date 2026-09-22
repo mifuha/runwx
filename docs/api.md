@@ -35,8 +35,10 @@ and gives one fixed 10:00–14:00 local start-area ERA5 weather context per edit
 That weather is not matched to individual runners. The page labels this clearly
 and plots the years with the gaps for 2020 and the different-route 2021 edition.
 The differences from the 2019 baseline are descriptive, not weather effects.
-The GNR query has been checked against the real mart locally; the new API image
-and read grants are not deployed yet, so the live page still has two courses.
+The GNR image and read grants for its summary table and comparison view are deployed.
+All 19 public editions matched the hash-verified local exports; Lydd and Folkestone
+responses were unchanged. The [GNR deployment record](evidence/gnr-public-api-validation.json)
+retains the image, checks and limitations.
 
 An unknown course returns `404`. A full-field course with no rows returns an empty
 `editions` list. A missing GNR sample, warehouse timeout or invalid mart row returns
@@ -88,8 +90,8 @@ instances, one maximum instance, concurrency 8, a 60-second request timeout and 
 startup/liveness probes against `/health`.
 
 The dedicated runtime identity can create BigQuery query jobs and read only the
-named tables and views in the deployed comparison dependency chains. The GNR
-change prepares two more exact table/view read grants. The identity has no
+named tables and views in the deployed comparison dependency chains, including
+the GNR summary table and comparison view. The identity has no
 dataset-wide data role, storage role or service-account key. The service uses an
 immutable `runwx-api@sha256:...` image.
 
@@ -104,5 +106,5 @@ The offline smoke check starts the real Uvicorn entrypoint and verifies `/health
 the page and both packaged assets with container networking disabled. It cannot call
 a configured comparison mart because the offline container deliberately has neither
 Application Default Credentials nor BigQuery access. Repository tests cover those
-success and failure cases. The separate deployment check called both public course
-endpoints and compared every returned field with the saved analytical results.
+success and failure cases. The latest deployment check called all three public
+course endpoints and reconciled the returned analytical values with saved results.

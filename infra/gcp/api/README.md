@@ -14,11 +14,16 @@ terraform plan \
 ```
 
 Review a complete plan before applying. After deployment, check `/health` and
-compare both public course responses with the saved analytical results.
+compare all three public course responses with the saved analytical results.
 
 The 22 September 2026 deployment updated the existing service's image and health
 probes. Both course responses matched, and Terraform then reported no remaining
 changes. See the [deployment record](../../../docs/evidence/public-api-validation.json).
+
+The later GNR deployment added read grants for its summary table and comparison
+view and updated only the existing service's image. All three course responses
+passed validation, and the
+post-apply plan was no-op. See the [GNR deployment record](../../../docs/evidence/gnr-public-api-validation.json).
 
 The process-only health endpoint is `/health`. Cloud Run's
 [known issues](https://docs.cloud.google.com/run/docs/known-issues) document conflicts
