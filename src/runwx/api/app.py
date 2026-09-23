@@ -35,6 +35,14 @@ INDEX_HTML = (
 )
 
 
+HOW_IT_WORKS_HTML = STATIC.joinpath("how-it-works.html").read_text(
+    encoding="utf-8"
+).replace(
+    'href="/assets/styles.css"',
+    f'href="/assets/styles.css?v={sha256(STYLESHEET.encode()).hexdigest()}"',
+)
+
+
 class ComparisonService:
     """Keep the synchronous BigQuery client off the ASGI event loop."""
 
@@ -74,6 +82,14 @@ async def health(response: Response) -> dict[str, str]:
 async def index() -> HTMLResponse:
     return HTMLResponse(
         INDEX_HTML,
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.get("/how-it-works", include_in_schema=False, response_class=HTMLResponse)
+async def how_it_works() -> HTMLResponse:
+    return HTMLResponse(
+        HOW_IT_WORKS_HTML,
         headers={"Cache-Control": "no-cache"},
     )
 

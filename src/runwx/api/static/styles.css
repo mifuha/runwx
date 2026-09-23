@@ -80,6 +80,49 @@ main {
   padding-block: 88px 104px;
 }
 
+.skip-link {
+  position: absolute;
+  z-index: 10;
+  top: -60px;
+  left: 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: var(--surface);
+  background: var(--accent);
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.site-nav a {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.83rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.site-nav a:focus-visible,
+.pipeline summary:focus-visible,
+.explainer a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .intro {
   max-width: 860px;
 }
@@ -421,11 +464,285 @@ footer {
   font-size: 0.75rem;
 }
 
+
+/* The explainer shares the page's type and colour, while keeping its flow separate. */
+.explainer {
+  max-width: 1040px;
+  padding-top: 78px;
+}
+
+.explainer-hero h1 {
+  max-width: 850px;
+  font-size: clamp(3.1rem, 7vw, 5.8rem);
+  line-height: 0.99;
+}
+
+.explainer-hero .lede {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.example-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 840px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.example-card div,
+.example-card strong {
+  display: block;
+}
+
+.example-card div > strong {
+  margin-top: 3px;
+  font-size: 1.06rem;
+}
+
+.example-kicker {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.example-card p {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.example-card p strong {
+  display: inline;
+  font-size: 1.12rem;
+}
+
+.example-note {
+  max-width: 750px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.journey {
+  margin-top: 96px;
+}
+
+.journey-heading {
+  margin-bottom: 30px;
+}
+
+.journey-heading h2 {
+  margin-bottom: 10px;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.journey-heading > p:last-child {
+  max-width: 650px;
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.pipeline {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipeline-step {
+  position: relative;
+}
+
+.pipeline-step:not(:last-child)::after {
+  position: absolute;
+  bottom: -16px;
+  left: 31px;
+  height: 16px;
+  border-left: 1px solid var(--accent);
+  content: "";
+}
+
+.pipeline details {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.pipeline details[open] {
+  border-color: var(--line-strong);
+}
+
+.pipeline summary {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto 18px;
+  align-items: center;
+  gap: 18px;
+  min-height: 116px;
+  padding: 18px 24px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pipeline summary::-webkit-details-marker {
+  display: none;
+}
+
+.pipeline summary::after {
+  color: var(--accent);
+  font-size: 1.35rem;
+  font-weight: 400;
+  line-height: 1;
+  content: "+";
+}
+
+.pipeline details[open] summary::after {
+  content: "−";
+}
+
+.pipeline summary:hover {
+  background: #fafbf9;
+}
+
+.step-number {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #c7ddcf;
+  border-radius: 50%;
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.82rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.step-main {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.step-artifact {
+  color: var(--accent);
+  font-size: 0.69rem;
+  font-weight: 730;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.step-main strong {
+  font-size: 1.18rem;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+}
+
+.step-main > span:last-child {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.step-safeguard {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.step-detail {
+  margin: 0 24px 0 102px;
+  padding: 18px 0 22px;
+  border-top: 1px solid var(--line);
+}
+
+.step-detail p {
+  max-width: 710px;
+  margin-bottom: 12px;
+  color: #4d5751;
+  font-size: 0.9rem;
+}
+
+.step-detail a {
+  color: var(--accent);
+  font-size: 0.84rem;
+  font-weight: 690;
+  text-underline-offset: 3px;
+}
+
+.explainer-notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 64px;
+}
+
+.note-card {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.note-card h2 {
+  margin-bottom: 12px;
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.note-card p:last-child {
+  margin-bottom: 0;
+  color: #4d5751;
+  font-size: 0.9rem;
+}
+
+.explainer-end {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-top: 64px;
+  padding-top: 25px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.explainer-end p {
+  max-width: 640px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.return-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.return-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 @media (max-width: 720px) {
   .site-header,
   main,
   footer {
-    width: min(100% - 28px, 1180px);
+    width: min(1180px, calc(100% - 28px));
   }
 
   main {
@@ -434,6 +751,65 @@ footer {
 
   .site-label {
     display: none;
+  }
+
+  .site-nav a {
+    padding-inline: 8px;
+    font-size: 0.77rem;
+  }
+
+  .explainer {
+    padding-top: 62px;
+  }
+
+  .example-card,
+  .explainer-end {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .journey {
+    margin-top: 74px;
+  }
+
+  .pipeline summary {
+    grid-template-columns: 44px minmax(0, 1fr) 16px;
+    gap: 10px;
+    padding: 17px 15px;
+  }
+
+  .step-number {
+    width: 38px;
+    height: 38px;
+    font-size: 0.72rem;
+  }
+
+  .step-safeguard {
+    grid-column: 2;
+    width: fit-content;
+    margin-top: 4px;
+  }
+
+  .pipeline summary::after {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .pipeline-step:not(:last-child)::after {
+    left: 23px;
+  }
+
+  .step-detail {
+    margin: 0 16px 0 69px;
+  }
+
+  .explainer-notes {
+    grid-template-columns: 1fr;
+  }
+
+  .note-card {
+    padding: 22px;
   }
 
   .controls {

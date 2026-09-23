@@ -3,16 +3,17 @@
 ## Historical analysis implemented today
 
 The current output covers [five Lydd editions](../README.md#real-historical-comparison)
-with 1,197 finishers and three Folkestone editions with 1,215 finishers, using fixed
-race snapshots and real hourly ERA5 weather. Python prepares the inputs; BigQuery
-and dbt produce the staging, accepted-results fact, edition summary and comparison
+with 1,197 finishers, three Folkestone editions with 1,215 finishers, 19 sampled
+Great North Run editions and 13 full-field Battersea Park 10K editions with 1,986
+finishers. It uses fixed race snapshots and real hourly ERA5 weather. Python
+prepares the inputs; BigQuery and dbt produce the staging, accepted-results fact, edition summary and comparison
 views. This flow has run
 against BigQuery from local containers, and the same dbt stage runner has now run
 inside Cloud Run.
 
 ```mermaid
 flowchart LR
-    race["Saved Eventrac HTML"] --> python["Python parsing / validation<br/>and UTC weather matching"]
+    race["Saved race results"] --> python["Python parsing / validation<br/>and UTC weather matching"]
     weather["Captured ERA5 JSON<br/>→ saved weather CSV"] --> python
     python --> export["Candidate-row NDJSON<br/>with hashes and settings"]
     export --> loader["Validate export / load / read back"]
@@ -138,10 +139,11 @@ load. This validation/export job still does not load BigQuery or invoke dbt. The
 stage is a separate Cloud Run job with its own runtime identity and permissions.
 A separate Cloud Run service serves the [public comparison page](https://runwx-api-f6n35ol7sa-ew.a.run.app/)
 and read-only API. It reads the existing comparison marts; the statistics stay in
-dbt. The live service now covers five Lydd, three Folkestone and 19 sampled Great
-North Run editions. GNR uses the fastest 1,000 available running results per edition
-and fixed start-area weather context. The [deployment check](evidence/gnr-public-api-validation.json)
-records the verified image and public responses. Inputs are still captured and runs
+dbt. The live service now covers five Lydd, three Folkestone, 19 sampled Great
+North Run and 13 full-field Battersea editions. GNR uses the fastest 1,000
+available running results per edition and fixed start-area weather context.
+Battersea keeps separate race dates for multiple editions in the same year. The [API documentation](api.md) links the
+deployment checks. Inputs are still captured and runs
 started manually.
 
 The verified downstream boundary is a thin Storage adapter: it requires exact

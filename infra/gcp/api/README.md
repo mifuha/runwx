@@ -30,7 +30,8 @@ The process-only health endpoint is `/health`. Cloud Run's
 with some public paths ending in `z`, so the service and container probes avoid those
 paths.
 
-The Battersea change adds table-level read grants for its 13 snapshots, 39 dbt
-edition views and one comparison view. The saved real-digest plan has 53 additions,
-one update to the existing service image and no deletions. The image is published
-by digest; the grants and image are not deployed yet.
+The Battersea deployment added table-level read grants for its 13 snapshots, 39 dbt
+edition views and one comparison view. The reviewed real-digest plan had 53
+additions, one update to the existing service image and no deletions. The grants
+and digest-pinned image are deployed; a later image update fixed crowded chart
+dates. The post-apply Terraform plan was no-op.

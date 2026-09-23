@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How runwx checks historical race and weather data before it reaches the comparison chart.">
+    <title>How it works · runwx</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="runwx home">runwx</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/">Compare</a>
+        <a href="/how-it-works" aria-current="page">How it works</a>
+      </nav>
+    </header>
+
+    <main id="main" class="explainer">
+      <section class="explainer-hero" aria-labelledby="explainer-title">
+        <p class="eyebrow">Behind the comparison</p>
+        <h1 id="explainer-title">From saved results to a useful chart.</h1>
+        <p class="lede">The chart is the last step. Cloud Storage, Cloud Run,
+          BigQuery and dbt help turn fixed race results and ERA5 weather into a
+          checked comparison that the read-only page can show.</p>
+        <div class="example-card">
+          <div>
+            <span class="example-kicker">Follow one real edition</span>
+            <strong>Folkestone Half Marathon · 2019</strong>
+          </div>
+          <p><strong>459</strong> accepted results <span aria-hidden="true">·</span>
+            <strong>459</strong> weather matches</p>
+        </div>
+        <p class="example-note">The evidence below comes from separate verified
+          executions of this same fixed edition, including an Airflow run. It is
+          not a continuously updated feed.</p>
+      </section>
+
+      <section class="journey" aria-labelledby="journey-title">
+        <div class="journey-heading">
+          <p class="eyebrow">The data journey</p>
+          <h2 id="journey-title">Six steps from source to screen</h2>
+          <p>The main path is visible here. Open any step for the reason behind it
+            and the evidence we kept.</p>
+        </div>
+
+        <ol class="pipeline">
+          <li class="pipeline-step">
+            <details>
+              <summary>
+                <span class="step-number" aria-hidden="true">01</span>
+                <span class="step-main">
+                  <span class="step-artifact">Saved race result + ERA5 weather</span>
+                  <strong>Qualify the inputs</strong>
+                  <span>Check the race date, start, course evidence and source files.</span>
+                </span>
+                <span class="step-safeguard">Input hashes</span>
+              </summary>
+              <div class="step-detail">
+                <p><strong>Why:</strong> fixed source bytes and their SHA-256 hashes
+                  make a later run traceable to the exact race and weather inputs.
+                  A matching hash proves identity, while source qualification checks
+                  whether those bytes describe the intended race.</p>
+                <a href="https://github.com/mifuha/runwx/blob/master/docs/evidence/folkestone-cloud-run-validation.json">See the Folkestone input checks</a>
+              </div>
+            </details>
+          </li>
+          <li class="pipeline-step">
+            <details>
+              <summary>
+                <span class="step-number" aria-hidden="true">02</span>
+                <span class="step-main">
+                  <span class="step-artifact">Audit report JSON + result-row NDJSON</span>
+                  <strong>Validate and export</strong>
+                  <span>Python checks each result and matches ERA5 weather to the run.</span>
+                </span>
+                <span class="step-safeguard">Validation gate</span>
+              </summary>
+              <div class="step-detail">
+                <p><strong>Why:</strong> the Cloud Run export job calls the same
+                  parsing, validation and weather-matching code used locally. It
+                  records candidate outcomes and fails if the source structure or
+                  weather is unusable. Folkestone produced 459 accepted results and
+                  459 weather matches.</p>
+                <a href="https://github.com/mifuha/runwx/blob/master/docs/evidence/cloud-run-result-export-validation.json">See the export check</a>
+              </div>
+            </details>
+          </li>
+          <li class="pipeline-step">
+            <details>
+              <summary>
+                <span class="step-number" aria-hidden="true">03</span>
+                <span class="step-main">
+                  <span class="step-artifact">Explicit BigQuery snapshot table</span>
+                  <strong>Store and read back the rows</strong>
+                  <span>Validate the whole export, then verify the typed warehouse rows.</span>
+                </span>
+                <span class="step-safeguard">No overwrite</span>
+              </summary>
+              <div class="step-detail">
+                <p><strong>Why:</strong> a fixed snapshot has its own destination.
+                  An identical rerun checks the existing rows instead of loading
+                  them again; a changed snapshot needs a separate destination.
+                  The Folkestone cloud export was checked against its protected
+                  459-row table without another load.</p>
+                <a href="https://github.com/mifuha/runwx/blob/master/docs/evidence/cloud-export-bigquery-validation.json">See the warehouse readback</a>
+              </div>
+            </details>
+          </li>
+          <li class="pipeline-step">
+            <details>
+              <summary>
+                <span class="step-number" aria-hidden="true">04</span>
+                <span class="step-main">
+                  <span class="step-artifact">Edition views + course comparison view</span>
+                  <strong>Build the comparison in dbt</strong>
+                  <span>Run edition models and tests before the comparison build.</span>
+                </span>
+                <span class="step-safeguard">Tests first</span>
+              </summary>
+              <div class="step-detail">
+                <p><strong>Why:</strong> dbt owns pace and weather summaries. The
+                  Cloud Run dbt job uses the same stage runner as local work; it
+                  stops downstream work if an earlier stage fails. Folkestone 2019
+                  and its three-edition comparison passed the native build.</p>
+                <a href="https://github.com/mifuha/runwx/blob/master/docs/dbt-models.md#verified-cloud-run">See the dbt execution</a>
+              </div>
+            </details>
+          </li>
+          <li class="pipeline-step">
+            <details>
+              <summary>
+                <span class="step-number" aria-hidden="true">05</span>
+                <span class="step-main">
+                  <span class="step-artifact">Reconciliation + execution evidence</span>
+                  <strong>Check the result independently</strong>
+                  <span>Compare important BigQuery values with saved expectations.</span>
+                </span>
+                <span class="step-safeguard">Readback</span>
+              </summary>
+              <div class="step-detail">
+                <p><strong>Why:</strong> a passing dbt command alone is not enough.
+                  Separate readback checks compare counts and statistics after the
+                  models run. Successful and failed executions retain useful
+                  evidence; a failed stage blocks later tasks, although views
+                  already created in BigQuery can remain.</p>
+                <a href="https://github.com/mifuha/runwx/blob/master/docs/evidence/composer-airflow-validation.json">See the Airflow checks</a>
+              </div>
+            </details>
+          </li>
+          <li class="pipeline-step">
+            <details>
+              <summary>
+                <span class="step-number" aria-hidden="true">06</span>
+                <span class="step-main">
+                  <span class="step-artifact">Prepared mart → API → chart</span>
+                  <strong>Show the comparison</strong>
+                  <span>The public page reads prepared summaries, not raw result rows.</span>
+                </span>
+                <span class="step-safeguard">Read only</span>
+              </summary>
+              <div class="step-detail">
+                <p><strong>Why:</strong> the Cloud Run API selects approved BigQuery
+                  comparison views and returns aggregate fields. It does not parse
+                  race files or recalculate the statistics. Weather and pace are
+                  shown together as descriptive context, not a measured weather
+                  effect.</p>
+                <a href="https://github.com/mifuha/runwx/blob/master/docs/api.md">See the API contract</a>
+              </div>
+            </details>
+          </li>
+        </ol>
+      </section>
+
+      <section class="explainer-notes" aria-label="Running and checking the pipeline">
+        <article class="note-card">
+          <p class="eyebrow">Coordination</p>
+          <h2>Airflow connects the steps.</h2>
+          <p>The DAG calls the tested stages; it does not repeat their business
+            logic. We verified it with real GCP services in Cloud Composer and
+            kept the DAG in the project. The Composer environment was removed
+            after verification. New historical runs are currently started manually.</p>
+        </article>
+        <article class="note-card">
+          <p class="eyebrow">Evidence today</p>
+          <h2>Checks leave a trail.</h2>
+          <p>We retain source hashes, validation counts, BigQuery job IDs, dbt
+            artifacts, reconciliation results and execution logs for success and
+            failure. Cloud Monitoring dashboards and alerts may come later; this
+            page does not show live pipeline status.</p>
+        </article>
+      </section>
+
+      <div class="explainer-end">
+        <p>Course compatibility is checked separately. Different runners enter
+          each edition, so the comparison does not prove that weather caused a
+          change in pace.</p>
+        <a class="return-link" href="/">Explore the comparison <span aria-hidden="true">↗</span></a>
+      </div>
+    </main>
+
+    <footer>
+      <span>runwx</span>
+      <span>Historical snapshots · reproducible comparisons</span>
+    </footer>
+  </body>
+</html>

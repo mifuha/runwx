@@ -1,15 +1,16 @@
 # runwx
 
 runwx compares historical race pace and weather across editions of the same course.
-Saved Eventrac and Great Run results and hourly ERA5 reanalysis pass through Python
+Saved race results and hourly ERA5 reanalysis pass through Python
 validation, BigQuery and dbt into a comparison view with explicit snapshot provenance.
 
 I'm building it to practise data engineering using something I care about: running.
 
 Try the [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/): choose Lydd,
-Folkestone or Great North Run and view pace beside the weather for each edition.
-Great North Run covers 19 editions, using the fastest 1,000 available running
-results per edition, with a fixed start-area weather window.
+Folkestone, Great North Run or Battersea Park 10K and view pace beside the weather
+for each edition. Great North Run covers 19 editions, using the fastest 1,000
+available running results per edition, with a fixed start-area weather window.
+Battersea covers 13 full-field editions across 2022–2024.
 
 ## Real historical comparison
 
@@ -85,8 +86,8 @@ frozen warehouse input. The dbt job then rebuilt the Folkestone 2019 edition and
 three-edition comparison, reconciled the important BigQuery values and saved its
 execution evidence. A separate Cloud Run service now serves the read-only API and
 comparison page. Its responses match the saved results for five Lydd, three
-Folkestone and 19 sampled Great North Run editions; see the
-[deployment check](docs/evidence/gnr-public-api-validation.json).
+Folkestone, 19 sampled Great North Run and 13 full-field Battersea editions; see
+the [deployment checks](docs/api.md).
 There is no scheduled historical pipeline. See the [architecture](docs/architecture.md)
 for how the parts fit together.
 

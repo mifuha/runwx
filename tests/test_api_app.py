@@ -303,3 +303,49 @@ def test_page_urls_identify_the_exact_packaged_assets():
     assert f'href="{css_url}"' in page.text
     assert f'src="{js_url}"' in page.text
     assert asyncio.run(request(Repository(), js_url)).content == javascript.content
+
+
+def test_how_it_works_page_keeps_the_path_visible_and_links_to_evidence():
+    repository = Repository(error=AssertionError("static page must not query BigQuery"))
+    home = asyncio.run(request(repository, "/"))
+    page = asyncio.run(request(repository, "/how-it-works"))
+
+    assert page.status_code == 200
+    assert page.headers["content-type"].startswith("text/html")
+    assert page.headers["cache-control"] == "no-cache"
+    assert repository.requests == []
+    assert 'href="/how-it-works"' in home.text
+    assert 'href="/"' in page.text
+    assert 'aria-current="page"' in page.text
+    assert 'href="#main"' in page.text
+    assert page.text.count('<li class="pipeline-step">') == 6
+    assert page.text.count("<details>") == page.text.count("<summary>") == 6
+    assert page.text.index("Qualify the inputs") < page.text.index("Validate and export")
+    assert page.text.index("Validate and export") < page.text.index("Store and read back")
+    assert page.text.index("Store and read back") < page.text.index("Build the comparison")
+    assert page.text.index("Build the comparison") < page.text.index("Check the result")
+    assert page.text.index("Check the result") < page.text.index("Show the comparison")
+    assert "459</strong> accepted results" in page.text
+    assert "459</strong> weather matches" in page.text
+    assert "The Composer environment was removed" in page.text
+    assert "New historical runs are currently started manually" in page.text
+    assert "Cloud Monitoring dashboards and alerts may come later" in page.text
+    assert "docs/evidence/folkestone-cloud-run-validation.json" in page.text
+    assert "docs/evidence/cloud-run-result-export-validation.json" in page.text
+    assert "docs/evidence/cloud-export-bigquery-validation.json" in page.text
+    assert "docs/dbt-models.md#verified-cloud-run" in page.text
+    assert "docs/evidence/composer-airflow-validation.json" in page.text
+    assert "docs/api.md" in page.text
+    assert 'src="http' not in page.text
+
+
+def test_explainer_uses_the_packaged_stylesheet_with_the_same_cache_key():
+    page = asyncio.run(request(Repository(), "/how-it-works"))
+    stylesheet = asyncio.run(request(Repository(), "/assets/styles.css"))
+    css_url = f"/assets/styles.css?v={sha256(stylesheet.content).hexdigest()}"
+
+    assert f'href="{css_url}"' in page.text
+    assert ".pipeline summary:focus-visible" in stylesheet.text
+    assert ".site-nav a:focus-visible" in stylesheet.text
+    assert ".skip-link:focus" in stylesheet.text
+    assert "@media (max-width: 720px)" in stylesheet.text
