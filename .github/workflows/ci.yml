@@ -27,6 +27,9 @@ jobs:
       - name: Run tests
         run: pytest -q tests
 
+      - name: Check chart date labels
+        run: node tests/ui_chart_dates.cjs
+
   airflow:
     runs-on: ubuntu-latest
     timeout-minutes: 15

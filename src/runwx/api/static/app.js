@@ -206,9 +206,10 @@ function renderChart(data, metric, target) {
     return;
   }
 
-  const width = 760;
+  const showDates = needsDateLabels(data);
+  const width = showDates ? Math.max(760, 90 + data.editions.length * 82) : 760;
   const height = 230;
-  const margin = { top: 18, right: 28, bottom: 42, left: 62 };
+  const margin = { top: 18, right: showDates ? 62 : 28, bottom: 42, left: 62 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
   const values = points.map((point) => point.value);
@@ -261,33 +262,42 @@ function renderChart(data, metric, target) {
     .join(" ");
   svg.append(svgElement("path", { d: path, class: "chart-path" }));
 
-  points.forEach((point) => {
-    const year = svgElement("text", {
-      x: x(point.edition),
-      y: height - 18,
-      "text-anchor": "middle",
-      class: "chart-year",
-    });
-    year.textContent = editionLabel(point.edition, needsDateLabels(data));
-    svg.append(year);
+  // Keep the actual date positions. Thin only the visible labels when dates repeat by year.
+  const lastPointX = x(points.at(-1).edition);
+  let previousLabelX = -Infinity;
+  points.forEach((point, index) => {
+    const pointX = x(point.edition);
+    if (!showDates || (pointX - previousLabelX >= 96 &&
+        (index === points.length - 1 || lastPointX - pointX >= 96))) {
+      const label = svgElement("text", {
+        x: pointX,
+        y: height - 18,
+        "text-anchor": "middle",
+        class: "chart-year",
+      });
+      label.textContent = editionLabel(point.edition, showDates);
+      svg.append(label);
+      previousLabelX = pointX;
+    }
 
     const circle = svgElement("circle", {
-      cx: x(point.edition),
+      cx: pointX,
       cy: y(point.value),
       r: 5,
       class: "chart-point",
       tabindex: 0,
       role: "img",
-      "aria-label": `${editionLabel(point.edition, needsDateLabels(data))}: ${metric.format(point.value)}`,
+      "aria-label": `${editionLabel(point.edition, showDates)}: ${metric.format(point.value)}`,
     });
     const title = svgElement("title");
-    title.textContent = `${editionLabel(point.edition, needsDateLabels(data))}: ${metric.format(point.value)}`;
+    title.textContent = `${editionLabel(point.edition, showDates)}: ${metric.format(point.value)}`;
     circle.append(title);
     svg.append(circle);
   });
 
   target.chart.append(svg);
-  target.caption.textContent = `${points.length} of ${data.editions.length} editions have this value.`;
+  target.caption.textContent = `${points.length} of ${data.editions.length} editions have this value.` +
+    (showDates ? " The table lists every race date." : "");
 }
 
 function renderCharts(data) {
