@@ -88,10 +88,52 @@ each boundary, plus the real artifact parsers/loader preparation and cloud wrapp
 formats. They do not prove live permissions, managed deployment or a native load.
 Ordinary application tests remain `pytest -q tests`.
 
-The new CI job runs the same offline checks. Keep the repository's `orchestration`
-and `dbt` directories on the worker Python path; neither dbt nor SQL is executed
-in the Airflow worker. The managed experiment separately pinned Composer
+The CI job runs the same offline checks. Keep the repository's `orchestration`
+and `dbt` directories on the worker Python path. In `runwx_historical`, dbt runs
+in Cloud Run. The managed experiment separately pinned Composer
 3 / Airflow 3.1.7 and its provider set rather than installing this local lock.
+
+## GNR batches
+
+`runwx_gnr_batch` coordinates the [saved-input batch workflow](batch-ingestion.md):
+
+```text
+prepare every edition
+    -> load/verify every snapshot
+    -> build the all-edition summary
+    -> build the comparison once
+    -> independently reconcile both marts and retain evidence
+```
+
+The original `runwx_historical` DAG keeps its full-results Cloud Run path. GNR's
+Top 1,000 sample format uses its own exporter, schema and existing dbt models.
+Airflow calls the shared functions; it does not parse results or calculate metrics.
+The comparison runs only after all configured snapshots and the summary build pass.
+Every task uses `all_success`, with no automatic retries and one active run/task.
+
+This version uses saved files available at the same absolute paths on every worker.
+dbt runs as a subprocess using a separate environment with `dbt/requirements.lock`;
+both processes use their existing ADC. A local Airflow setup with shared paths is
+supported. The Composer deployment bundle still contains only the earlier historical
+DAG; this batch DAG has not been deployed or run in Composer.
+
+Pass these fields under the DAG's `batch` parameter:
+
+```json
+{
+  "config": "/absolute/path/to/gnr.json",
+  "output": "/absolute/path/to/a-new-execution-directory",
+  "dbt_project": "/absolute/path/to/runwx/dbt",
+  "dbt_python": "/absolute/path/to/runwx/.venv-dbt/bin/python"
+}
+```
+
+Only file references go through XCom. Successful earlier snapshot loads remain
+after a later failure. A fresh run checks existing rows instead of loading duplicates.
+Failed dbt tests or reconciliation fail the DAG; models already built may remain.
+The offline end-to-end test exercises the real DAG, exporter, loader, artifact checks
+and reconciliation with simulated dbt/BigQuery I/O. It covers success, identical
+reruns and failures at each stage. This is separate from the live evidence below.
 
 ## Managed validation
 

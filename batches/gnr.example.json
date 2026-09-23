@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "project": "runwx-learning-mifuha",
+  "location": "europe-west1",
+  "staging_dataset": "runwx_staging",
+  "analytics": {
+    "dataset": "runwx_dbt_gnr_example",
+    "baseline_year": 2019
+  },
+  "editions": [
+    {
+      "year": 2019,
+      "race_json": "../data/local/gnr/2019/race.json",
+      "categories_json": "../data/local/gnr/2019/categories.json",
+      "weather_json": "../data/local/gnr/2019/era5.json",
+      "weather_request": "../data/local/gnr/2019/weather-request.json"
+    },
+    {
+      "year": 2022,
+      "race_json": "../data/local/gnr/2022/race.json",
+      "categories_json": "../data/local/gnr/2022/categories.json",
+      "weather_json": "../data/local/gnr/2022/era5.json",
+      "weather_request": "../data/local/gnr/2022/weather-request.json"
+    }
+  ]
+}

@@ -23,6 +23,8 @@ MODELS = {
     'edition': {'model.runwx.stg_race_results', 'model.runwx.fct_race_results',
                 'model.runwx.mart_event_summary'},
     'comparison': {'model.runwx.mart_course_comparison'},
+    'gnr_edition': {'model.runwx.mart_gnr_edition_summary'},
+    'gnr_comparison': {'model.runwx.mart_gnr_sample_comparison'},
 }
 
 
@@ -226,6 +228,12 @@ def query_metadata(job):
 
 def reconcile(config, expectations, output_dir, client_setup=create_bigquery_client):
     plans = build_reconciliation_plan(config, expectations)
+    return execute_reconciliation(plans, expectations, config, output_dir, client_setup)
+
+
+def execute_reconciliation(plans, expectations, config, output_dir,
+                           client_setup=create_bigquery_client):
+    """Run bounded readbacks against independently prepared expected values."""
     folder = Path(output_dir) / 'reconciliation'
     folder.mkdir()
     expected_text = canonical_json(expectations)
@@ -309,16 +317,28 @@ def verify_artifacts(folder, stage):
         return 'comparison' in (node.get('tags') or []) or any(
             comparison_node(parent, seen) for parent in node.get('depends_on', {}).get('nodes', []))
 
-    expected = {
-        uid for uid, node in nodes.items()
-        if node['resource_type'] in {'model', 'test', 'unit_test'}
-        and node.get('config', {}).get('materialized') != 'ephemeral'
-        and comparison_node(uid) == (stage == 'comparison')
-    }
+    if stage.startswith('gnr_'):
+        models = MODELS[stage]
+        if not models <= nodes.keys():
+            raise ValueError('Manifest is missing an expected GNR model')
+        expected = models | {
+            uid for uid, node in nodes.items()
+            if node['resource_type'] in {'test', 'unit_test'}
+            and models.intersection(node.get('depends_on', {}).get('nodes', []))
+            and (stage != 'gnr_edition' or uid != 'test.runwx.gnr_comparison_reconcile')
+        }
+    else:
+        expected = {
+            uid for uid, node in nodes.items()
+            if node['resource_type'] in {'model', 'test', 'unit_test'}
+            and node.get('config', {}).get('materialized') != 'ephemeral'
+            and comparison_node(uid) == (stage == 'comparison')
+        }
     expected_models = {uid for uid in expected if uid.startswith('model.')}
     # These counts describe this locked project's existing test contract, not
     # arbitrary dbt projects. Missing tests must not look like successful builds.
-    expected_counts = (3, 14, 7) if stage == 'edition' else (1, 5, 2)
+    expected_counts = {'edition': (3, 14, 7), 'comparison': (1, 5, 2),
+                       'gnr_edition': (1, 5, 0), 'gnr_comparison': (1, 4, 1)}[stage]
     counts = tuple(sum(uid.startswith(prefix) for uid in expected)
                    for prefix in ('model.', 'test.', 'unit_test.'))
     if expected_models != MODELS[stage] or counts != expected_counts:
@@ -332,6 +352,24 @@ def verify_artifacts(folder, stage):
             raise ValueError('Unsuccessful dbt result: ' + row['unique_id'])
     return {'invocation_id': invocation, 'models': counts[0],
             'data_tests': counts[1], 'unit_tests': counts[2]}
+
+
+def execute_build(plan, stage):
+    """Run one build and verify its artifacts; shared by local and DAG runners."""
+    folder = Path(plan['directory'])
+    folder.mkdir()
+    # Keep authentication, but discard flags that could change the reviewed build.
+    env = {k: v for k, v in os.environ.items() if not k.startswith('DBT_')}
+    env.update(plan['environment'])
+    env['DBT_SEND_ANONYMOUS_USAGE_STATS'] = 'false'
+    with (folder / 'console.log').open('w') as log:
+        result = subprocess.run(plan['command'], env=env, stdout=log,
+                                stderr=subprocess.STDOUT, timeout=1800, check=False)
+    stage['returncode'] = result.returncode
+    if result.returncode:
+        raise ValueError(f"{plan['stage']} dbt build exited {result.returncode}")
+    stage.update(verify_artifacts(folder, plan['stage']))
+    stage['status'] = 'passed'
 
 
 def execute(config, expectations, output_dir, project_dir, client_setup=create_bigquery_client):
@@ -349,25 +387,10 @@ def execute(config, expectations, output_dir, project_dir, client_setup=create_b
     phase = 'dbt'
     try:
         for plan in plans:
-            folder = Path(plan['directory'])
-            folder.mkdir()
             stage = {'stage': plan['stage'], 'status': 'running', 'command': plan['command']}
             record['stages'].append(stage)
             record_path.write_text(json.dumps(record, indent=2) + '\n')
-            env = os.environ.copy()
-            # Prevent inherited dbt flags from suppressing tests/artifacts or
-            # substituting a different selection/profile. Auth env stays intact.
-            env = {k: v for k, v in env.items() if not k.startswith('DBT_')}
-            env.update(plan['environment'])
-            env['DBT_SEND_ANONYMOUS_USAGE_STATS'] = 'false'
-            with (folder / 'console.log').open('w') as log:
-                result = subprocess.run(plan['command'], env=env, stdout=log,
-                                        stderr=subprocess.STDOUT, timeout=1800, check=False)
-            stage['returncode'] = result.returncode
-            if result.returncode:
-                raise ValueError(f"{plan['stage']} dbt build exited {result.returncode}")
-            stage.update(verify_artifacts(folder, plan['stage']))
-            stage['status'] = 'passed'
+            execute_build(plan, stage)
         record['status'] = 'builds_passed'
         record_path.write_text(json.dumps(record, indent=2) + '\n')
         phase = 'reconciliation'

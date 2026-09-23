@@ -216,7 +216,14 @@ against the saved exports. The build needed a per-query billing cap above the
 default 100 MiB because it read 19 source tables; `RUNWX_DBT_MAXIMUM_BYTES_BILLED`
 sets that cap for a reviewed run. Terraform is no-op after creating the output
 dataset. This GNR path has run locally with developer credentials; it has not run in
-the Cloud Run dbt job, and the public API/page does not show it yet.
+the Cloud Run dbt job. Its verified comparison is now served by the public API/page.
+
+The [batch workflow](batch-ingestion.md) reuses these models through `gnr_stage.py`.
+It builds the all-edition summary, then the comparison once, and independently
+reconciles both against the saved sample exports. The local command and GNR Airflow
+DAG use the same build/artifact/reconciliation helpers as the full-results runner.
+This orchestration has offline test coverage; no new native batch or Composer run
+is claimed.
 
 ## Staged build runner
 

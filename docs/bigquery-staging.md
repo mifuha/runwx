@@ -1,5 +1,9 @@
 # First BigQuery staging load
 
+For several qualified Great North Run editions, use the
+[batch preparation/loading command](batch-ingestion.md). It reuses the same safe
+snapshot loader and records one batch summary.
+
 Status: **first cloud load passed on 8 September; exact Cloud Run artifact-to-table
 verification passed on 14 September 2026**.
 This step puts the [synthetic result export](result-export.md) into one table.

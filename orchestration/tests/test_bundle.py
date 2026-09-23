@@ -15,6 +15,25 @@ from build_bundle import build_bundle
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def test_candidate_bundle_retains_packaged_gnr_assets(monkeypatch):
+    import build_bundle as builder
+
+    paths = subprocess.check_output(
+        ['git', 'ls-files', '--cached', '--others', '--exclude-standard'], cwd=ROOT).decode().splitlines()
+
+    def candidate_git(root, *args):
+        if args[0] == 'rev-parse': return b'a' * 40
+        if args[0] == 'ls-tree': return '\n'.join(paths).encode()
+        if args[0] == 'show': return (root / args[1].split(':', 1)[1]).read_bytes()
+        raise AssertionError(args)
+
+    monkeypatch.setattr(builder, 'git', candidate_git)
+    with zipfile.ZipFile(BytesIO(builder.build_bundle(ROOT))) as archive:
+        assert 'dags/runwx/adapters/races/gnr_editions.json' in archive.namelist()
+        assert 'dags/runwx/adapters/bigquery/gnr_sample_rows.schema.json' in archive.namelist()
+        assert 'dags/runwx_gnr_batch.py' not in archive.namelist()  # Requires shared worker files first.
+
+
 def test_bundle_is_reproducible_and_excludes_local_files():
     payload = build_bundle(ROOT)
     assert build_bundle(ROOT) == payload
