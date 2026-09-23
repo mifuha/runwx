@@ -31,5 +31,6 @@ with some public paths ending in `z`, so the service and container probes avoid 
 paths.
 
 The Battersea change adds table-level read grants for its 13 snapshots, 39 dbt
-edition views and one comparison view. The saved plan has 53 additions and no
-updates or deletions. These grants and the new API image are not deployed yet.
+edition views and one comparison view. The saved real-digest plan has 53 additions,
+one update to the existing service image and no deletions. The image is published
+by digest; the grants and image are not deployed yet.
