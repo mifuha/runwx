@@ -307,6 +307,9 @@ def verify_artifacts(folder, stage):
     if not invocation or invocation != manifest['metadata']['invocation_id']:
         raise ValueError('Artifact invocation IDs disagree')
     nodes = {**manifest['nodes'], **manifest.get('unit_tests', {})}
+    # dbt can retain generic tests for disabled models in manifest nodes.
+    nodes = {uid: node for uid, node in nodes.items()
+             if node.get('config', {}).get('enabled', True)}
 
     def comparison_node(uid, seen=None):
         seen = set() if seen is None else seen
