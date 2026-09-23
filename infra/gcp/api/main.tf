@@ -3,14 +3,27 @@ locals {
   # dependencies must also be readable unless a separate authorized-view layer
   # is introduced. Keep this list aligned with the reviewed API course catalog.
   editions = {
-    runwx_dbt_lydd_2022_99783aaa85b8       = "lydd_2022_99783aaa85b8"
-    runwx_dbt_lydd_2023_bb1171d02f0f       = "lydd_2023_bb1171d02f0f"
-    runwx_dbt_lydd_2024_f0758db89562       = "lydd_2024_f0758db89562"
-    runwx_dbt_lydd_2025_6cbb29274bab       = "lydd_2025_6cbb29274bab"
-    runwx_dbt_lydd_2026_5243cfebedc2       = "lydd_2026_5243cfebedc2"
-    runwx_dbt_folkestone_2019_f95b3ae312e3 = "folkestone_2019_f95b3ae312e3"
-    runwx_dbt_folkestone_2022_b7e702b5ec87 = "folkestone_2022_b7e702b5ec87"
-    runwx_dbt_folkestone_2023_e56f91f4c1ba = "folkestone_2023_e56f91f4c1ba"
+    runwx_dbt_lydd_2022_99783aaa85b8            = "lydd_2022_99783aaa85b8"
+    runwx_dbt_lydd_2023_bb1171d02f0f            = "lydd_2023_bb1171d02f0f"
+    runwx_dbt_lydd_2024_f0758db89562            = "lydd_2024_f0758db89562"
+    runwx_dbt_lydd_2025_6cbb29274bab            = "lydd_2025_6cbb29274bab"
+    runwx_dbt_lydd_2026_5243cfebedc2            = "lydd_2026_5243cfebedc2"
+    runwx_dbt_folkestone_2019_f95b3ae312e3      = "folkestone_2019_f95b3ae312e3"
+    runwx_dbt_folkestone_2022_b7e702b5ec87      = "folkestone_2022_b7e702b5ec87"
+    runwx_dbt_folkestone_2023_e56f91f4c1ba      = "folkestone_2023_e56f91f4c1ba"
+    runwx_dbt_battersea_2022_03_26_18f9f3ba0578 = "battersea_2022_03_26_18f9f3ba0578"
+    runwx_dbt_battersea_2022_05_21_42a5fc976228 = "battersea_2022_05_21_42a5fc976228"
+    runwx_dbt_battersea_2022_07_16_1a32fe8b1652 = "battersea_2022_07_16_1a32fe8b1652"
+    runwx_dbt_battersea_2022_08_06_a83086e9f1ba = "battersea_2022_08_06_a83086e9f1ba"
+    runwx_dbt_battersea_2022_10_15_6ff9bdd7af64 = "battersea_2022_10_15_6ff9bdd7af64"
+    runwx_dbt_battersea_2022_11_19_b357886fde0b = "battersea_2022_11_19_b357886fde0b"
+    runwx_dbt_battersea_2023_03_04_d0e1e22b5d44 = "battersea_2023_03_04_d0e1e22b5d44"
+    runwx_dbt_battersea_2023_04_22_cf587531a0f0 = "battersea_2023_04_22_cf587531a0f0"
+    runwx_dbt_battersea_2023_06_03_5afd61ff78b6 = "battersea_2023_06_03_5afd61ff78b6"
+    runwx_dbt_battersea_2023_11_11_5f6e2c2841e5 = "battersea_2023_11_11_5f6e2c2841e5"
+    runwx_dbt_battersea_2023_12_02_ef41888db865 = "battersea_2023_12_02_ef41888db865"
+    runwx_dbt_battersea_2024_03_02_0b5b2f183523 = "battersea_2024_03_02_0b5b2f183523"
+    runwx_dbt_battersea_2024_08_03_8ef51364b6fb = "battersea_2024_08_03_8ef51364b6fb"
   }
 
   analysis_dependencies = merge([
@@ -37,6 +50,10 @@ locals {
     }
     "runwx_dbt_folkestone_2019_f95b3ae312e3.mart_course_comparison" = {
       dataset_id = "runwx_dbt_folkestone_2019_f95b3ae312e3"
+      table_id   = "mart_course_comparison"
+    }
+    "runwx_dbt_battersea_2022_03_26_18f9f3ba0578.mart_course_comparison" = {
+      dataset_id = "runwx_dbt_battersea_2022_03_26_18f9f3ba0578"
       table_id   = "mart_course_comparison"
     }
     "runwx_dbt_gnr_top1000_v1.mart_gnr_edition_summary" = {

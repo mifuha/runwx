@@ -20,15 +20,17 @@ run "public_api_has_bounded_runtime_and_exact_reads" {
 
   assert {
     condition = (
-      length(google_bigquery_table_iam_member.query_reader) == 36 &&
+      length(google_bigquery_table_iam_member.query_reader) == 89 &&
       contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_dbt_gnr_top1000_v1.mart_gnr_edition_summary") &&
       contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_dbt_gnr_top1000_v1.mart_gnr_sample_comparison") &&
+      contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_dbt_battersea_2022_03_26_18f9f3ba0578.mart_course_comparison") &&
+      contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_staging.battersea_2024_08_03_8ef51364b6fb") &&
       alltrue([
         for grant in google_bigquery_table_iam_member.query_reader :
         grant.role == "roles/bigquery.dataViewer" && grant.project == var.project_id
       ])
     )
-    error_message = "The API must read only the 36 named tables and views in the approved mart dependency chains."
+    error_message = "The API must read only the 89 named tables and views in the approved mart dependency chains."
   }
 
   assert {
