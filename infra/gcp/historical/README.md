@@ -1,8 +1,9 @@
 # Historical warehouse resources
 
-This Terraform root manages one empty results table and one dbt output dataset
-per explicitly chosen export. It reads the existing staging dataset as a data
-source. It does not upload results, build views, create a project, enable APIs,
+This Terraform root manages one results table and one dbt output dataset per
+explicitly chosen full-field export. The current state covers five Lydd, three
+Folkestone and 13 Battersea editions. It also holds 19 separate GNR sample
+tables. It reads the existing staging dataset as a data source. It does not upload results, build views, create a project, enable APIs,
 change billing or grant runtime roles.
 
 The optional `gnr_sample_tables` map creates only explicit GNR top-1,000 staging
@@ -48,8 +49,8 @@ terraform -chdir=infra/gcp/historical validate
 terraform -chdir=infra/gcp/historical plan -out=historical.tfplan
 ```
 
-Inspect the saved plan before approving execution. Two snapshots should add
-exactly two tables and two datasets, with no changes or deletions. Check project,
+Inspect the saved plan before approving execution. In a fresh state, the two
+example snapshots above would add two tables and two datasets. Check project,
 region, exact names and the packaged results schema. Existing destinations must
 be inspected rather than silently adopted into this new state.
 

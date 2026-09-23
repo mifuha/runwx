@@ -10,7 +10,9 @@ Try the [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/): choose Ly
 Folkestone, Great North Run or Battersea Park 10K and view pace beside the weather
 for each edition. Great North Run covers 19 editions, using the fastest 1,000
 available running results per edition, with a fixed start-area weather window.
-Battersea covers 13 full-field editions across 2022–2024.
+Battersea covers 13 full-field editions across 2022–2024. The live
+[How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
+follows Folkestone 2019 from saved inputs to the chart.
 
 ## Real historical comparison
 
@@ -47,16 +49,18 @@ mean these results **do not isolate weather's causal effect**.
 
 ```mermaid
 flowchart TD
-    inputs["Saved race + ERA5 inputs"] --> python["Python validation/export"]
-    python --> snapshots[("BigQuery snapshots")]
-    snapshots --> runner["dbt stage runner"]
+    inputs["Saved race + ERA5 inputs"] --> export["Python validation/export<br/>local or Cloud Run job"]
+    export --> artifacts["Audit report + result rows<br/>local or Cloud Storage"]
+    artifacts --> loader["Validate and load snapshot"]
+    loader --> snapshots[("BigQuery snapshots")]
+    snapshots --> runner["dbt stage runner<br/>local or separate Cloud Run job"]
     runner --> edition["Edition build"]
     edition --> comparison["Comparison build"]
     comparison --> reconciliation["Independent reconciliation"]
     comparison --> output["Comparison output"]
-    output --> api["Read-only API"]
-    api --> page["Public comparison page"]
-    runner --> evidence["Execution evidence"]
+    output --> api["Read-only Cloud Run API"]
+    api --> page["Comparison + How it works pages"]
+    runner --> evidence["Success/failure evidence"]
 ```
 
 The same stage runner works locally and inside the Cloud Run dbt job. It runs the
@@ -68,7 +72,7 @@ datasets and a named baseline. Exact export reruns verify existing rows without
 another upload. A deliberately corrected snapshot uses a separate destination and
 retains its own provenance.
 
-The latest 2025 addition passed **28 native dbt tests**: 21 for the new edition and
+The Lydd 2025 addition passed **28 native dbt tests**: 21 for the new edition and
 seven for the five-edition comparison. Full result readbacks matched the saved
 expectations. [2025 execution evidence](docs/evidence/lydd-2025-validation.json)
 distinguishes nine cached fixture tests from 19 uncached data tests and records
@@ -88,8 +92,9 @@ execution evidence. A separate Cloud Run service now serves the read-only API an
 comparison page. Its responses match the saved results for five Lydd, three
 Folkestone, 19 sampled Great North Run and 13 full-field Battersea editions; see
 the [deployment checks](docs/api.md).
-There is no scheduled historical pipeline. See the [architecture](docs/architecture.md)
-for how the parts fit together.
+The [Airflow DAG](docs/airflow.md) also coordinated a verified Folkestone run in
+Composer. That environment was removed after the check; historical runs are started
+manually. See the [architecture](docs/architecture.md) for how the parts fit together.
 
 <a id="quickstart"></a>
 <a id="example-result"></a>

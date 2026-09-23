@@ -6,26 +6,24 @@ The current output covers [five Lydd editions](../README.md#real-historical-comp
 with 1,197 finishers, three Folkestone editions with 1,215 finishers, 19 sampled
 Great North Run editions and 13 full-field Battersea Park 10K editions with 1,986
 finishers. It uses fixed race snapshots and real hourly ERA5 weather. Python
-prepares the inputs; BigQuery and dbt produce the staging, accepted-results fact, edition summary and comparison
-views. This flow has run
-against BigQuery from local containers, and the same dbt stage runner has now run
-inside Cloud Run.
+prepares the inputs; BigQuery and dbt produce the staging, accepted-results fact,
+edition summary and comparison views. Historical builds have run from local
+containers; the same export and dbt code has also run in separate Cloud Run jobs
+for Folkestone 2019.
 
 ```mermaid
-flowchart LR
-    race["Saved race results"] --> python["Python parsing / validation<br/>and UTC weather matching"]
-    weather["Captured ERA5 JSON<br/>→ saved weather CSV"] --> python
-    python --> export["Candidate-row NDJSON<br/>with hashes and settings"]
-    export --> loader["Validate export / load / read back"]
-    loader --> source[("BigQuery table<br/>per fixed snapshot")]
-    source --> runner["Reusable dbt stage runner"]
-    runner --> edition["Edition build"]
-    edition --> comparison["Comparison build"]
-    comparison --> reconciliation["Independent reconciliation"]
-    comparison --> output["Comparison output"]
-    output --> api["Read-only API"]
-    api --> page["Public comparison page"]
-    reconciliation --> evidence["Immutable execution evidence"]
+flowchart TD
+    inputs["Saved race + ERA5 inputs<br/>local files or Cloud Storage"] --> export["Python validation/export<br/>local or Cloud Run report job"]
+    export --> artifacts["Audit report + result rows<br/>local files or Cloud Storage"]
+    artifacts --> loader["Validate export, load or verify"]
+    loader --> snapshot[("BigQuery snapshot tables")]
+    snapshot --> runner["dbt stage runner<br/>local or separate Cloud Run dbt job"]
+    runner --> edition["Edition views + tests"]
+    edition --> comparison["Course comparison view + tests"]
+    comparison --> checks["Independent reconciliation"]
+    comparison --> api["Read-only Cloud Run API"]
+    api --> pages["Comparison + How it works pages"]
+    runner --> evidence["Retained success/failure evidence"]
 ```
 
 [Source qualification](historical-inputs.md) checks race date/start, timing fields,
@@ -115,13 +113,13 @@ synthetic**. An execution-specific Folkestone 2019 run produced 459 accepted res
 The job does not load BigQuery or invoke dbt.
 
 ```mermaid
-flowchart LR
-    inputs[("Private Cloud Storage<br/>approved synthetic or historical inputs")] --> job["Manual Cloud Run validation/export job"]
-    job --> reports[("Private Cloud Storage<br/>audit report JSON")]
-    job --> exports[("Private Cloud Storage<br/>candidate-result NDJSON")]
-    reports --> loader["Manual exact-generation validation<br/>existing safe loader"]
+flowchart TD
+    inputs[("Private Cloud Storage<br/>approved fixed inputs")] --> job["Cloud Run validation/export job"]
+    job --> reports[("Audit report JSON<br/>private Cloud Storage")]
+    job --> exports[("Result-row NDJSON<br/>private Cloud Storage")]
+    reports --> loader["Check exact generations<br/>then use the safe loader"]
     exports --> loader
-    loader --> snapshot[("Explicit BigQuery<br/>snapshot table")]
+    loader --> snapshot[("Explicit BigQuery snapshot")]
 ```
 
 Input generations and SHA-256 checks bind the downloaded bytes. Execution-specific
@@ -142,9 +140,11 @@ and read-only API. It reads the existing comparison marts; the statistics stay i
 dbt. The live service now covers five Lydd, three Folkestone, 19 sampled Great
 North Run and 13 full-field Battersea editions. GNR uses the fastest 1,000
 available running results per edition and fixed start-area weather context.
-Battersea keeps separate race dates for multiple editions in the same year. The [API documentation](api.md) links the
-deployment checks. Inputs are still captured and runs
-started manually.
+Battersea keeps separate race dates for multiple editions in the same year.
+The API also serves the live [How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works).
+The [API documentation](api.md) links the deployment checks. Inputs are still
+captured and historical runs started manually. The Airflow DAG completed a
+Folkestone run in Composer; that environment was removed after validation.
 
 The verified downstream boundary is a thin Storage adapter: it requires exact
 report/export generations, verifies the report-last completeness marker and fully
