@@ -35,14 +35,19 @@
         <p class="example-note">The evidence below comes from separate verified
           executions of this same fixed edition, including an Airflow run. It is
           not a continuously updated feed.</p>
+        <nav class="page-jump" aria-label="On this page">
+          <a href="#journey-title">Follow the data</a>
+          <a href="#decisions-title">Design decisions</a>
+          <a href="#evidence-title">What we verified</a>
+        </nav>
       </section>
 
       <section class="journey" aria-labelledby="journey-title">
         <div class="journey-heading">
           <p class="eyebrow">The data journey</p>
           <h2 id="journey-title">Six steps from source to screen</h2>
-          <p>The main path is visible here. Open any step for the reason behind it
-            and the evidence we kept.</p>
+          <p>The path and its safeguards are visible here. Open a step for the
+            implementation detail and its evidence.</p>
         </div>
 
         <ol class="pipeline">
@@ -173,14 +178,113 @@
         </ol>
       </section>
 
+      <section class="design-section" aria-labelledby="decisions-title">
+        <div class="journey-heading">
+          <p class="eyebrow">Key design decisions</p>
+          <h2 id="decisions-title">Why the pipeline works this way</h2>
+          <p>The choices follow the workload: saved historical races, repeatable
+            checks and a small public comparison.</p>
+        </div>
+        <div class="decision-grid">
+          <article class="decision-card">
+            <span class="decision-number">01 / Fixed inputs</span>
+            <h3>Know exactly what was processed.</h3>
+            <p>Source hashes identify each saved race and weather file. Validation
+              happens before output, and an identical rerun verifies the existing
+              snapshot. A corrected input gets a distinct snapshot. More elaborate
+              revision and publication controls can wait for a changing feed.</p>
+          </article>
+          <article class="decision-card">
+            <span class="decision-number">02 / Shared processing</span>
+            <h3>One set of checks in each environment.</h3>
+            <p>The local export command and Cloud Run export job reuse the tested
+              Python parsing, validation and export code. The dbt stage runner
+              also works locally and in Cloud Run. Airflow calls these stages;
+              source adapters handle formats such as GNR's Top 1,000 sample.</p>
+          </article>
+          <article class="decision-card">
+            <span class="decision-number">03 / Warehouse models</span>
+            <h3>Calculate once, then serve the result.</h3>
+            <p>BigQuery stores checked rows; dbt builds and tests the edition and
+              comparison views. The API reads approved aggregate results, so the
+              chart does not calculate pace statistics.</p>
+          </article>
+          <article class="decision-card">
+            <span class="decision-number">04 / Airflow</span>
+            <h3>Coordinate without repeating the logic.</h3>
+            <p>Task dependencies stop later steps when validation or an earlier
+              build fails. Airflow records the run history; the existing Python
+              and dbt stages still do the processing. A failed dbt build can
+              leave views that an earlier step already created.</p>
+          </article>
+          <article class="decision-card decision-card-wide">
+            <span class="decision-number">05 / Bounded cloud work</span>
+            <h3>Use the cloud where the project needs it.</h3>
+            <p>Cloud Run serves the page and runs separate export and dbt jobs;
+              BigQuery holds the snapshots and marts. The managed Composer run
+              was an exercise. The Composer environment was removed after
+              verification. New historical runs are currently started manually.
+              This small dataset does not need cloud scale, but the deployed path
+              shows how its stages, access and evidence fit together.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="model-section" aria-labelledby="models-title">
+        <div class="model-heading">
+          <div>
+            <p class="eyebrow">Full-results path</p>
+            <h2 id="models-title">What each dbt model represents</h2>
+          </div>
+          <p>GNR's Top 1,000 samples use separate models and a fixed event weather
+            window rather than individual runner weather matches.</p>
+        </div>
+        <div class="model-table-scroll">
+          <table class="model-table">
+            <thead><tr><th scope="col">Model</th><th scope="col">One row means</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>stg_race_results</code></th><td>One candidate source result, including its validation outcome.</td></tr>
+              <tr><th scope="row"><code>fct_race_results</code></th><td>One accepted result, with pace and matched weather where available.</td></tr>
+              <tr><th scope="row"><code>mart_event_summary</code></th><td>One edition and its counts, pace summary and weather coverage.</td></tr>
+              <tr><th scope="row"><code>mart_course_comparison</code></th><td>One selected edition relative to a named baseline; differences appear only when comparable.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="model-note">Edition timing methods also matter: Battersea's
+          unknown chip/gun basis leaves baseline pace changes blank.</p>
+      </section>
+
+      <section class="proof-section" aria-labelledby="evidence-title">
+        <div class="journey-heading">
+          <p class="eyebrow">What we verified</p>
+          <h2 id="evidence-title">Two useful run outcomes</h2>
+        </div>
+        <div class="proof-grid">
+          <article class="proof-card">
+            <span class="proof-status">Stopped safely</span>
+            <h3>Invalid configuration ended the DAG before Cloud Run.</h3>
+            <p>The first task failed; all five downstream tasks were blocked.
+              No Cloud Run job was submitted.</p>
+            <a href="https://github.com/mifuha/runwx/blob/master/docs/evidence/composer-airflow-validation.json#L11-L15">See the validation evidence</a>
+          </article>
+          <article class="proof-card">
+            <span class="proof-status">Safe rerun</span>
+            <h3>The same Folkestone snapshot passed all six tasks again.</h3>
+            <p>The loader verified the existing 459 rows and submitted no new
+              warehouse load. That run checked an existing snapshot; it did not
+              demonstrate a fresh insert or transactional rollback.</p>
+            <a href="https://github.com/mifuha/runwx/blob/master/docs/evidence/composer-airflow-validation.json#L53-L69">See the rerun evidence</a>
+          </article>
+        </div>
+      </section>
+
       <section class="explainer-notes" aria-label="Running and checking the pipeline">
         <article class="note-card">
           <p class="eyebrow">Coordination</p>
-          <h2>Airflow connects the steps.</h2>
-          <p>The DAG calls the tested stages; it does not repeat their business
-            logic. We verified it with real GCP services in Cloud Composer and
-            kept the DAG in the project. The Composer environment was removed
-            after verification. New historical runs are currently started manually.</p>
+          <h2>Deployments are checked, too.</h2>
+          <p>Terraform records the service and its access. Immutable container
+            images identify deployed code. CI checks code, models and containers
+            offline; separate real-cloud runs verify the deployed stages.</p>
         </article>
         <article class="note-card">
           <p class="eyebrow">Evidence today</p>
@@ -201,7 +305,7 @@
     </main>
 
     <footer>
-      <span>runwx</span>
+      <span>Built by Miha Fugina</span>
       <span>Historical snapshots · reproducible comparisons</span>
     </footer>
   </body>
