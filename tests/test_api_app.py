@@ -269,7 +269,9 @@ def test_home_page_serves_the_minimal_comparison_interface():
     assert 'id="timing-heading"' in result.text
     assert "Simple statistics, fixed historical snapshots, no prediction." in result.text
     assert 'src="http' not in result.text
-    assert 'href="http' not in result.text
+    assert 'href="/how-it-works"' in result.text
+    assert 'href="https://github.com/mifuha/runwx"' in result.text
+    assert 'href="https://runwx-api-' not in result.text
 
 
 def test_frontend_assets_are_local_packaged_and_cache_bounded():
@@ -337,6 +339,14 @@ def test_how_it_works_page_keeps_the_path_visible_and_links_to_evidence():
     assert "docs/evidence/composer-airflow-validation.json" in page.text
     assert "docs/api.md" in page.text
     assert 'src="http' not in page.text
+    assert 'href="https://runwx-api-' not in page.text
+    assert "Invalid configuration ended the DAG before Cloud Run" in page.text
+    assert "The same Folkestone snapshot passed all six tasks again" in page.text
+    assert "submitted no new" in page.text
+    assert "stg_race_results" in page.text
+    assert "mart_course_comparison" in page.text
+    assert "GNR's Top 1,000 samples use separate models" in page.text
+    assert "Built by Miha Fugina" in page.text
 
 
 def test_explainer_uses_the_packaged_stylesheet_with_the_same_cache_key():
