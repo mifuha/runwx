@@ -51,6 +51,7 @@ class CourseSource:
     distance_m: int
     baseline_event_id: str
     scope: Literal["full_field", "top_1000"] = "full_field"
+    maximum_bytes_billed: int = MAXIMUM_BYTES_BILLED
 
     def __post_init__(self):
         if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", self.slug):
@@ -65,6 +66,8 @@ class CourseSource:
             raise ValueError("course distance must be positive")
         if not TABLE_ID.fullmatch(self.table_id):
             raise ValueError("comparison table must be a fully qualified simple table ID")
+        if not 0 < self.maximum_bytes_billed <= 200 * 1024 * 1024:
+            raise ValueError("comparison query cap must be positive and at most 200 MiB")
 
 
 COURSES: dict[str, CourseSource] = {
@@ -91,6 +94,19 @@ COURSES: dict[str, CourseSource] = {
         ),
         distance_m=21097,
         baseline_event_id="eventrac:36835",
+    ),
+    "battersea-park-10k": CourseSource(
+        slug="battersea-park-10k",
+        name="Battersea Park 10K",
+        course_id="battersea-park-10k",
+        table_id=(
+            "runwx-learning-mifuha."
+            "runwx_dbt_battersea_2022_03_26_18f9f3ba0578."
+            "mart_course_comparison"
+        ),
+        distance_m=10000,
+        baseline_event_id="sri_chinmoy:battersea-10k-2022-03-26",
+        maximum_bytes_billed=160 * 1024 * 1024,
     ),
     "great-north-run": CourseSource(
         slug="great-north-run",
@@ -201,7 +217,7 @@ class BigQueryComparisonRepository:
         """
         job_config = bigquery.QueryJobConfig(
             use_legacy_sql=False,
-            maximum_bytes_billed=MAXIMUM_BYTES_BILLED,
+            maximum_bytes_billed=source.maximum_bytes_billed,
             query_parameters=[
                 bigquery.ScalarQueryParameter("course_id", "STRING", source.course_id)
             ],

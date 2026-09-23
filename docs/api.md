@@ -14,14 +14,19 @@ external frontend or chart dependency.
 GET /api/courses/{course_slug}/comparison
 ```
 
-The reviewed course slugs in this code are `lydd-half`, `folkestone-half` and
-`great-north-run`. Each maps to one explicit BigQuery comparison view. The URL
-cannot select a table or submit SQL. The query selects fixed public columns, binds
-the expected course ID as a parameter, reads at most 50 editions and refuses to
-bill more than 64 MiB. The first deployed queries required 50 MiB for Lydd and
-30 MiB for Folkestone because
-of BigQuery's minimum billing per referenced table. The previous 10 MiB cap rejected
-both; 64 MiB leaves a small margin above the current requirement.
+The reviewed course slugs in this code are `lydd-half`, `folkestone-half`,
+`great-north-run` and `battersea-park-10k`. Each maps to one explicit BigQuery
+comparison view. The URL cannot select a table or submit SQL. The query selects
+fixed public columns, binds the expected course ID as a parameter and reads at most
+50 editions. Lydd, Folkestone and GNR keep the 64 MiB query cap. Battersea's 13
+underlying snapshot tables require a 160 MiB cap; the original 64 MiB attempt
+failed because BigQuery required at least 130 MiB.
+
+Battersea has 13 full-field editions across 2022–2024. The page shows their dates
+so races in the same year remain distinct. Its published times are manually timed
+without a chip/gun distinction, so baseline pace changes are left blank. The pace
+and ERA5 weather statistics are descriptive. The new API image and read grants are
+prepared for deployment; the live page does not show Battersea yet.
 
 The full-field response contains the course and baseline identity, followed by
 editions in date order. Each edition includes finishers; median, mean, p25–p75 and fastest-N

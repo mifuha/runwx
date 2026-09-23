@@ -14,7 +14,7 @@ terraform plan \
 ```
 
 Review a complete plan before applying. After deployment, check `/health` and
-compare all three public course responses with the saved analytical results.
+compare all configured public course responses with the saved analytical results.
 
 The 22 September 2026 deployment updated the existing service's image and health
 probes. Both course responses matched, and Terraform then reported no remaining
@@ -29,3 +29,8 @@ The process-only health endpoint is `/health`. Cloud Run's
 [known issues](https://docs.cloud.google.com/run/docs/known-issues) document conflicts
 with some public paths ending in `z`, so the service and container probes avoid those
 paths.
+
+The Battersea change adds table-level read grants for its 13 snapshots, 39 dbt
+edition views and one comparison view. The saved real-digest plan has 53 additions,
+one update to the existing service image and no deletions. The image is published
+by digest; the grants and image are not deployed yet.

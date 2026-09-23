@@ -132,6 +132,34 @@ def test_query_uses_only_catalog_table_and_parameterized_course():
     assert result.editions[0].weather.median_temperature_c == 5.8
 
 
+def test_battersea_keeps_two_editions_in_one_year_and_unknown_timing():
+    source = COURSES["battersea-park-10k"]
+    first = comparison_row(
+        event_id=source.baseline_event_id, course_id=source.course_id,
+        distance_m=10000, baseline_event_id=source.baseline_event_id,
+        started_at_utc=datetime(2022, 3, 26, 8, 30, tzinfo=timezone.utc),
+        comparison_status="unknown_timing_basis", median_pace_change_pct=None,
+        speed_at_median_duration_change_pct=None,
+    )
+    second = {**first, "event_id": "sri_chinmoy:battersea-10k-2022-05-21",
+              "started_at_utc": datetime(2022, 5, 21, 7, 30, tzinfo=timezone.utc)}
+    job = Mock()
+    job.result.return_value = [first, second]
+    client = Mock()
+    client.query.return_value = job
+
+    response = BigQueryComparisonRepository(client).get_course_comparison(source.slug)
+
+    assert source.maximum_bytes_billed == 160 * 1024 * 1024
+    assert client.query.call_args.kwargs["job_config"].maximum_bytes_billed == source.maximum_bytes_billed
+    assert [edition.year for edition in response.editions] == [2022, 2022]
+    assert [edition.started_at_utc.date() for edition in response.editions] == [
+        date(2022, 3, 26), date(2022, 5, 21),
+    ]
+    assert all(edition.comparison_status == "unknown_timing_basis" for edition in response.editions)
+    assert all(edition.change_from_baseline.median_pace_pct is None for edition in response.editions)
+
+
 def test_sampled_query_keeps_sample_weather_and_timing_distinct_from_full_field():
     repo, client = sampled_repository([sampled_row()])
 
@@ -256,6 +284,12 @@ def test_public_catalog_matches_the_verified_comparison_views():
             21097,
             "eventrac:36835",
             "runwx-learning-mifuha.runwx_dbt_folkestone_2019_f95b3ae312e3.mart_course_comparison",
+        ),
+        "battersea-park-10k": (
+            "battersea-park-10k",
+            10000,
+            "sri_chinmoy:battersea-10k-2022-03-26",
+            "runwx-learning-mifuha.runwx_dbt_battersea_2022_03_26_18f9f3ba0578.mart_course_comparison",
         ),
         "great-north-run": (
             "great-north-run-traditional",

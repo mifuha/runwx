@@ -101,6 +101,22 @@ function formatNumber(value, suffix, decimals) {
   return `${value.toFixed(decimals)}${suffix}`;
 }
 
+function editionDate(edition) {
+  return new Date(edition.started_at_utc ?? `${edition.race_date}T12:00:00Z`);
+}
+
+function needsDateLabels(data) {
+  return new Set(data.editions.map((edition) => edition.year)).size < data.editions.length;
+}
+
+function editionLabel(edition, showDate) {
+  return showDate
+    ? editionDate(edition).toLocaleDateString("en-GB", {
+      day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
+    })
+    : String(edition.year);
+}
+
 function formatInteger(value) {
   return Number.isInteger(value) ? value.toLocaleString("en-GB") : "—";
 }
@@ -128,11 +144,12 @@ function renderTable(data) {
   elements.timingHeading.hidden = !isSampled(data);
   for (const edition of data.editions) {
     const row = document.createElement("tr");
-    const year = appendCell(row, String(edition.year), "edition-year");
+    const year = appendCell(row, editionLabel(edition, needsDateLabels(data)), "edition-year");
     if (!["comparable", "descriptive_sample"].includes(edition.comparison_status)) {
       const note = document.createElement("span");
       note.className = "comparison-note";
-      note.textContent = edition.comparison_status.replaceAll("_", " ");
+      note.textContent = edition.comparison_status === "unknown_timing_basis"
+        ? "timing basis unknown" : edition.comparison_status.replaceAll("_", " ");
       year.append(note);
     }
     appendCell(row, formatInteger(isSampled(data) ? edition.sample_size : edition.finishers));
@@ -201,11 +218,11 @@ function renderChart(data, metric, target) {
   const min = rawMin - spread * 0.14;
   const max = rawMax + spread * 0.14;
 
-  const years = data.editions.map((edition) => edition.year);
-  const firstYear = Math.min(...years);
-  const lastYear = Math.max(...years);
-  const x = (year) => margin.left + (firstYear === lastYear
-    ? plotWidth / 2 : (plotWidth * (year - firstYear)) / (lastYear - firstYear));
+  const dates = data.editions.map((edition) => editionDate(edition).getTime());
+  const firstDate = Math.min(...dates);
+  const lastDate = Math.max(...dates);
+  const x = (edition) => margin.left + (firstDate === lastDate
+    ? plotWidth / 2 : (plotWidth * (editionDate(edition).getTime() - firstDate)) / (lastDate - firstDate));
   const y = (value) => {
     const ratio = (value - min) / (max - min);
     return margin.top + (metric.lowerIsBetter ? ratio : 1 - ratio) * plotHeight;
@@ -240,31 +257,31 @@ function renderChart(data, metric, target) {
   }
 
   const path = points
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.edition.year)} ${y(point.value)}`)
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.edition)} ${y(point.value)}`)
     .join(" ");
   svg.append(svgElement("path", { d: path, class: "chart-path" }));
 
   points.forEach((point) => {
     const year = svgElement("text", {
-      x: x(point.edition.year),
+      x: x(point.edition),
       y: height - 18,
       "text-anchor": "middle",
       class: "chart-year",
     });
-    year.textContent = String(point.edition.year);
+    year.textContent = editionLabel(point.edition, needsDateLabels(data));
     svg.append(year);
 
     const circle = svgElement("circle", {
-      cx: x(point.edition.year),
+      cx: x(point.edition),
       cy: y(point.value),
       r: 5,
       class: "chart-point",
       tabindex: 0,
       role: "img",
-      "aria-label": `${point.edition.year}: ${metric.format(point.value)}`,
+      "aria-label": `${editionLabel(point.edition, needsDateLabels(data))}: ${metric.format(point.value)}`,
     });
     const title = svgElement("title");
-    title.textContent = `${point.edition.year}: ${metric.format(point.value)}`;
+    title.textContent = `${editionLabel(point.edition, needsDateLabels(data))}: ${metric.format(point.value)}`;
     circle.append(title);
     svg.append(circle);
   });
@@ -276,7 +293,9 @@ function renderChart(data, metric, target) {
 function renderCharts(data) {
   const years = data.editions.map((edition) => edition.year);
   const yearSpan = years.length ? Math.max(...years) - Math.min(...years) : 0;
-  elements.timeline.style.minWidth = `${Math.max(620, 90 + yearSpan * 46)}px`;
+  elements.timeline.style.minWidth = `${Math.max(
+    620, 90 + yearSpan * 46, needsDateLabels(data) ? 90 + data.editions.length * 82 : 0,
+  )}px`;
   renderChart(data, paceMetrics[elements.paceMetric.value], {
     chart: elements.paceChart,
     title: elements.paceChartTitle,
@@ -307,11 +326,13 @@ function render(data) {
   comparison = data;
   elements.courseName.textContent = data.course_name;
   const baseline = data.editions.find((edition) => edition.event_id === data.baseline_event_id);
-  const baselineLabel = baseline ? baseline.year : "stated event";
+  const baselineLabel = baseline ? editionLabel(baseline, needsDateLabels(data)) : "stated event";
   elements.courseMeta.textContent = `${data.editions.length} editions · ${(data.distance_m / 1000).toFixed(1)} km · baseline ${baselineLabel}${isSampled(data) ? ` · ${data.sample_label}` : ""}`;
   elements.interpretation.textContent = isSampled(data)
     ? `${data.sample_note} Weather is a fixed 10:00–14:00 local ERA5 estimate at an approximate start-area point, not each runner's exposure or whole-course weather. Published times may use chip, gun or unknown timing bases; the table shows their counts. Pace differences do not prove a weather effect.`
-    : "Weather values are ERA5 estimates matched to runner midpoints. Editions contain different runners, so differences are descriptive and do not prove a weather effect.";
+    : data.course_slug === "battersea-park-10k"
+      ? "Weather is an ERA5 park-area estimate matched to runner midpoints. The published results are manually timed without a chip/gun distinction, so baseline pace changes are unavailable. Different runners enter each race; the chart does not show a weather effect."
+      : "Weather values are ERA5 estimates matched to runner midpoints. Editions contain different runners, so differences are descriptive and do not prove a weather effect.";
   renderTable(data);
   renderCharts(data);
   elements.comparison.hidden = false;
