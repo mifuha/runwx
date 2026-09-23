@@ -2,18 +2,19 @@
 
 from dataclasses import dataclass
 from datetime import date, datetime, time
+from importlib.resources import files
+import json
 import re
 
 from pydantic import BaseModel, ConfigDict, Field
 
 SAMPLE_SIZE = 1000
 # Editions with retained traditional-course evidence. Extend after source qualification.
-EDITION_IDS = {
-    2006: 32, 2007: 62, 2008: 106, 2009: 137, 2010: 173, 2011: 222,
-    2012: 272, 2013: 374, 2014: 437, 2015: 488, 2016: 582, 2017: 680,
-    2018: 785, 2019: 881, 2022: 1149, 2023: 1191, 2024: 1252,
-    2025: 1324, 2026: 1371,
-}
+CATALOG_BYTES = files(__package__).joinpath("gnr_editions.json").read_bytes()
+QUALIFIED_EDITIONS = json.loads(CATALOG_BYTES)
+EDITION_IDS = {int(year): item["race_id"] for year, item in QUALIFIED_EDITIONS.items()}
+EDITION_DATES = {int(year): date.fromisoformat(item["race_date"])
+                 for year, item in QUALIFIED_EDITIONS.items()}
 EXCLUDED_CATEGORIES = {"Hand Cycle", "Wheelchair", "Elite Men", "Elite Women"}
 SAMPLE_LABEL = "Top 1,000 only*"
 SAMPLE_NOTE = (
@@ -74,7 +75,8 @@ def parse_greatrun_sample(
     if (not source.success or event.idRace != race_id or supplied_date.date() != race_date
             or supplied_date.tzinfo is not None or supplied_date.time() != time()):
         raise ValueError("Great Run identity/date does not match the requested edition")
-    if EDITION_IDS.get(race_date.year) != race_id:
+    if (EDITION_IDS.get(race_date.year) != race_id
+            or EDITION_DATES.get(race_date.year) != race_date):
         raise ValueError("edition is outside the qualified traditional-course scope")
     if event.distanceInKm != 21.1:
         raise ValueError("expected the Great North Run half-marathon distance")

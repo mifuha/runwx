@@ -10,7 +10,7 @@ import re
 from zoneinfo import ZoneInfo
 
 from runwx.adapters.bigquery.result_load import _normalise_fields, _unique_object
-from runwx.adapters.races.greatrun_json import EDITION_IDS, SAMPLE_LABEL, SAMPLE_NOTE, SAMPLE_SIZE
+from runwx.adapters.races.greatrun_json import EDITION_DATES, EDITION_IDS, SAMPLE_LABEL, SAMPLE_NOTE, SAMPLE_SIZE
 
 SCHEMA_BYTES = files(__package__).joinpath("gnr_sample_rows.schema.json").read_bytes()
 SCHEMA = json.loads(SCHEMA_BYTES)
@@ -73,7 +73,8 @@ def prepare_sample_load(
     first = rows[0]
     day = date.fromisoformat(first["race_date"])
     race_id = EDITION_IDS.get(day.year)
-    if race_id is None or first["event_id"] != f"greatrun:{race_id}":
+    if (race_id is None or first["event_id"] != f"greatrun:{race_id}"
+            or day != EDITION_DATES.get(day.year)):
         raise ValueError("unqualified GNR edition identity")
     if (first["export_schema"] != "gnr_sample_v1"
             or first["course_id"] != "great-north-run-traditional"

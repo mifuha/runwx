@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import subprocess
+import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -121,6 +123,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     gnr_p.add_argument("--race-date", type=date.fromisoformat, required=True)
     gnr_p.set_defaults(log_level="WARNING")
 
+    batch_p = sub.add_parser("batch", help="Prepare or load a batch of saved, qualified GNR editions.")
+    batch_sub = batch_p.add_subparsers(dest="batch_action", required=True)
+    batch_prepare = batch_sub.add_parser("prepare", help="Validate all inputs and prepare exports offline.")
+    batch_prepare.add_argument("config", type=Path)
+    batch_execute = batch_sub.add_parser("execute", help="Load/verify snapshots, then run configured GNR analytics.")
+    batch_execute.add_argument("plan", type=Path)
+    batch_execute.add_argument("--dbt-project", type=Path, default=Path("dbt"))
+    batch_execute.add_argument("--dbt-python", type=Path, default=Path(sys.executable))
+    for command in (batch_prepare, batch_execute):
+        command.add_argument("--output", type=Path, required=True, help="New evidence directory; never reused.")
+        command.set_defaults(log_level="WARNING")
+
     args = p.parse_args(argv)
 
     # default: if no subcommand, behave like "run"
@@ -143,6 +157,30 @@ def main(argv: list[str] | None = None) -> None:
     def out(msg: str) -> None:
         if not getattr(args, "quiet", False):
             print(msg)
+
+    if args.cmd == "batch":
+        from runwx.services.gnr_batch import _read_prepared, execute_batch, prepare_batch
+
+        try:
+            if args.batch_action == "prepare":
+                result = prepare_batch(args.config, args.output)
+            else:
+                plan, _, _ = _read_prepared(args.plan.resolve())
+                runner = args.dbt_project.resolve() / "gnr_stage.py"
+                if plan.analytics and (not runner.is_file() or not args.dbt_python.is_file()):
+                    raise ValueError("configured analytics requires the GNR dbt runner and Python executable")
+                result = execute_batch(args.plan, args.output)
+                if plan.analytics:
+                    subprocess.run([sys.executable, str(runner), "--plan", str(args.plan.resolve()),
+                                    "--execution-dir", str(args.output.resolve()),
+                                    "--dbt-python", str(args.dbt_python.absolute())], check=True,
+                                   stdout=subprocess.DEVNULL)
+                    result = json.loads((args.output / "execution.json").read_text())
+        except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(1) from exc
+        print(json.dumps(result, indent=2, sort_keys=True, allow_nan=False))
+        return
 
     if args.cmd == "export-gnr-sample":
         rows = build_gnr_sample_rows(
