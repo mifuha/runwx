@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from runwx.adapters.races.battersea_pdf import parse_battersea_pdf
 from runwx.adapters.races.eventrac_html import parse_eventrac_results_html
 from runwx.adapters.races.outcomes import RaceParseResult
 from runwx.adapters.races.sporthive_json import parse_sporthive_snapshot_json
 
 
-RACE_FORMATS = ("eventrac_html", "sporthive_json")
+RACE_FORMATS = ("eventrac_html", "sporthive_json", "battersea_pdf")
 
 
 def parse_saved_race_results(
@@ -21,6 +22,11 @@ def parse_saved_race_results(
     timezone_name: str,
     timing_basis: str | None,
 ) -> RaceParseResult:
+    if race_format == "battersea_pdf":
+        return parse_battersea_pdf(
+            data, course_id=course_id, distance_m=distance_m,
+            timezone_name=timezone_name, timing_basis=timing_basis,
+        )
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
