@@ -9,12 +9,16 @@
     <script src="/assets/app.js" defer></script>
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="brand" href="/" aria-label="runwx home">runwx</a>
-      <span class="site-label">Race pace + weather</span>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/" aria-current="page">Compare</a>
+        <a href="/how-it-works">How it works</a>
+      </nav>
     </header>
 
-    <main>
+    <main id="main">
       <section class="intro" aria-labelledby="page-title">
         <p class="eyebrow">Historical comparison</p>
         <h1 id="page-title">Pace, in context.</h1>

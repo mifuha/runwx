@@ -4,8 +4,10 @@ The [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/) reads the exis
 dbt comparison marts through this API. It does not parse race data, align weather
 or calculate new statistics.
 
-The service root (`/`) serves the small comparison page. It uses the endpoint below
-to populate course, pace and weather selectors, two aligned accessible SVG trend
+The service root (`/`) serves the small comparison page. `/how-it-works` explains
+the path from fixed inputs to the chart, using Folkestone 2019 as one example.
+The pages link to each other. The comparison page uses the endpoint below to
+populate course, pace and weather selectors, two aligned accessible SVG trend
 plots and a compact edition table. Pace stays visible beside the selected weather
 measure. The HTML, CSS and JavaScript are packaged with the API; the page has no
 external frontend or chart dependency.
@@ -25,8 +27,8 @@ failed because BigQuery required at least 130 MiB.
 Battersea has 13 full-field editions across 2022–2024. The page shows their dates
 so races in the same year remain distinct. Its published times are manually timed
 without a chip/gun distinction, so baseline pace changes are left blank. The pace
-and ERA5 weather statistics are descriptive. The new API image and read grants are
-prepared for deployment; the live page does not show Battersea yet.
+and ERA5 weather statistics are descriptive. The live page shows all 13 editions
+and their 1,986 finishers.
 
 The full-field response contains the course and baseline identity, followed by
 editions in date order. Each edition includes finishers; median, mean, p25–p75 and fastest-N
@@ -111,5 +113,6 @@ The offline smoke check starts the real Uvicorn entrypoint and verifies `/health
 the page and both packaged assets with container networking disabled. It cannot call
 a configured comparison mart because the offline container deliberately has neither
 Application Default Credentials nor BigQuery access. Repository tests cover those
-success and failure cases. The latest deployment check called all three public
-course endpoints and reconciled the returned analytical values with saved results.
+success and failure cases. The GNR deployment check called its three then-public course endpoints and
+reconciled the returned analytical values with saved results. The later Battersea
+deployment added the fourth course; the chart-date correction is also live.
