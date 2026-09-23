@@ -170,7 +170,25 @@ def test_success_retains_both_artifacts(config, expectations, tmp_path, monkeypa
     assert calls == ['edition', 'comparison']
 
 
-@pytest.mark.parametrize('problem', ['fail', 'skip', 'warn', 'missing', 'duplicate', 'invocation', 'no_artifact', 'manifest'])
+@pytest.mark.parametrize('stage', ['edition', 'comparison'])
+def test_disabled_unrelated_tests_in_manifest_are_not_required(tmp_path, stage):
+    folder = tmp_path / stage
+    artifacts(folder / 'target', stage)
+    path = folder / 'target/manifest.json'
+    manifest = json.loads(path.read_text())
+    # dbt retains generic tests for disabled GNR models in nodes, with no dependencies.
+    manifest['nodes']['test.runwx.disabled_gnr_not_null'] = {
+        'resource_type': 'test', 'config': {'enabled': False},
+        'attached_node': 'model.runwx.mart_gnr_edition_summary',
+        'depends_on': {'nodes': []},
+    }
+    path.write_text(json.dumps(manifest))
+    result = runner.verify_artifacts(folder, stage)
+    assert result['data_tests'] == (14 if stage == 'edition' else 5)
+    assert result['unit_tests'] == (7 if stage == 'edition' else 2)
+
+
+@pytest.mark.parametrize('problem', ['fail', 'skip', 'warn', 'missing', 'duplicate', 'invocation', 'no_artifact', 'manifest', 'disabled_required'])
 def test_bad_edition_evidence_blocks_comparison(config, expectations, tmp_path, monkeypatch, problem):
     calls = []
     def mutate(target, stage):
@@ -187,6 +205,11 @@ def test_bad_edition_evidence_blocks_comparison(config, expectations, tmp_path, 
         elif problem == 'no_artifact':
             file.unlink()
             return
+        elif problem == 'disabled_required':
+            path = target / 'manifest.json'
+            manifest = json.loads(path.read_text())
+            manifest['nodes']['test.runwx.example_0']['config'] = {'enabled': False}
+            path.write_text(json.dumps(manifest))
         elif problem == 'manifest':
             manifest = target / 'manifest.json'
             m = json.loads(manifest.read_text())
