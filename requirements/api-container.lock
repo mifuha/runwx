@@ -1,4 +1,5 @@
-# Full dependency snapshot for the Python 3.12 Linux API container, 2026-09-20.
+# Dependency lock based on the Python 3.12 Linux API container snapshot of 2026-09-20.
+# pypdf 6.10.0 was added for the 2026-09-23 local Battersea pilot; the image has not been rebuilt.
 # Install with --no-deps; see docs/api.md for updating and validation limits.
 
 annotated-doc==0.0.5
@@ -34,6 +35,7 @@ pyasn1_modules==0.4.2
 pycparser==3.0
 pydantic==2.13.5
 pydantic_core==2.46.5
+pypdf==6.10.0
 python-dateutil==2.9.0.post0
 requests==2.34.2
 six==1.17.0

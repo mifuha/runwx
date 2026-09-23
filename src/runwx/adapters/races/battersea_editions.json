@@ -1,0 +1,93 @@
+{
+  "2022-03-26": {
+    "name": "Mad March 10K",
+    "result_sha256": "18f9f3ba057870d25f81b6533a187fa09bf9655f555d98bccbb1cf608909b366",
+    "result_url": "https://uk.srichinmoyraces.org/files/Mad%20March%2010K%20Final%20Results%20v2.pdf",
+    "result_count": 83,
+    "pdf_pages": 3
+  },
+  "2022-05-21": {
+    "name": "May 10K",
+    "result_sha256": "42a5fc9762287109f677401025abcffcad1152709ffb8aff2379d7d00294832a",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2022/May%2010K%20Final%20Results.pdf",
+    "result_count": 114,
+    "pdf_pages": 3
+  },
+  "2022-07-16": {
+    "name": "Sri Chinmoy Summer Sizzle 10K",
+    "result_sha256": "1a32fe8b16528b535ac2d525ece06d0f0c1ddee3e731e9b7542758ce53422a7e",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2022/Summer%20Sizzle%2010K%20Final%20Results%20v2.pdf",
+    "result_count": 136,
+    "pdf_pages": 4
+  },
+  "2022-08-06": {
+    "name": "Green Space 10K",
+    "result_sha256": "a83086e9f1ba28113c512b6768a672b3452471d947b8aac32fa56dbc817e1f78",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2022/Green%20Space%2010K%20Final%20Results.pdf",
+    "result_count": 116,
+    "pdf_pages": 3
+  },
+  "2022-10-15": {
+    "name": "Autumn Dawn 10K",
+    "result_sha256": "6ff9bdd7af64f4e955a652db4de7e173b607aac6ebc0ea38f7cdce7c8186eaa0",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2022/Autumn%20Dawn%2010K%20Final%20Results.pdf",
+    "result_count": 48,
+    "pdf_pages": 2
+  },
+  "2022-11-19": {
+    "name": "Golden Leaf 10K",
+    "result_sha256": "b357886fde0b6ff03d15a35b561e1fb53b201b94f843edc4bfcc2510b8491a4f",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2022/Golden%20Leaf%2010K%20Final%20Results.pdf",
+    "result_count": 228,
+    "pdf_pages": 4
+  },
+  "2023-03-04": {
+    "name": "Mad March 10K",
+    "result_sha256": "d0e1e22b5d44c01d539db233245f7ab02ab408b75f7036d266ac6d078ce1c68d",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2023/Mad%20March%2010K%20Final%20Results%202023_v2.pdf",
+    "result_count": 233,
+    "pdf_pages": 4
+  },
+  "2023-04-22": {
+    "name": "Spring 10K",
+    "result_sha256": "cf587531a0f0c9f0ec424ce8e510fc14e24372459a12c89c56134084244b5a43",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2023/Spring%2010K%20Final%20Results%202023.pdf",
+    "result_count": 122,
+    "pdf_pages": 3
+  },
+  "2023-06-03": {
+    "name": "Midsummer 10K",
+    "result_sha256": "5afd61ff78b6c3caef38da2a406240b93c78c40d446734f8b6e18bb9722fd3ef",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2023/Midsummer%2010K%20Final%20Results%202023.pdf",
+    "result_count": 145,
+    "pdf_pages": 4
+  },
+  "2023-11-11": {
+    "name": "Golden Leaf 10K",
+    "result_sha256": "5f6e2c2841e58466a05e44a0da4797868d3ecc4b412ff4e113c91772ad6818ab",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2023/Golden%20Leaf%2010K%20Results%202023%20v2.pdf",
+    "result_count": 195,
+    "pdf_pages": 4
+  },
+  "2023-12-02": {
+    "name": "Grizzly Bear 10K",
+    "result_sha256": "ef41888db865da9f588e0f16eff8b7cd2e2b4be08876b7f72165b42dfc18e544",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2023/Grizzly%20Bear%2010K%20Final%20Results%202023.pdf",
+    "result_count": 144,
+    "pdf_pages": 4
+  },
+  "2024-03-02": {
+    "name": "Mad March 10K",
+    "result_sha256": "0b5b2f183523453ad2254d3f51ec437053e0984115aa84886531680e9d1c5698",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2024/Mad%20March%2010K%20Final%20Results%202024.pdf",
+    "result_count": 194,
+    "pdf_pages": 4
+  },
+  "2024-08-03": {
+    "name": "Green Space 10K",
+    "result_sha256": "8ef51364b6fb63b3a7c9e2e76ac5e071049e7e2204c6630558b5a3e2604047fe",
+    "result_url": "https://uk.srichinmoyraces.org/files/uk/result-pdfs/2024/Green%20Space%2010K%20Final%20Results%202024.pdf",
+    "result_count": 228,
+    "pdf_pages": 4
+  }
+}

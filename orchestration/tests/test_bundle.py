@@ -15,7 +15,7 @@ from build_bundle import build_bundle
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_candidate_bundle_retains_packaged_gnr_assets(monkeypatch):
+def test_candidate_bundle_retains_packaged_race_assets(monkeypatch):
     import build_bundle as builder
 
     paths = subprocess.check_output(
@@ -30,6 +30,7 @@ def test_candidate_bundle_retains_packaged_gnr_assets(monkeypatch):
     monkeypatch.setattr(builder, 'git', candidate_git)
     with zipfile.ZipFile(BytesIO(builder.build_bundle(ROOT))) as archive:
         assert 'dags/runwx/adapters/races/gnr_editions.json' in archive.namelist()
+        assert 'dags/runwx/adapters/races/battersea_editions.json' in archive.namelist()
         assert 'dags/runwx/adapters/bigquery/gnr_sample_rows.schema.json' in archive.namelist()
         assert 'dags/runwx_gnr_batch.py' not in archive.namelist()  # Requires shared worker files first.
 
@@ -40,6 +41,7 @@ def test_bundle_is_reproducible_and_excludes_local_files():
     with zipfile.ZipFile(BytesIO(payload)) as archive:
         names = archive.namelist()
         assert "dags/runwx/adapters/bigquery/result_rows.schema.json" in names
+        assert "dags/runwx/adapters/races/battersea_editions.json" in names
         assert all(name.startswith("dags/") or name in {"bundle-manifest.json", "folkestone-2019.json"}
                    for name in names)
         assert not any(part in name for name in names for part in
