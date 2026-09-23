@@ -23,7 +23,8 @@ def build_bundle(root, revision="HEAD"):
         elif path.startswith("orchestration/runwx_airflow/") and path.endswith(".py"):
             destination = "dags/" + path.removeprefix("orchestration/")
         elif path.startswith("src/runwx/") and path.endswith(
-                (".py", "result_rows.schema.json", "gnr_sample_rows.schema.json", "gnr_editions.json")):
+                (".py", "result_rows.schema.json", "gnr_sample_rows.schema.json", "gnr_editions.json",
+                 "battersea_editions.json")):
             destination = "dags/" + path.removeprefix("src/")
         elif path == "dbt/stage_runner.py":
             destination = "dags/stage_runner.py"
