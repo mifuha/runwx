@@ -1,0 +1,79 @@
+{
+  "checked_on": "2026-09-23",
+  "source_commit": "de9b80187888e38aa4be4db1b24b7e98d2325a41",
+  "pull_request": "https://github.com/mifuha/runwx/pull/50",
+  "ci": {
+    "run": "https://github.com/mifuha/runwx/actions/runs/35908960641",
+    "result": "six jobs passed"
+  },
+  "image": "europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx-api@sha256:3ef3524ea293f409d7397dbb600712e4d7f008a6a5ee790c5c8ee02dd109e4bb",
+  "terraform": {
+    "saved_plan_sha256": "ba62c2987eff8cc9167d912959b676c8e15f88d272737447160b5bb7e03ce486",
+    "changes": [
+      {
+        "address": "google_cloud_run_v2_service.api",
+        "actions": [
+          "update"
+        ]
+      }
+    ],
+    "changed_field": "existing Cloud Run service container image only",
+    "apply": "0 added, 1 changed, 0 destroyed",
+    "post_apply_plan": "no changes"
+  },
+  "cloud_run": {
+    "service": "runwx-api",
+    "region": "europe-west1",
+    "ready_revision": "runwx-api-00006-dzj",
+    "traffic_percent": 100
+  },
+  "http_checks": {
+    "/": {
+      "status": 200,
+      "sha256": "2e27e1eff6b58d8c8cd4b8f917e662dbb044ad422c7b84dc9775426ebfcd79dd",
+      "cache_control": "no-cache"
+    },
+    "/how-it-works": {
+      "status": 200,
+      "sha256": "dabf02000fec13385fb5c8b7b13e0df1a6362a47318a425015bee75ffceefd24",
+      "cache_control": "no-cache"
+    },
+    "/assets/styles.css": {
+      "status": 200,
+      "sha256": "b56215c0e9525c08c625b781d45a4ee7e98e0ac21c980835a380c8acded08ef8",
+      "cache_control": "public, max-age=3600"
+    },
+    "/api/courses/lydd-half/comparison": {
+      "status": 200,
+      "editions": 5,
+      "rows_or_samples": 1197,
+      "sha256": "fd3cc7c398b88464aa0c57e195b88471dd62bce615e2aa929e4f687b8c239e44"
+    },
+    "/api/courses/folkestone-half/comparison": {
+      "status": 200,
+      "editions": 3,
+      "rows_or_samples": 1215,
+      "sha256": "48918c03766eb27f2e7fef55fd1dd7a21baf3a8b1c86b291e3575d5483245acb"
+    },
+    "/api/courses/great-north-run/comparison": {
+      "status": 200,
+      "editions": 19,
+      "rows_or_samples": 19000,
+      "sha256": "d4b6ac16c1007b3c66a745a6136626b81b64778245f4c01114db3e3729f663fc"
+    },
+    "/api/courses/battersea-park-10k/comparison": {
+      "status": 200,
+      "editions": 13,
+      "rows_or_samples": 1986,
+      "sha256": "d6366dca63f3646e16cb7b577eb74be3550d5a01b563a6bc6b3cbf59139480d9"
+    },
+    "/health": {
+      "status": 200,
+      "body": "{\"status\":\"ok\"}"
+    }
+  },
+  "limits": [
+    "Public API checks compared edition counts and totals with saved expectations; they did not rerun BigQuery/dbt or compare full predeployment response bytes.",
+    "Historical pipeline runs remain manual; no Composer environment or live alert was created."
+  ]
+}

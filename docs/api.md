@@ -4,8 +4,10 @@ The [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/) reads the exis
 dbt comparison marts through this API. It does not parse race data, align weather
 or calculate new statistics.
 
-The service root (`/`) serves the small comparison page. `/how-it-works` explains
-the path from fixed inputs to the chart, using Folkestone 2019 as one example.
+The service root (`/`) serves the small comparison page. The live
+[How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
+explains the path from fixed inputs to the chart, using Folkestone 2019 as one
+example.
 The pages link to each other. The comparison page uses the endpoint below to
 populate course, pace and weather selectors, two aligned accessible SVG trend
 plots and a compact edition table. Pace stays visible beside the selected weather
@@ -110,9 +112,15 @@ Exact version pins improve repeatability, while the immutable registry digest re
 the deployment identity.
 
 The offline smoke check starts the real Uvicorn entrypoint and verifies `/health`,
-the page and both packaged assets with container networking disabled. It cannot call
+both pages and the packaged assets with container networking disabled. It cannot call
 a configured comparison mart because the offline container deliberately has neither
 Application Default Credentials nor BigQuery access. Repository tests cover those
-success and failure cases. The GNR deployment check called its three then-public course endpoints and
-reconciled the returned analytical values with saved results. The later Battersea
+success and failure cases. The GNR deployment check called its three then-public
+course endpoints and reconciled them with saved results. The later Battersea
 deployment added the fourth course; the chart-date correction is also live.
+
+On 23 September 2026, the existing Cloud Run service received an immutable image
+with `/how-it-works`. The saved Terraform plan changed only the image. The live page,
+health route, stylesheet and all four comparison endpoints returned `200`; the
+edition and result counts matched their saved expectations. A fresh Terraform plan
+was no-op. See the [deployment check](evidence/pipeline-explainer-api-validation.json).

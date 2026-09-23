@@ -1,9 +1,9 @@
 # Historical pipeline orchestration
 
 The first Airflow DAG connects the existing stages for one explicitly configured
-historical snapshot. It is tested offline and completed a bounded Cloud Composer
-experiment against the frozen Folkestone 2019 snapshot. The temporary environment
-and its runtime permissions were removed after validation.
+historical snapshot. It is tested offline and completed a Cloud Composer run
+against the frozen Folkestone 2019 snapshot. The Composer environment and its
+runtime permissions were removed after validation.
 
 ```text
 validate_configuration

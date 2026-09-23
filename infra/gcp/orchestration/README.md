@@ -1,7 +1,7 @@
-# Temporary Airflow environment
+# Completed Composer validation
 
-This root prepares the [supervised Composer experiment](../../../docs/airflow-live-plan.md).
-It was applied for the bounded 17 September 2026 validation and then fully destroyed.
+This root was used for the [Composer validation](../../../docs/evidence/composer-airflow-validation.json)
+on 17 September 2026. Its managed resources were then destroyed.
 Its state is empty and a destroy plan is no-op. It uses its own state and an already
 bootstrapped, separately approved orchestration project. It does not create a project
 or attach billing. Do not import resources from the parent or historical roots.

@@ -35,3 +35,8 @@ edition views and one comparison view. The reviewed real-digest plan had 53
 additions, one update to the existing service image and no deletions. The grants
 and digest-pinned image are deployed; a later image update fixed crowded chart
 dates. The post-apply Terraform plan was no-op.
+
+The 23 September 2026 explainer deployment updated only this existing service's
+image. The live `/how-it-works` page, health check and four course APIs returned
+`200`, and the post-apply plan was no-op. See the
+[deployment check](../../../docs/evidence/pipeline-explainer-api-validation.json).
