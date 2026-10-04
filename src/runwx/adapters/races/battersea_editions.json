@@ -1,4 +1,39 @@
 {
+  "2019-03-16": {
+    "name": "Mad March 10K",
+    "result_sha256": "301b6c15b5f8007b7faf533b3b00e23f22491170aa277ee6ae1bd2043f891a61",
+    "result_url": "https://uk.srichinmoyraces.org/files/mad_march_10k_16-03-19.pdf",
+    "result_count": 137,
+    "pdf_pages": 4
+  },
+  "2019-04-06": {
+    "name": "Fools Paradise 10K",
+    "result_sha256": "c6497e2e8da0deda0a59f515847058ccdfad34e78d8c954c9c8e05c0d46305eb",
+    "result_url": "https://uk.srichinmoyraces.org/files/fools_paradise_10k_6-04-19.pdf",
+    "result_count": 126,
+    "pdf_pages": 4
+  },
+  "2019-08-03": {
+    "name": "Green Space 10K",
+    "result_sha256": "1a5d71910728f337c915b84177f17ccaf55e5919ad538413838d582b9cb68a98",
+    "result_url": "https://uk.srichinmoyraces.org/files/green_space_10k_3-08-19.pdf",
+    "result_count": 112,
+    "pdf_pages": 4
+  },
+  "2019-10-19": {
+    "name": "Golden Leaf 10K",
+    "result_sha256": "1debd308d3f4c09df28361202017d902b51a7bcc8b1f7d4e7245f74763ca853a",
+    "result_url": "https://uk.srichinmoyraces.org/files/golden_leaf_10k_19-10-19.pdf",
+    "result_count": 171,
+    "pdf_pages": 4
+  },
+  "2019-11-30": {
+    "name": "Grizzly Bear 10K",
+    "result_sha256": "8db9e7adf24be26f1a727287b88dd5a270b4d97e290d9d9c8ccb32089d2f2f24",
+    "result_url": "https://uk.srichinmoyraces.org/files/grizzly_bear_10k_30-11-19.pdf",
+    "result_count": 193,
+    "pdf_pages": 4
+  },
   "2022-03-26": {
     "name": "Mad March 10K",
     "result_sha256": "18f9f3ba057870d25f81b6533a187fa09bf9655f555d98bccbb1cf608909b366",
