@@ -3,6 +3,12 @@ locals {
   # dependencies must also be readable unless a separate authorized-view layer
   # is introduced. Keep this list aligned with the reviewed API course catalog.
   editions = {
+    runwx_dbt_battersea_2019_03_16_301b6c15b5f8 = "battersea_2019_03_16_301b6c15b5f8"
+    runwx_dbt_battersea_2019_04_06_c6497e2e8da0 = "battersea_2019_04_06_c6497e2e8da0"
+    runwx_dbt_battersea_2019_08_03_1a5d71910728 = "battersea_2019_08_03_1a5d71910728"
+    runwx_dbt_battersea_2019_10_19_1debd308d3f4 = "battersea_2019_10_19_1debd308d3f4"
+    runwx_dbt_battersea_2019_11_30_8db9e7adf24b = "battersea_2019_11_30_8db9e7adf24b"
+
     runwx_dbt_lydd_2022_99783aaa85b8            = "lydd_2022_99783aaa85b8"
     runwx_dbt_lydd_2023_bb1171d02f0f            = "lydd_2023_bb1171d02f0f"
     runwx_dbt_lydd_2024_f0758db89562            = "lydd_2024_f0758db89562"
@@ -52,6 +58,11 @@ locals {
       dataset_id = "runwx_dbt_folkestone_2019_f95b3ae312e3"
       table_id   = "mart_course_comparison"
     }
+    "runwx_dbt_battersea_2019_03_16_301b6c15b5f8.mart_course_comparison" = {
+      dataset_id = "runwx_dbt_battersea_2019_03_16_301b6c15b5f8"
+      table_id   = "mart_course_comparison"
+    }
+    # Keep the current live image readable during rollout and rollback.
     "runwx_dbt_battersea_2022_03_26_18f9f3ba0578.mart_course_comparison" = {
       dataset_id = "runwx_dbt_battersea_2022_03_26_18f9f3ba0578"
       table_id   = "mart_course_comparison"

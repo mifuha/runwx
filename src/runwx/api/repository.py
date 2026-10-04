@@ -101,12 +101,12 @@ COURSES: dict[str, CourseSource] = {
         course_id="battersea-park-10k",
         table_id=(
             "runwx-learning-mifuha."
-            "runwx_dbt_battersea_2022_03_26_18f9f3ba0578."
+            "runwx_dbt_battersea_2019_03_16_301b6c15b5f8."
             "mart_course_comparison"
         ),
         distance_m=10000,
         baseline_event_id="sri_chinmoy:battersea-10k-2022-03-26",
-        maximum_bytes_billed=160 * 1024 * 1024,
+        maximum_bytes_billed=200 * 1024 * 1024,
     ),
     "great-north-run": CourseSource(
         slug="great-north-run",
