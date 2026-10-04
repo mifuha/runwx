@@ -24,6 +24,11 @@ SETTINGS = dict(
     race_format="battersea_pdf", course_id="battersea-park-10k",
     distance_m=10_000, timezone_name="Europe/London", timing_basis=None,
 )
+LEGACY_NOTICE = (
+    "“Congratulations on completing the race.\n"
+    "A notice about handicap scores.\n"
+    "http://www.runbritainrankings.com/user/claimhandicap.aspx“\n"
+)
 
 
 def _fake_reader(monkeypatch, text=ROWS, *, date="2022-05-21"):
@@ -47,9 +52,15 @@ def _fake_reader(monkeypatch, text=ROWS, *, date="2022-05-21"):
 
 
 def test_qualified_catalog_excludes_held_race():
-    assert len(battersea_pdf.QUALIFIED_EDITIONS) == 13
-    assert sum(e["result_count"] for e in battersea_pdf.QUALIFIED_EDITIONS.values()) == 1_986
+    assert len(battersea_pdf.QUALIFIED_EDITIONS) == 18
+    assert sum(e["result_count"] for e in battersea_pdf.QUALIFIED_EDITIONS.values()) == 2_725
     assert "2023-08-05" not in battersea_pdf.QUALIFIED_EDITIONS
+    assert "2019-06-01" not in battersea_pdf.QUALIFIED_EDITIONS
+    assert {date: e["result_count"] for date, e in battersea_pdf.QUALIFIED_EDITIONS.items()
+            if date.startswith("2019")} == {
+        "2019-03-16": 137, "2019-04-06": 126, "2019-08-03": 112,
+        "2019-10-19": 171, "2019-11-30": 193,
+    }
 
 
 def test_parser_ignores_winners_and_preserves_rank_ties_and_london_start(monkeypatch):
@@ -64,12 +75,36 @@ def test_parser_ignores_winners_and_preserves_rank_ties_and_london_start(monkeyp
     assert parsed.timing_basis is None
 
 
+def test_2019_notice_before_results_and_winter_start(monkeypatch):
+    text = ROWS.replace("21st May 2022", "30th November 2019").replace(
+        "ALL RESULTS BELOW\n", "ALL RESULTS BELOW\n" + LEGACY_NOTICE
+    )
+    data = _fake_reader(monkeypatch, text, date="2019-11-30")
+    parsed = parse_saved_race_results(data, **SETTINGS)
+    assert [r.duration_s for r in parsed.accepted] == [1860, 1860, 1921]
+    assert parsed.event.started_at.isoformat() == "2019-11-30T08:30:00+00:00"
+
+
+@pytest.mark.parametrize("notice", [
+    "Unrecognised results section\n",
+    LEGACY_NOTICE.replace("A notice about handicap scores.", "1 Runner 00:30:00"),
+    LEGACY_NOTICE + "RESULTS\nRANK NAME TIME\n",
+])
+def test_parser_does_not_skip_unknown_or_result_like_preamble(monkeypatch, notice):
+    data = _fake_reader(monkeypatch, ROWS.replace(
+        "ALL RESULTS BELOW\n", "ALL RESULTS BELOW\n" + notice
+    ))
+    with pytest.raises(ValueError, match="heading|preamble"):
+        parse_saved_race_results(data, **SETTINGS)
+
+
 @pytest.mark.parametrize("changed, error", [
     (ROWS.replace("2 Runner", "4 Runner"), "out-of-order"),
     (ROWS.replace("00:32:01", "00:30:01"), "unordered"),
     (ROWS.replace("3Runner Three Male00:32:01", "3Runner Three Male"), "ambiguous"),
     (ROWS.replace("3Runner Three Male00:32:01\n", ""), "expected 3"),
     (ROWS.replace("ALL RESULTS BELOW", "WINNERS AGAIN"), "full-results marker"),
+    (ROWS.replace("00:32:01", "00;32:01"), "ambiguous"),
 ])
 def test_parser_rejects_incomplete_or_ambiguous_full_results(monkeypatch, changed, error):
     data = _fake_reader(monkeypatch, changed)

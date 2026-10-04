@@ -38,8 +38,17 @@ def _result_rows(text: str, *, expected_count: int) -> tuple[RaceResultIn, ...]:
     if len(markers) != 1:
         raise ValueError("Battersea PDF needs exactly one full-results marker")
     body = text[markers[0].end():]
-    if not re.match(r"\s*RESULTS\s+RANK", body, re.IGNORECASE):
-        raise ValueError("Battersea PDF full-results heading is missing")
+    headings = list(re.finditer(r"\bRESULTS\s+RANK", body, re.IGNORECASE))
+    if len(headings) != 1:
+        raise ValueError("Battersea PDF needs exactly one full-results heading")
+    preamble = body[:headings[0].start()].strip()
+    if preamble and not (
+        preamble.startswith("“Congratulations on completing the race.")
+        and preamble.endswith("http://www.runbritainrankings.com/user/claimhandicap.aspx“")
+        and not any(RANK.match(line) or TIME.search(line) for line in preamble.splitlines())
+    ):
+        raise ValueError("Battersea PDF unrecognised full-results preamble")
+    body = body[headings[0].start():]
     results = []
     previous_duration = 0
     for line in body.splitlines():
