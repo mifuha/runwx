@@ -40,3 +40,11 @@ The 23 September 2026 explainer deployment updated only this existing service's
 image. The live `/how-it-works` page, health check and four course APIs returned
 `200`, and the post-apply plan was no-op. See the
 [deployment check](../../../docs/evidence/pipeline-explainer-api-validation.json).
+
+The next Battersea publication is prepared for 18 editions and 2,725 finishers.
+It reads the reconciled comparison in the March 2019 dataset while keeping
+March 2022 as the analytical baseline. Terraform adds 21 table-level read grants:
+five snapshots, 15 edition views and the new comparison view. The old comparison
+grant stays during rollout so the current image remains usable. The API's
+Battersea query cap increases from 160 to 200 MiB; other course caps stay unchanged.
+These changes are prepared, not yet applied or deployed.
