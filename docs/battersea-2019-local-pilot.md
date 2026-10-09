@@ -1,8 +1,9 @@
 # Battersea 2019 local pilot
 
 Five more Sri Chinmoy Battersea Park 10Ks pass the local parser and weather
-export checks. These are prepared locally; they have not been loaded into
-BigQuery or added to the public comparison.
+export checks. They were then loaded into BigQuery, built with dbt and checked
+against the local exports. All five joined the live comparison on 7 October 2026,
+bringing Battersea to 18 editions and 2,725 finishers.
 
 | Date | Accepted results | Weather matches |
 | --- | ---: | ---: |
@@ -52,4 +53,8 @@ preambles, duplicate headings and malformed times.
 
 1 June 2019 remains held: rank 107 has `00;54:52`, leaving 142 usable times
 among 143 listed ranks. We have not repaired that value or silently dropped it.
-No warehouse, API, infrastructure or public chart changed in this pilot.
+The original local pilot changed no warehouse, API or public chart. The later
+load verified every stored row. Five edition builds passed 15 models and 105
+tests; one comparison build passed 1 model and 7 tests. All 18 comparison rows
+were independently reconciled before publication. The March 2022 baseline
+remains unchanged.

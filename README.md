@@ -10,7 +10,7 @@ Try the [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/): choose Ly
 Folkestone, Great North Run or Battersea Park 10K and view pace beside the weather
 for each edition. Great North Run covers 19 editions, using the fastest 1,000
 available running results per edition, with a fixed start-area weather window.
-Battersea covers 13 full-field editions across 2022–2024. The live
+Battersea covers 18 full-field editions from 2019 and 2022–2024. The live
 [How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
 follows Folkestone 2019 from saved inputs to the chart.
 
@@ -90,7 +90,7 @@ frozen warehouse input. The dbt job then rebuilt the Folkestone 2019 edition and
 three-edition comparison, reconciled the important BigQuery values and saved its
 execution evidence. A separate Cloud Run service now serves the read-only API and
 comparison page. Its responses match the saved results for five Lydd, three
-Folkestone, 19 sampled Great North Run and 13 full-field Battersea editions; see
+Folkestone, 19 sampled Great North Run and 18 full-field Battersea editions; see
 the [deployment checks](docs/api.md).
 The [Airflow DAG](docs/airflow.md) also coordinated a verified Folkestone run in
 Composer. That environment was removed after the check; historical runs are started

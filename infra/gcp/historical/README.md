@@ -2,7 +2,7 @@
 
 This Terraform root manages one results table and one dbt output dataset per
 explicitly chosen full-field export. The current state covers five Lydd, three
-Folkestone and 13 Battersea editions. It also holds 19 separate GNR sample
+Folkestone and 18 Battersea editions. It also holds 19 separate GNR sample
 tables. It reads the existing staging dataset as a data source. It does not upload results, build views, create a project, enable APIs,
 change billing or grant runtime roles.
 

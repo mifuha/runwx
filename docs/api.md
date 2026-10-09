@@ -22,15 +22,22 @@ The reviewed course slugs in this code are `lydd-half`, `folkestone-half`,
 `great-north-run` and `battersea-park-10k`. Each maps to one explicit BigQuery
 comparison view. The URL cannot select a table or submit SQL. The query selects
 fixed public columns, binds the expected course ID as a parameter and reads at most
-50 editions. Lydd, Folkestone and GNR keep the 64 MiB query cap. Battersea's 13
-underlying snapshot tables require a 160 MiB cap; the original 64 MiB attempt
-failed because BigQuery required at least 130 MiB.
+50 editions. Lydd, Folkestone and GNR keep the 64 MiB query cap. Battersea uses
+a 200 MiB cap for its 18 underlying snapshot tables. During the original
+13-edition deployment, a 64 MiB query failed because BigQuery required at least
+130 MiB.
 
-Battersea has 13 full-field editions across 2022–2024. The page shows their dates
-so races in the same year remain distinct. Its published times are manually timed
+Battersea has 18 full-field editions from 2019 and 2022–2024. The page shows
+their dates so races in the same year remain distinct. Its published times are manually timed
 without a chip/gun distinction, so baseline pace changes are left blank. The pace
-and ERA5 weather statistics are descriptive. The live page shows all 13 editions
-and their 1,986 finishers.
+and ERA5 weather statistics are descriptive. The live page shows all 18 editions
+and their 2,725 finishers.
+
+The 7 October 2026 deployment added the five 2019 editions. The live response
+matched all 18 reconciled warehouse rows; the other three courses were unchanged.
+Health and page checks passed, and Terraform reported no remaining changes.
+The [2019 source note](battersea-2019-local-pilot.md) records the start-time
+evidence and the June race that remains excluded.
 
 The full-field response contains the course and baseline identity, followed by
 editions in date order. Each edition includes finishers; median, mean, p25–p75 and fastest-N

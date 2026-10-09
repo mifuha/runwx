@@ -4,7 +4,7 @@
 
 The current output covers [five Lydd editions](../README.md#real-historical-comparison)
 with 1,197 finishers, three Folkestone editions with 1,215 finishers, 19 sampled
-Great North Run editions and 13 full-field Battersea Park 10K editions with 1,986
+Great North Run editions and 18 full-field Battersea Park 10K editions with 2,725
 finishers. It uses fixed race snapshots and real hourly ERA5 weather. Python
 prepares the inputs; BigQuery and dbt produce the staging, accepted-results fact,
 edition summary and comparison views. Historical builds have run from local
@@ -138,7 +138,7 @@ stage is a separate Cloud Run job with its own runtime identity and permissions.
 A separate Cloud Run service serves the [public comparison page](https://runwx-api-f6n35ol7sa-ew.a.run.app/)
 and read-only API. It reads the existing comparison marts; the statistics stay in
 dbt. The live service now covers five Lydd, three Folkestone, 19 sampled Great
-North Run and 13 full-field Battersea editions. GNR uses the fastest 1,000
+North Run and 18 full-field Battersea editions. GNR uses the fastest 1,000
 available running results per edition and fixed start-area weather context.
 Battersea keeps separate race dates for multiple editions in the same year.
 The API also serves the live [How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works).
