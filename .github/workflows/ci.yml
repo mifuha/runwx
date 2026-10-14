@@ -151,6 +151,12 @@ jobs:
           terraform -chdir=api validate -no-color
           terraform -chdir=api test -no-color
 
+      - name: Check isolated monitoring root without cloud credentials
+        run: |
+          terraform -chdir=monitoring init -backend=false -lockfile=readonly -input=false -no-color
+          terraform -chdir=monitoring validate -no-color
+          terraform -chdir=monitoring test -no-color
+
   dbt:
     runs-on: ubuntu-latest
     timeout-minutes: 15
