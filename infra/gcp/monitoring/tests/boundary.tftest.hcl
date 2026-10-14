@@ -26,7 +26,7 @@ run "health_probe_is_small_and_does_not_query_the_warehouse" {
       google_monitoring_uptime_check_config.api.http_check[0].port == 443 &&
       google_monitoring_uptime_check_config.api.http_check[0].accepted_response_status_codes[0].status_value == 200 &&
       google_monitoring_uptime_check_config.api.content_matchers[0].matcher == "MATCHES_JSON_PATH" &&
-      google_monitoring_uptime_check_config.api.content_matchers[0].content == "ok" &&
+      try(jsondecode(google_monitoring_uptime_check_config.api.content_matchers[0].content), null) == "ok" &&
       google_monitoring_uptime_check_config.api.content_matchers[0].json_path_matcher[0].json_path == "$.status"
     )
     error_message = "A passing probe needs a valid TLS certificate, HTTP 200 and the expected JSON health status."
