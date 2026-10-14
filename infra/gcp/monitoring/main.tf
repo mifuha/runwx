@@ -50,7 +50,7 @@ resource "google_monitoring_uptime_check_config" "api" {
   }
 
   content_matchers {
-    content = "ok"
+    content = jsonencode("ok")
     matcher = "MATCHES_JSON_PATH"
     json_path_matcher {
       json_path    = "$.status"

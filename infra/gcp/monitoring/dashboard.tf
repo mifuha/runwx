@@ -3,13 +3,14 @@ resource "google_monitoring_dashboard" "api" {
   dashboard_json = jsonencode({
     displayName = "runwx API"
     gridLayout = {
-      columns = 2
+      columns = "2"
       widgets = [
         {
           title = "Requests by status class / 5 minutes"
           xyChart = {
             dataSets = [{
-              plotType = "LINE"
+              plotType   = "LINE"
+              targetAxis = "Y1"
               timeSeriesQuery = {
                 timeSeriesFilter = {
                   filter = "${local.api_filter} AND metric.type = \"run.googleapis.com/request_count\""
@@ -29,7 +30,8 @@ resource "google_monitoring_dashboard" "api" {
           title = "Server errors (5xx) / 5 minutes"
           xyChart = {
             dataSets = [{
-              plotType = "LINE"
+              plotType   = "LINE"
+              targetAxis = "Y1"
               timeSeriesQuery = {
                 timeSeriesFilter = {
                   filter = "${local.api_filter} AND metric.type = \"run.googleapis.com/request_count\" AND metric.labels.response_code_class = \"5xx\""
@@ -48,7 +50,8 @@ resource "google_monitoring_dashboard" "api" {
           title = "Request latency p95 per series / 5 minutes"
           xyChart = {
             dataSets = [{
-              plotType = "LINE"
+              plotType   = "LINE"
+              targetAxis = "Y1"
               timeSeriesQuery = {
                 timeSeriesFilter = {
                   filter = "${local.api_filter} AND metric.type = \"run.googleapis.com/request_latencies\""
@@ -66,6 +69,7 @@ resource "google_monitoring_dashboard" "api" {
           title = "How to read this"
           text = {
             format = "MARKDOWN"
+            style  = {}
             content = join("\n\n", [
               "[API error logs](${local.error_logs_url}) · [Uptime results](https://console.cloud.google.com/monitoring/uptime?project=${var.project_id})",
               "Traffic is low. Health probes count as requests and can keep the instance warm. Latency is p95 for each metric series, not a service-wide percentile. Empty charts can mean no samples; they do not prove zero errors.",

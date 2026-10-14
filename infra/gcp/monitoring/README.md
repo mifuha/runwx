@@ -1,7 +1,8 @@
 # API availability monitoring
 
-This root prepares one dashboard, one HTTPS uptime check, one alert policy and
-one email channel for the existing `runwx-api` service. It has not been applied.
+This root manages one dashboard, one HTTPS uptime check, one alert policy and
+one email channel for the existing `runwx-api` service. They were deployed on
+14 October 2026, and the follow-up Terraform plan reported no changes.
 It uses its own Terraform state and does not manage the API, IAM or warehouse.
 
 ## What it checks
@@ -10,6 +11,10 @@ Google's public checkers call `/health` every five minutes from three locations.
 A pass needs a valid TLS certificate, HTTP 200 and JSON `status: "ok"` within ten
 seconds. This checks that the HTTP process can respond. It does not query BigQuery
 or prove that the comparison data is correct.
+
+The JSONPath matcher needs a JSON value, so the Terraform configuration uses
+`jsonencode("ok")` for the expected string. An unencoded `ok` was rejected during
+the first deployment; a regression test now checks that the value decodes correctly.
 
 The alert counts failing locations. More than one must fail continuously for the
 ten-minute retest window before an incident opens. One failing location does not
@@ -92,3 +97,5 @@ and [dashboards](https://registry.terraform.io/providers/hashicorp/google/latest
 These fields were checked against this repository's locked provider, 7.46.1.
 Google documents [checker locations](https://docs.cloud.google.com/monitoring/uptime-checks)
 and [uptime alerting](https://docs.cloud.google.com/monitoring/uptime-checks/uptime-alerting-policies).
+Its [response validation guidance](https://docs.cloud.google.com/monitoring/uptime-checks/response-validation)
+explains the JSON value encoding.

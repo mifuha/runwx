@@ -79,8 +79,8 @@ page, assets and both course endpoints returned `200`; an unknown course returne
 [deployment record](evidence/public-api-validation.json) includes the image digest
 and checks. Terraform reported no remaining changes after the update.
 
-The [monitoring configuration](../infra/gcp/monitoring/README.md) prepares a small
-API dashboard and a `/health` uptime alert. It has not been deployed. It checks
+The [monitoring configuration](../infra/gcp/monitoring/README.md) manages a small
+API dashboard and a `/health` uptime alert, deployed on 14 October 2026. It checks
 service availability without recurring BigQuery queries; analytical correctness
 still comes from the existing reconciliation checks.
 
