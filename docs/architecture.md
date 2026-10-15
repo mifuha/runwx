@@ -24,6 +24,7 @@ flowchart TD
     comparison --> api["Read-only Cloud Run API"]
     api --> pages["Comparison + How it works pages"]
     runner --> evidence["Retained success/failure evidence"]
+    api -. "HTTPS /health" .-> monitoring["Cloud Monitoring<br/>availability checks + email alerts"]
 ```
 
 [Source qualification](historical-inputs.md) checks race date/start, timing fields,
@@ -47,6 +48,19 @@ hash before submission. A pre-created table receives one export using `WRITE_EMP
 and `CREATE_NEVER`. Full typed-row readback must match before success is reported;
 an identical sequential rerun verifies existing data without another upload.
 Changed or extra rows fail verification and are not overwritten.
+
+## Availability and data checks
+
+Cloud Monitoring checks the public API’s `/health` response from three locations
+every five minutes. Sustained failures in at least two locations trigger an email;
+recovery sends a closing notification. The dashboard shows requests, errors and
+latency. These checks do not query BigQuery or prove the comparison data is correct.
+The dbt tests, reconciliation and retained execution evidence cover that boundary.
+
+A controlled test on 14 October 2026 verified an opening incident, recovery and
+cleanup. Both emails were confirmed received on 15 October. The test used shorter
+timing and left the production service and monitoring unchanged. See the
+[monitoring test and troubleshooting guide](../infra/gcp/monitoring/README.md#verified-alert-test).
 
 ## Fixed snapshot boundaries
 

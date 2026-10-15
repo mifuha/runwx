@@ -60,10 +60,42 @@ removal. Do not copy state from the API root.
 
 After approval, apply the reviewed saved plan. Check that all three locations pass,
 inspect the dashboard, confirm the email channel is usable and save a no-op plan.
-Notification delivery and failure/recovery behaviour still need a separately
-approved check using a controlled test target. Do not break the public service to
-test an alert. Offline Terraform tests check configuration boundaries; they do not
-prove live alert timing or email delivery.
+Future notification tests should use a separately approved, controlled test target.
+Do not break the public service to test an alert. Offline Terraform tests check
+configuration boundaries; they do not prove live alert timing or email delivery.
+
+## Verified alert test
+
+On 14 October 2026, a temporary check deliberately expected the wrong JSON value
+from the healthy `/health` endpoint. A temporary policy reused the existing email
+channel. The incident opened at 18:18:41 UK time. After correcting the expected
+value, all three locations passed and the incident closed at 18:25:34. The recipient
+confirmed receipt of both TEST emails on 15 October; inbox delivery was confirmed
+by the recipient, not independently inspected.
+
+The test checked every minute with a two-minute retest window. Production remains
+at five-minute checks and a ten-minute window, so this proves the notification and
+recovery path, not the production timer. Both temporary resources were removed and
+independently confirmed absent. The production check and policy were unchanged,
+public health returned 200, and the saved Terraform plan showed no changes.
+Private plans, state and logs are retained locally; they are not published here.
+
+## When an alert arrives
+
+1. Open the incident and check which locations failed and when. Open `/health`
+   and the comparison page to see what is currently affected.
+2. Check the dashboard’s errors and latency, then follow its API error-log link.
+   Compare the failure time with recent Cloud Run revisions. A healthy `/health`
+   response does not rule out a comparison request failing with `503`.
+3. If the comparison fails, inspect the API error and relevant BigQuery job before
+   deciding what to fix. Use the retained dbt tests and reconciliation evidence
+   for questions about data; do not rerun ingestion just because an alert arrived.
+4. After recovery, confirm fresh passing probes from all three locations, the
+   closed incident and the recovery email. A closed incident alone is insufficient.
+   If an email is missing, check spam and the configured notification channel.
+
+Record the incident, cause if known, action and recovery evidence. Avoid guessing
+a cause from a single chart.
 
 ## Cost and removal
 
