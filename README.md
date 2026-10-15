@@ -208,5 +208,6 @@ with small manual changes or tests to reinforce understanding.
 - [dbt staging, fact and mart models](docs/dbt-models.md)
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
 - [Result-row export](docs/result-export.md) and [BigQuery loader](docs/bigquery-staging.md)
+- [Prepare qualified Battersea batches offline](docs/battersea-preparation.md)
 - [Cloud artifact contract, runtime permissions and verification](docs/first-cloud-run.md)
 - [Code structure, API, contributing and CSV/SQLite usage](docs/development.md)

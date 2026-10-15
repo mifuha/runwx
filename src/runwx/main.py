@@ -135,6 +135,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         command.add_argument("--output", type=Path, required=True, help="New evidence directory; never reused.")
         command.set_defaults(log_level="WARNING")
 
+    battersea_p = sub.add_parser("prepare-battersea", help="Prepare qualified Battersea PDFs and saved weather offline.")
+    battersea_p.add_argument("config", type=Path)
+    battersea_p.add_argument("--output", type=Path, required=True, help="New preparation directory; never reused.")
+    battersea_p.set_defaults(log_level="WARNING")
+
     args = p.parse_args(argv)
 
     # default: if no subcommand, behave like "run"
@@ -157,6 +162,17 @@ def main(argv: list[str] | None = None) -> None:
     def out(msg: str) -> None:
         if not getattr(args, "quiet", False):
             print(msg)
+
+    if args.cmd == "prepare-battersea":
+        from runwx.services.battersea_prepare import prepare_battersea
+
+        try:
+            result = prepare_battersea(args.config, args.output)
+        except (OSError, ValueError, RuntimeError) as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(1) from exc
+        print(json.dumps(result, indent=2, sort_keys=True, allow_nan=False))
+        return
 
     if args.cmd == "batch":
         from runwx.services.gnr_batch import _read_prepared, execute_batch, prepare_batch
