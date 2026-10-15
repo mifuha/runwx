@@ -331,7 +331,9 @@ def test_how_it_works_page_keeps_the_path_visible_and_links_to_evidence():
     assert "459</strong> weather matches" in page.text
     assert "The Composer environment was removed" in page.text
     assert "New historical runs are currently started manually" in page.text
-    assert "Cloud Monitoring dashboards and alerts may come later" in page.text
+    assert "Cloud Monitoring checks API availability" in page.text
+    assert "Data correctness comes from dbt tests and reconciliation" in page.text
+    assert "infra/gcp/monitoring/README.md#verified-alert-test" in page.text
     assert "docs/evidence/folkestone-cloud-run-validation.json" in page.text
     assert "docs/evidence/cloud-run-result-export-validation.json" in page.text
     assert "docs/evidence/cloud-export-bigquery-validation.json" in page.text

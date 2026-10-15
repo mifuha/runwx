@@ -291,8 +291,12 @@
           <h2>Checks leave a trail.</h2>
           <p>We retain source hashes, validation counts, BigQuery job IDs, dbt
             artifacts, reconciliation results and execution logs for success and
-            failure. Cloud Monitoring dashboards and alerts may come later; this
-            page does not show live pipeline status.</p>
+            failure. These records let us check what happened at each stage.</p>
+          <p>Cloud Monitoring checks API availability and emails on sustained
+            failure and recovery. Its dashboard shows requests, errors and latency.
+            Data correctness comes from dbt tests and reconciliation; this page
+            does not show live pipeline status.</p>
+          <p><a href="https://github.com/mifuha/runwx/blob/master/infra/gcp/monitoring/README.md#verified-alert-test">See the verified alert test and troubleshooting guide</a></p>
         </article>
       </section>
 

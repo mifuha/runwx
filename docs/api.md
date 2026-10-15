@@ -82,7 +82,9 @@ and checks. Terraform reported no remaining changes after the update.
 The [monitoring configuration](../infra/gcp/monitoring/README.md) manages a small
 API dashboard and a `/health` uptime alert, deployed on 14 October 2026. It checks
 service availability without recurring BigQuery queries; analytical correctness
-still comes from the existing reconciliation checks.
+still comes from the existing reconciliation checks. A controlled test verified
+incident opening, recovery and cleanup on 14 October; the recipient confirmed both
+emails on 15 October. See the [test and troubleshooting guide](../infra/gcp/monitoring/README.md#verified-alert-test).
 
 ## API container
 
