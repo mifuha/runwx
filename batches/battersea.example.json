@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "editions": [
+    {
+      "date": "2019-03-16",
+      "race_pdf": "../data/local/battersea/results/2019-03-16.pdf",
+      "weather_json": "../data/local/battersea/weather/2019-03-16.json",
+      "weather_sha256": "9c0dbdfb2d1f60dfb9e8e240915cb9fdaae83e55d46491f5a664e1a4267e26d8",
+      "weather_request_url": "https://archive-api.open-meteo.com/v1/archive?latitude=51.4791075&longitude=-0.1564981&start_date=2019-03-16&end_date=2019-03-16&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&models=era5&wind_speed_unit=ms&timezone=UTC"
+    }
+  ]
+}

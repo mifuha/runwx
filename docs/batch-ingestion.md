@@ -5,6 +5,8 @@ their snapshots. The command calls the existing sample exporter and BigQuery
 loader, then runs the existing GNR models and independent reconciliation when
 `analytics` is configured. Lydd and Folkestone keep their existing commands.
 Source discovery, table provisioning and public API deployment remain separate.
+For qualified full-field Battersea PDFs, use the separate
+[offline preparation command](battersea-preparation.md).
 
 Start with [the example configuration](../batches/gnr.example.json). Its paths are
 placeholders: point them at your qualified saved inputs. Paths are relative to the
