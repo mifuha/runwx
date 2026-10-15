@@ -201,6 +201,7 @@ with small manual changes or tests to reinforce understanding.
 - [Historical source qualification and warehouse inputs](docs/historical-inputs.md)
 - [Comparison statistics, explicit datasets and validation](docs/historical-comparison.md)
 - [Read-only historical comparison API](docs/api.md)
+- [Failure behaviour, recovery and supporting evidence](docs/failure-and-recovery.md)
 - [dbt staging, fact and mart models](docs/dbt-models.md)
 - [Report fields, parser rules, course identity and time matching](docs/race-report.md)
 - [Result-row export](docs/result-export.md) and [BigQuery loader](docs/bigquery-staging.md)
