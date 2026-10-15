@@ -14,6 +14,9 @@ Battersea covers 18 full-field editions from 2019 and 2022–2024. The live
 [How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
 follows Folkestone 2019 from saved inputs to the chart.
 
+Short on time? [Take the two-minute tour](docs/walkthrough.md): the live result,
+the main design choices, and one real failure and recovery.
+
 ## Real historical comparison
 
 The **Lydd Half Marathon 2022–2026** snapshots are verified in
