@@ -58,8 +58,8 @@ def _json(raw):
     return json.loads(raw, object_pairs_hook=_unique_object)
 
 
-def _weather(raw: bytes, request_url: str, day: str):
-    """Validate local-day ERA5, then reuse the shared UTC/domain translation."""
+def validate_weather_request(request_url: str, day: str) -> None:
+    """Check the recorded request without network access or provider authentication."""
     url = urlsplit(request_url)
     if (url.scheme != "https" or url.netloc != "archive-api.open-meteo.com"
             or url.path != "/v1/archive" or url.fragment):
@@ -75,6 +75,11 @@ def _weather(raw: bytes, request_url: str, day: str):
             or len(query.get("hourly", [])) != 1
             or sorted(query["hourly"][0].split(",")) != sorted(FIELDS)):
         raise ValueError("weather request date/location/model/timezone/units differ")
+
+
+def _weather(raw: bytes, request_url: str, day: str):
+    """Validate local-day ERA5, then reuse the shared UTC/domain translation."""
+    validate_weather_request(request_url, day)
     payload = _json(raw)
     if not isinstance(payload, dict):
         raise ValueError("weather response must be an object")
