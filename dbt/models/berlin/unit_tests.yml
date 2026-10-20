@@ -1,0 +1,72 @@
+version: 2
+unit_tests:
+  - name: berlin_summary_preserves_ties_excludes_held_and_keeps_fixed_weather
+    model: mart_berlin_edition_summary
+    config:
+      enabled: "{{ var('berlin_research_tables', []) | length > 0 }}"
+    overrides:
+      vars:
+        top_n: 2
+    given:
+      - input: ref('stg_berlin_research_results')
+        format: sql
+        fixture: berlin_captured
+    expect:
+      rows:
+        - snapshot_table: normal
+          captured_count: 5
+          accepted_count: 4
+          held_count: 1
+          finisher_count: 4
+          distinct_source_rows: 5
+          unknown_timing_count: 5
+          best_duration_s: 10800
+          mean_duration_s: 15300.0
+          duration_p25_s: 13500.0
+          median_duration_s: 14400.0
+          duration_p75_s: 16200.0
+          top_n_median_duration_s: 12600.0
+          top_n_mean_duration_s: 12600.0
+          best_pace_s_per_km: 255.95449697831498
+          mean_pace_s_per_km: 362.6022040526129
+          median_pace_s_per_km: 341.2726626377533
+          pace_p25_s_per_km: 319.9431212228937
+          pace_p75_s_per_km: 383.93174546747247
+          top_n_median_pace_s_per_km: 298.6135798080341
+          top_n_requested: 2
+          top_n_effective: 2
+          published_count: null
+          count_difference_from_published: null
+          median_temp_c: 18.0
+          precipitation_mm: 0.5
+          comparison_status: descriptive_research_capture
+        - snapshot_table: empty
+          captured_count: 1
+          accepted_count: 0
+          held_count: 1
+          finisher_count: 0
+          best_duration_s: null
+          mean_duration_s: null
+          median_duration_s: null
+          top_n_median_duration_s: null
+          top_n_mean_duration_s: null
+          median_pace_s_per_km: null
+          top_n_requested: 2
+          top_n_effective: 0
+          median_temp_c: 18.0
+          comparison_status: descriptive_research_capture
+  - name: berlin_top_n_clamps_to_available_accepted_results
+    model: mart_berlin_edition_summary
+    config:
+      enabled: "{{ var('berlin_research_tables', []) | length > 0 }}"
+    overrides:
+      vars:
+        top_n: 20
+    given:
+      - input: ref('stg_berlin_research_results')
+        format: sql
+        fixture: berlin_captured
+    expect:
+      rows:
+        - {snapshot_table: normal, top_n_requested: 20, top_n_effective: 4, top_n_median_duration_s: 14400.0, top_n_mean_duration_s: 15300.0}
+        - {snapshot_table: empty, top_n_requested: 20, top_n_effective: 0, top_n_median_duration_s: null, top_n_mean_duration_s: null}

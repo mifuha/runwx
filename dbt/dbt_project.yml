@@ -22,3 +22,6 @@ models:
     gnr:
       +enabled: "{{ var('gnr_sample_tables', []) | length > 0 }}"
       +tags: [gnr]
+    berlin:
+      +enabled: "{{ var('berlin_research_tables', []) | length > 0 }}"
+      +tags: [berlin]
