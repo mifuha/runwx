@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "dataset_url": "https://www.kaggle.com/datasets/aiaiaidavid/berlin-marathons-data/versions/2",
+  "dataset_version": 2,
+  "license": "CC0: Public Domain (publisher metadata)",
+  "results_sha256": "bcc454bb7382cc34acc0d1fd359b55258bf25eea48323fd7fcb6d3053396c7f2",
+  "columns": [
+    "YEAR",
+    "COUNTRY",
+    "GENDER",
+    "AGE",
+    "TIME"
+  ],
+  "population": "Available results in the published anonymised research dataset; not verified complete official fields.",
+  "course_era": "Post-2003 Berlin course era; identical routes and smaller changes are not verified.",
+  "course_evidence_url": "https://www.bmw-berlin-marathon.com/fileadmin/media/events/berlinmarathon/fotos/Presse/Mediaguide/Statistiken/BM25-Entwicklung_der_Streckenrekorde.pdf",
+  "published_counts_url": "https://www.bmw-berlin-marathon.com/fileadmin/media/events/berlinmarathon/fotos/Presse/Mediaguide/Statistiken/BM25-Zieleinlaeufe-nach-Leistung-gestaffelt.pdf",
+  "published_counts_note": "Published table includes walkers from 2009; its population is not reconciled row-for-row with this dataset.",
+  "editions": {
+    "2003": {
+      "date": "2003-09-28",
+      "captured_count": 30709,
+      "gender_counts": {
+        "female": 5604,
+        "male": 25105
+      },
+      "published_count": 30709,
+      "count_note": "Capture and published table totals match; this does not prove row-for-row population equivalence.",
+      "date_evidence_url": "https://aims-worldrunning.org/drmag/issues/31.html"
+    },
+    "2004": {
+      "date": "2004-09-26",
+      "captured_count": 28022,
+      "gender_counts": {
+        "female": 5224,
+        "male": 22798
+      },
+      "published_count": 28023,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://www.bmw-berlin-marathon.com/fileadmin/media/events/berlinmarathon/PDFs/BM25-Die-Wetterdaten.pdf"
+    },
+    "2005": {
+      "date": "2005-09-25",
+      "captured_count": 30373,
+      "gender_counts": {
+        "female": 5868,
+        "male": 24505
+      },
+      "published_count": 30382,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2005_09.htm"
+    },
+    "2006": {
+      "date": "2006-09-24",
+      "captured_count": 30182,
+      "gender_counts": {
+        "female": 6086,
+        "male": 24096
+      },
+      "published_count": 30190,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2006_09.htm"
+    },
+    "2007": {
+      "date": "2007-09-30",
+      "captured_count": 32486,
+      "gender_counts": {
+        "female": 6486,
+        "male": 26000
+      },
+      "published_count": 32497,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2007_09.htm"
+    },
+    "2008": {
+      "date": "2008-09-28",
+      "captured_count": 35732,
+      "gender_counts": {
+        "female": 7405,
+        "male": 28327
+      },
+      "published_count": 35653,
+      "count_note": "Capture exceeds published table by 79; cause unresolved. No deduplication.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2008_09.htm"
+    },
+    "2009": {
+      "date": "2009-09-20",
+      "captured_count": 35015,
+      "gender_counts": {
+        "female": 7066,
+        "male": 27949
+      },
+      "published_count": 35016,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2009_09.htm"
+    },
+    "2010": {
+      "date": "2010-09-26",
+      "captured_count": 34001,
+      "gender_counts": {
+        "female": 7397,
+        "male": 26604
+      },
+      "published_count": 34070,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2010_09.htm"
+    },
+    "2011": {
+      "date": "2011-09-25",
+      "captured_count": 32914,
+      "gender_counts": {
+        "female": 7382,
+        "male": 25532
+      },
+      "published_count": 32977,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2011_09.htm"
+    },
+    "2012": {
+      "date": "2012-09-30",
+      "captured_count": 34270,
+      "gender_counts": {
+        "female": 7868,
+        "male": 26402
+      },
+      "published_count": 34377,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2012_09.htm"
+    },
+    "2013": {
+      "date": "2013-09-29",
+      "captured_count": 36473,
+      "gender_counts": {
+        "female": 8918,
+        "male": 27555
+      },
+      "published_count": null,
+      "count_note": "Published table prints 36.5277; unusable ambiguous total retained here, not silently corrected.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2013_09.htm"
+    },
+    "2014": {
+      "date": "2014-09-28",
+      "captured_count": 28945,
+      "gender_counts": {
+        "female": 6768,
+        "male": 22177
+      },
+      "published_count": 28946,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results-new/2014_09.htm"
+    },
+    "2015": {
+      "date": "2015-09-27",
+      "captured_count": 36753,
+      "gender_counts": {
+        "female": 8910,
+        "male": 27843
+      },
+      "published_count": 36767,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results/archive/2015.html"
+    },
+    "2016": {
+      "date": "2016-09-25",
+      "captured_count": 35991,
+      "gender_counts": {
+        "female": 9226,
+        "male": 26765
+      },
+      "published_count": 35999,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results/archive/2016.html"
+    },
+    "2017": {
+      "date": "2017-09-24",
+      "captured_count": 39223,
+      "gender_counts": {
+        "female": 11069,
+        "male": 28154
+      },
+      "published_count": 39234,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results/archive/2017.html"
+    },
+    "2018": {
+      "date": "2018-09-16",
+      "captured_count": 40641,
+      "gender_counts": {
+        "female": 12269,
+        "male": 28372
+      },
+      "published_count": 40651,
+      "count_note": "Count difference unresolved; do not infer missing runners or completeness.",
+      "date_evidence_url": "https://aims-worldrunning.org/results/archive/2018.html"
+    }
+  }
+}
