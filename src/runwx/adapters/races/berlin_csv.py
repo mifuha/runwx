@@ -11,6 +11,18 @@ from runwx.domain.race import RaceResult
 CATALOG = json.loads(files(__package__).joinpath("berlin_editions.json").read_bytes())
 
 
+def validate_reported_result(time_raw: str, gender_raw: str):
+    """Return the duration or held reason used by preparation and load preflight."""
+    match = re.fullmatch(r"([0-9]{1,3}):([0-5][0-9]):([0-5][0-9])", time_raw)
+    duration = sum(int(v) * k for v, k in zip(match.groups(), (3600, 60, 1))) if match else None
+    if not duration:
+        return None, "invalid or nonpositive reported duration"
+    if gender_raw not in {"male", "female"}:
+        return None, "unsupported recorded gender"
+    RaceResult(event_id="berlin-research", duration_s=duration, gender=gender_raw)
+    return duration, None
+
+
 def iter_research_rows(path: Path, years: set[int], source_hash: str):
     """Yield every capture row; an unselected year yields no result payload.
 
@@ -35,15 +47,7 @@ def _read_rows(path: Path, years: set[int], source_hash: str):
             if year not in years:
                 yield year, None
                 continue
-            reason = None
-            match = re.fullmatch(r"([0-9]{1,3}):([0-5][0-9]):([0-5][0-9])", raw[4])
-            duration = sum(int(v) * k for v, k in zip(match.groups(), (3600, 60, 1))) if match else None
-            if not duration:
-                reason = "invalid or nonpositive reported duration"
-            elif raw[2] not in {"male", "female"}:
-                reason = "unsupported recorded gender"
-            else:
-                RaceResult(event_id=f"berlin-research:{year}", duration_s=duration, gender=raw[2])
+            duration, reason = validate_reported_result(raw[4], raw[2])
             yield year, {
                 "source_row_number": number,
                 "source_row_id": f"berlin-kaggle-v2:{source_hash}:{number}",

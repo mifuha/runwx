@@ -1,0 +1,255 @@
+[
+  {
+    "name": "source_row_number",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "source_row_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "race_date",
+    "type": "DATE",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "country_raw",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "gender_raw",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "age_category_raw",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "time_raw",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "duration_s",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "place",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "age",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "timing_basis",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "validation_status",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "validation_reason",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "export_schema",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "dataset_version",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "race_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "preparation_report_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "weather_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "weather_csv_sha256",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "population_basis",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "course_basis",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "distance_m",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "captured_count",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "published_count",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "weather_context",
+    "type": "RECORD",
+    "mode": "REQUIRED",
+    "fields": [
+      {
+        "name": "basis",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "timezone",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "start_local",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "end_local",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "start_utc",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "end_utc",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "observation_count",
+        "type": "INTEGER",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "requested_point",
+        "type": "RECORD",
+        "mode": "REQUIRED",
+        "fields": [
+          {
+            "name": "latitude",
+            "type": "FLOAT",
+            "mode": "REQUIRED"
+          },
+          {
+            "name": "longitude",
+            "type": "FLOAT",
+            "mode": "REQUIRED"
+          }
+        ]
+      },
+      {
+        "name": "returned_point",
+        "type": "RECORD",
+        "mode": "REQUIRED",
+        "fields": [
+          {
+            "name": "latitude",
+            "type": "FLOAT",
+            "mode": "REQUIRED"
+          },
+          {
+            "name": "longitude",
+            "type": "FLOAT",
+            "mode": "REQUIRED"
+          }
+        ]
+      },
+      {
+        "name": "units",
+        "type": "RECORD",
+        "mode": "REQUIRED",
+        "fields": [
+          {
+            "name": "temperature",
+            "type": "STRING",
+            "mode": "REQUIRED"
+          },
+          {
+            "name": "wind",
+            "type": "STRING",
+            "mode": "REQUIRED"
+          },
+          {
+            "name": "precipitation",
+            "type": "STRING",
+            "mode": "REQUIRED"
+          },
+          {
+            "name": "humidity",
+            "type": "STRING",
+            "mode": "REQUIRED"
+          }
+        ]
+      },
+      {
+        "name": "median_temp_c",
+        "type": "FLOAT",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "median_wind_mps",
+        "type": "FLOAT",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "median_humidity_pct",
+        "type": "FLOAT",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "precipitation_mm",
+        "type": "FLOAT",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "precipitation_basis",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "note",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      }
+    ]
+  }
+]

@@ -84,6 +84,7 @@ published table; its cause is unresolved. The table's 2013 total is malformed, s
 `published_count` remains null rather than being guessed. Neither matching nor
 near-matching totals proves that the population is complete or unbiased.
 
-The next integration must retain these population/weather labels, measure the
-appropriate load bound, and preserve typed-row verification and duplicate/conflict
-protection. No loader, warehouse schema, API or cloud change is part of this work.
+The [Berlin load preview](berlin-research-load.md) checks these artifacts against
+an explicit research warehouse contract, retaining population/weather labels and
+typed-row verification. Preparing files does not submit that load or change the
+API. Native loading and subsequent dbt/API integration require separate review.
