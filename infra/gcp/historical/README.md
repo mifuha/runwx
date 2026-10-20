@@ -13,6 +13,11 @@ grant runtime roles. Add one reviewed hash-derived table name per edition.
 The optional `gnr_analysis_dataset_id` creates a separate dataset for the sampled
 GNR dbt summaries and comparison. It grants no new runtime access.
 
+The optional `berlin_research_tables` map creates explicit Berlin research snapshot
+tables with their own schema. It defaults to empty and adds no dataset or IAM grant.
+These are captured research populations with unknown official places and timing,
+plus fixed-window weather. They do not use the full-field or GNR schema.
+
 Run Terraform from this directory, with its own state. The parent root's state
 also owns earlier cloud demonstrations and a parked revision spike. Reusing that
 state with the simplified configuration could plan removal of omitted resources.

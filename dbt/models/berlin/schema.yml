@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: stg_berlin_research_results
+    description: Explicit Berlin research snapshots, including held records and unknown official places.
+  - name: mart_berlin_edition_summary
+    description: Pace distributions of captured accepted results, alongside fixed-window edition weather. Not official full-field coverage or a weather-effect estimate.
+    columns:
+      - name: snapshot_table
+        data_tests: [not_null, unique]
+      - name: race_date
+        data_tests: [not_null, unique]
+      - name: comparison_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [descriptive_research_capture]
+      - name: top_n_effective
+        description: Number of lowest recorded durations used, not official finishing places.
+      - name: weather_context
+        description: Saved 09–15 Europe/Berlin ERA5 context, independent of finishing durations; not personal exposure.

@@ -75,3 +75,6 @@ Tests use the real SDK interfaces and a stateful fake with network and credentia
 blocked. They verify load/rerun/conflict and failure behaviour, not native SQL or
 cloud execution. This change creates no tables, changes no IAM and does not run
 dbt or update the API. A real pilot load remains a separately reviewed step.
+
+After loading, the [Berlin edition summary](berlin-statistics.md) provides the
+pace distributions and saved weather context for explicitly chosen snapshots.
