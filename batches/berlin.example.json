@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "race_csv": "../data/local/berlin/inputs/Berlin_Marathon_data_1974_2019.csv",
+  "editions": [
+    {
+      "year": 2012,
+      "weather_json": "../data/local/berlin/inputs/2012-09-30.era5.json",
+      "weather_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "weather_request_url": "https://archive-api.open-meteo.com/v1/archive?latitude=52.5163&longitude=13.3777&start_date=2012-09-30&end_date=2012-09-30&models=era5&timezone=Europe%2FBerlin&wind_speed_unit=ms&temperature_unit=celsius&precipitation_unit=mm&hourly=temperature_2m%2Cwind_speed_10m%2Cprecipitation%2Crelative_humidity_2m"
+    },
+    {
+      "year": 2018,
+      "weather_json": "../data/local/berlin/inputs/2018-09-16.era5.json",
+      "weather_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "weather_request_url": "https://archive-api.open-meteo.com/v1/archive?latitude=52.5163&longitude=13.3777&start_date=2018-09-16&end_date=2018-09-16&models=era5&timezone=Europe%2FBerlin&wind_speed_unit=ms&temperature_unit=celsius&precipitation_unit=mm&hourly=temperature_2m%2Cwind_speed_10m%2Cprecipitation%2Crelative_humidity_2m"
+    }
+  ]
+}
