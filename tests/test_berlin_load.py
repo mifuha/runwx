@@ -89,6 +89,28 @@ def test_shared_loader_writes_once_then_reads_and_verifies_all_typed_rows(artifa
     store.api.delete_table.assert_not_called()
 
 
+def test_large_valid_capture_has_bounded_upload_timeout_without_relaxing_other_checks(artifacts):
+    capture, report_bytes = artifacts
+    rows = [json.loads(line) for line in capture.splitlines()]
+    # Still a fully validated capture, not a manually constructed PreparedLoad.
+    rows[0]['country_raw'] = 'x' * (6 * 1024 * 1024)
+    capture = b''.join(encode(row) for row in rows)
+    report = json.loads(report_bytes)
+    report.update(export_bytes=len(capture), export_sha256=sha256(capture).hexdigest())
+    load = prepared((capture, encode(report)))
+    store = warehouse()
+    assert load_prepared(store.api, load)['status'] == 'loaded_verified'
+    assert store.api.load_table_from_file.call_args.kwargs['timeout'] == 180
+    assert store.api.load_table_from_file.call_args.kwargs['num_retries'] == 0
+    assert store.rows == load.rows
+    assert load_prepared(store.api, load)['status'] == 'already_present_verified'
+    assert store.api.load_table_from_file.call_count == 1
+    assert all(call.kwargs['timeout'] == 30 for call in store.api.query.call_args_list)
+    assert all(call.kwargs['job_config'].maximum_bytes_billed == 100 * 1024 * 1024
+               for call in store.api.query.call_args_list)
+    store.api.delete_table.assert_not_called()
+
+
 @pytest.mark.parametrize("mutation", ["duration", "weather", "population", "missing", "duplicate"])
 def test_existing_conflicts_are_not_overwritten(artifacts, mutation):
     load = prepared(artifacts)

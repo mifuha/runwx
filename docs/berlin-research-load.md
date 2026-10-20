@@ -67,14 +67,31 @@ rows without another upload; conflicting, missing, extra or duplicated rows fail
 without overwrite or deletion. Paths do not enter job identity. Changing the
 report, payload, destination or schema changes the planned job identity.
 
-Existing request/job timeouts, deterministic job recovery and the 100 MiB query
-billing cap remain in the shared loader. These are serialized snapshot operations,
+Uploads over 5 MiB have a 180-second HTTP timeout; smaller uploads keep 30 seconds.
+The SDK can send up to 100 MiB per chunk, so the old small-file timeout can expire
+while writing a Berlin export. Upload retries remain disabled. Query requests keep
+30 seconds, job waits keep 300 seconds, and the 100 MiB query billing cap and
+deterministic job recovery remain unchanged. These are serialized snapshot operations,
 not a concurrent publication protocol or automatic edition selection.
 
 Tests use the real SDK interfaces and a stateful fake with network and credentials
 blocked. They verify load/rerun/conflict and failure behaviour, not native SQL or
-cloud execution. This change creates no tables, changes no IAM and does not run
-dbt or update the API. A real pilot load remains a separately reviewed step.
+cloud execution. Table creation uses a separately reviewed Terraform plan; the
+loader does not change IAM, run dbt or update the API.
+
+## First native load — 20 October 2026
+
+Berlin 2018's 40,641 captured accepted results loaded into the explicitly named
+research snapshot in `europe-west1`. The loader verified every typed row, including
+weather and provenance. An identical rerun returned `already_present_verified`,
+submitted no second load and left the table unchanged. The published count is
+40,651; the ten-row gap remains explicit.
+
+The initial upload hit the 30-second write timeout. Its job ID was absent and the
+table empty before a controlled retry with the same data/job identity and the
+bounded large-upload timeout above. One load ultimately completed. Verification
+queries billed 66 MiB in total, including the initial attempt's empty-table check.
+This verifies the snapshot load and rerun, not the dbt statistics or live chart.
 
 After loading, the [Berlin edition summary](berlin-statistics.md) provides the
 pace distributions and saved weather context for explicitly chosen snapshots.
