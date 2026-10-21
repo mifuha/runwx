@@ -8,7 +8,9 @@ weather become checked, repeatable comparisons.
 [Open Battersea Park 10K](https://runwx-api-f6n35ol7sa-ew.a.run.app/?course=battersea-park-10k&pace=median-pace&weather=temperature).
 There are **18 race dates and 2,725 finishers**. Follow median pace alongside
 temperature, then switch the weather measure to wind. The table gives the numbers
-behind the chart.
+behind the chart. Scroll down to the temperature–pace scatter: each dot is one
+race date. For a larger race, switch to Berlin: 16 research editions and 541,730
+accepted records. Across all five courses, the site now shows 61 editions.
 
 Different runners enter each race. This is a way to explore historical patterns,
 not proof that weather caused a pace change.
@@ -20,7 +22,7 @@ flowchart TD
     inputs["Saved race results + historical weather"] --> python["Python: validate and export"]
     python --> warehouse["BigQuery + dbt: store and calculate"]
     warehouse --> api["Read-only API"]
-    api --> chart["Chart + table"]
+    api --> chart["Trends + scatter + table"]
 ```
 
 Three choices keep the output explainable:

@@ -1,4 +1,10 @@
-# First dbt models
+# dbt models and stage runner
+
+The shared runner builds editions, then comparisons, checks the warehouse results
+and retains success/failure evidence. It runs locally and in a separate Cloud Run
+dbt job. Full-field, sampled GNR and [Berlin research](berlin-statistics.md) models
+keep their source contracts explicit; Berlin stores a materialized summary.
+The sections below retain the original synthetic validation and later executions.
 
 Status: **executed and verified in BigQuery on 8 September 2026**. The source is
 the [verified synthetic export](bigquery-staging.md) in

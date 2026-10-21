@@ -5,7 +5,8 @@
 The current output covers [five Lydd editions](../README.md#real-historical-comparison)
 with 1,197 finishers, three Folkestone editions with 1,215 finishers, 19 sampled
 Great North Run editions and 18 full-field Battersea Park 10K editions with 2,725
-finishers. It uses fixed race snapshots and real hourly ERA5 weather. Python
+finishers. With 16 Berlin research editions, the live site covers **five courses
+and 61 editions**. It uses fixed race snapshots and real hourly ERA5 weather. Python
 prepares the inputs; BigQuery and dbt produce the staging, accepted-results fact,
 edition summary and comparison views. Historical builds have run from local
 containers; the same export and dbt code has also run in separate Cloud Run jobs
@@ -13,7 +14,9 @@ for Folkestone 2019.
 
 Berlin's separate research mart is also verified: 16 editions from 2003–2018 and
 541,730 accepted records. Its opt-in dbt build produces a materialized summary,
-with independent reconciliation. API/chart support is prepared locally, not live.
+with independent reconciliation. This is a separate opt-in build; the shared
+stage runner handles the edition/comparison sequence described below. The API,
+trends, table and scatter plot are live.
 It preserves captured populations, unknown timing and fixed-window weather rather
 than treating the records as verified official fields. See [Berlin statistics](berlin-statistics.md).
 
@@ -23,12 +26,12 @@ flowchart TD
     export --> artifacts["Audit report + result rows<br/>local files or Cloud Storage"]
     artifacts --> loader["Validate export, load or verify"]
     loader --> snapshot[("BigQuery snapshot tables")]
-    snapshot --> runner["dbt stage runner<br/>local or separate Cloud Run dbt job"]
-    runner --> edition["Edition views + tests"]
-    edition --> comparison["Course comparison view + tests"]
+    snapshot --> runner["dbt builds + tests"]
+    runner --> edition["Edition models + tests"]
+    edition --> comparison["Comparison / research summaries + tests"]
     comparison --> checks["Independent reconciliation"]
     comparison --> api["Read-only Cloud Run API"]
-    api --> pages["Comparison + How it works pages"]
+    api --> pages["Trends, scatter plots + tables<br/>How it works page"]
     runner --> evidence["Retained success/failure evidence"]
     api -. "HTTPS /health" .-> monitoring["Cloud Monitoring<br/>availability checks + email alerts"]
 ```
@@ -43,11 +46,13 @@ capture and reconciliation remain manual.
 New raw captures and per-runner exports stay outside Git; public evidence records
 hashes, settings, aggregate results, validation outcomes and limitations.
 
-The [row exporter](result-export.md) reads and hashes the same saved bytes, assigns
-each candidate a snapshot row ID, records its validation outcome and aligns weather
+For full-field sources, the [row exporter](result-export.md) reads and hashes the
+same saved bytes, assigns each candidate a snapshot row ID, records its validation outcome and aligns weather
 to an estimated run midpoint. Weather matching uses aware UTC timestamps, a maximum
 30-minute gap by default and the earlier observation for an equal-distance tie.
-Unmatched finishers remain in performance statistics.
+Unmatched finishers remain in performance statistics. GNR and Berlin use fixed
+edition-level weather windows instead; they do not infer individual starts or
+runner weather matches.
 
 The [BigQuery loader](bigquery-staging.md) validates the complete export and expected
 hash before submission. A pre-created table receives one export using `WRITE_EMPTY`
@@ -158,8 +163,8 @@ stage is a separate Cloud Run job with its own runtime identity and permissions.
 A separate Cloud Run service serves the [public comparison page](https://runwx-api-f6n35ol7sa-ew.a.run.app/)
 and read-only API. It reads the existing comparison marts; the statistics stay in
 dbt. The live service now covers five Lydd, three Folkestone, 19 sampled Great
-North Run and 18 full-field Battersea editions. GNR uses the fastest 1,000
-available running results per edition and fixed start-area weather context.
+North Run, 18 full-field Battersea and 16 Berlin research editions. GNR uses the
+fastest 1,000 available running results per edition and fixed start-area weather context.
 Battersea keeps separate race dates for multiple editions in the same year.
 The API also serves the live [How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works).
 The [API documentation](api.md) links the deployment checks. Inputs are still
@@ -203,9 +208,15 @@ provenance records supply that context separately. The
 Domain rules, use cases and external I/O follow the existing
 [package layers](development.md#package-structure-and-api).
 
-The comparison uses a common 21,097 m pace convention and an explicit unchanged-
+The Lydd comparison uses a common 21,097 m pace convention and an explicit unchanged-
 course assumption supported by venue/certificate evidence. Provider distances are
-retained separately. Every runner uses the event start; individual starts are
-unavailable. ERA5 at a venue proxy is matched to estimated midpoints, and hourly
-precipitation is not whole-race rainfall. Different fields of runners prevent
-attributing the observed pace differences to weather alone.
+retained separately. Full-field midpoint matching uses the event start; individual
+starts are unavailable. ERA5 is a venue proxy, not measured personal exposure.
+GNR uses a fixed 10:00–14:00 Europe/London start-area window; Berlin uses
+09:00–15:00 Europe/Berlin at the finish area. Those windows are independent of
+finishing durations. Their precipitation is a window total.
+
+Every course has a separate temperature–pace scatter using existing summary
+values. Battersea dots show full dates; GNR retains its top-1,000 label, and small
+cohorts carry a caution. The plots do not pool populations, fit a trend or claim
+that weather caused a pace change.

@@ -64,8 +64,8 @@ different expected columns between rows. Correcting the fixtures let the existin
 statistics SQL run unchanged. An offline regression now checks the expected columns.
 
 This covers 40,641 captured accepted results, compared with 40,651 published
-finishers. The ten-record gap remains explicit. Berlin is not on the public
-comparison page yet; this validates one research edition, not a weather effect.
+finishers. The ten-record gap remains explicit. At this pilot stage Berlin was
+not yet on the public comparison page. The check validated one research edition.
 
 ## Full cohort validation — 21 October 2026
 
@@ -80,9 +80,10 @@ Fixed-window median temperatures range from 10.5 to 24 °C. Published-count gaps
 including the extra 79 captured records in 2008 and unknown 2013 total, remain
 explicit. This verifies the research summaries, not a weather effect.
 
-The API and chart can now present this mart through a distinct research response.
-That integration is prepared locally; the live four-course site is unchanged.
-It needs one read grant on the materialized summary, with no raw-table access.
+The live API presents this mart through a distinct research response. All 16
+editions are available in the trends, table and temperature–pace scatter. The
+runtime has one read grant on the materialized summary, with no raw-table access.
+See the [API deployment summary](../infra/gcp/api/README.md#current-deployment).
 
 ## Interpretation
 
@@ -99,5 +100,5 @@ edition summaries does not establish a weather effect.
 The [loader](berlin-research-load.md) and the optional
 `berlin_research_tables` map in the [historical Terraform root](../infra/gcp/historical/README.md)
 prepare the inputs. A reviewed saved plan and approval are needed before table
-creation or upload. No Berlin data has been added to the live comparison by this
-implementation alone.
+creation or upload. Preparation, warehouse builds and API deployment remain
+separate steps.
