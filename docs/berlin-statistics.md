@@ -42,9 +42,8 @@ RUNWX_DBT_DATASET=APPROVED_OUTPUT_DATASET \
 ```
 
 The models are disabled by default, so existing builds keep their current scope.
-The mart is `mart_berlin_edition_summary`. This change adds no runner, API endpoint,
-or website feature. The existing reconciliation reader can compare its rows with
-independently calculated expected values before any publication.
+The mart is `mart_berlin_edition_summary`. The existing reconciliation reader
+compares its rows with independently calculated expected values before publication.
 
 dbt unit fixtures cover ties, held rows, an empty accepted population, clamping N
 and inconsistent context. CI checks table/N configuration, parses the unit fixtures
@@ -67,6 +66,23 @@ statistics SQL run unchanged. An offline regression now checks the expected colu
 This covers 40,641 captured accepted results, compared with 40,651 published
 finishers. The ten-record gap remains explicit. Berlin is not on the public
 comparison page yet; this validates one research edition, not a weather effect.
+
+## Full cohort validation — 21 October 2026
+
+All 16 reviewed editions (2003–2018) are loaded: 541,730 accepted records and no
+held records. The native build passed one materialized summary model, seven data
+tests and two unit tests. Independent reconciliation checked 44 fields and the
+full weather context for every edition against frozen original-CSV calculations.
+The existing 2018 snapshot and all raw tables stayed unchanged during analytics.
+An identical 2003 rerun made no second upload; the final Terraform plan was no-op.
+
+Fixed-window median temperatures range from 10.5 to 24 °C. Published-count gaps,
+including the extra 79 captured records in 2008 and unknown 2013 total, remain
+explicit. This verifies the research summaries, not a weather effect.
+
+The API and chart can now present this mart through a distinct research response.
+That integration is prepared locally; the live four-course site is unchanged.
+It needs one read grant on the materialized summary, with no raw-table access.
 
 ## Interpretation
 

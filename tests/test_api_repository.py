@@ -299,4 +299,10 @@ def test_public_catalog_matches_the_verified_comparison_views():
             "greatrun:881",
             "runwx-learning-mifuha.runwx_dbt_gnr_top1000_v1.mart_gnr_sample_comparison",
         ),
+        "berlin-marathon": (
+            "berlin-post-2003-course-era",
+            42195,
+            None,
+            "runwx-learning-mifuha.runwx_dbt_berlin_research_v1.mart_berlin_edition_summary",
+        ),
     }

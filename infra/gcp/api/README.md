@@ -48,3 +48,10 @@ five snapshots, 15 edition views and the new comparison view. The old comparison
 grant remains available for rollback. The API's Battersea query cap is now 200 MiB; other course caps are unchanged.
 The deployed image serves the verified 18-edition response. The other courses
 were unchanged, and the post-apply Terraform plan was no-op.
+
+Berlin support is prepared, not deployed. This root adds one table-level Data
+Viewer grant for `runwx_dbt_berlin_research_v1.mart_berlin_edition_summary`.
+It is a materialized table, so the API needs no Berlin raw-snapshot access.
+The explicit dependency list grows from 110 to 111 grants; existing grants stay
+unchanged. The API keeps its 64 MiB Berlin query cap. A reviewed immutable image,
+saved plan and separate apply approval are still needed before it appears live.

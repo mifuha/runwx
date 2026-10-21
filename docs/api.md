@@ -19,10 +19,13 @@ GET /api/courses/{course_slug}/comparison
 ```
 
 The reviewed course slugs in this code are `lydd-half`, `folkestone-half`,
-`great-north-run` and `battersea-park-10k`. Each maps to one explicit BigQuery
-comparison view. The URL cannot select a table or submit SQL. The query selects
-fixed public columns, binds the expected course ID as a parameter and reads at most
-50 editions. Lydd, Folkestone and GNR keep the 64 MiB query cap. Battersea uses
+`great-north-run`, `battersea-park-10k` and `berlin-marathon`. Berlin support is
+prepared locally; the live site still has the other four courses. Each slug maps
+to one explicit BigQuery mart. The URL cannot select a table or submit SQL.
+Existing course queries select fixed public columns, bind the expected course ID
+and read at most 50 editions. Berlin reads at most 17 rows from its materialized
+summary and requires the complete reviewed 16-edition cohort.
+Lydd, Folkestone, GNR and Berlin keep the 64 MiB query cap. Battersea uses
 a 200 MiB cap for its 18 underlying snapshot tables. During the original
 13-edition deployment, a 64 MiB query failed because BigQuery required at least
 130 MiB.
@@ -56,9 +59,22 @@ All 19 public editions matched the hash-verified local exports; Lydd and Folkest
 responses were unchanged. The [GNR deployment record](evidence/gnr-public-api-validation.json)
 retains the image, checks and limitations.
 
+Berlin has a separate `research_capture` response for 2003–2018: 541,730 accepted
+records from a published anonymised research dataset. It returns captured, accepted,
+held and published counts, retaining count differences and the unknown 2013 total.
+These are not verified complete official fields. Timing basis and individual starts
+are unknown; the course-era grouping does not prove identical routes.
+
+Pace values come directly from `mart_berlin_edition_summary`. Weather is a fixed
+09:00–15:00 Europe/Berlin finish-area ERA5 context with seven observations, not
+runner-matched exposure. Precipitation is the window total. The response has no
+baseline change, official places, inferred starts or matched-runner coverage.
+The page labels these differences and keeps the existing courses' responses intact.
+See [Berlin statistics and verification](berlin-statistics.md).
+
 An unknown course returns `404`. A full-field course with no rows returns an empty
-`editions` list. A missing GNR sample, warehouse timeout or invalid mart row returns
-`503` without exposing internal details.
+`editions` list. A missing GNR sample or Berlin edition, warehouse timeout or
+invalid mart row returns `503` without exposing internal details.
 
 Install and run locally with Application Default Credentials that can query the
 selected view and its dependencies:

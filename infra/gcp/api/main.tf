@@ -1,5 +1,5 @@
 locals {
-  # The comparison marts are logical views. Their exact nested view/table
+  # Existing comparison marts use logical views. Their exact nested view/table
   # dependencies must also be readable unless a separate authorized-view layer
   # is introduced. Keep this list aligned with the reviewed API course catalog.
   editions = {
@@ -50,6 +50,11 @@ locals {
   }
 
   comparison_dependencies = {
+    # Berlin is materialized: no raw snapshot grants are needed.
+    "runwx_dbt_berlin_research_v1.mart_berlin_edition_summary" = {
+      dataset_id = "runwx_dbt_berlin_research_v1"
+      table_id   = "mart_berlin_edition_summary"
+    }
     "runwx_dbt_lydd_2022_99783aaa85b8.mart_course_comparison" = {
       dataset_id = "runwx_dbt_lydd_2022_99783aaa85b8"
       table_id   = "mart_course_comparison"

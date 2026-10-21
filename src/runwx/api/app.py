@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse, Response
 from google.cloud import bigquery
 from starlette.concurrency import run_in_threadpool
 
-from runwx.api.models import CourseComparison, SampledCourseComparison
+from runwx.api.models import CourseComparison, ResearchCourseComparison, SampledCourseComparison
 from runwx.api.repository import (
     BigQueryComparisonRepository,
     ComparisonUnavailableError,
@@ -51,7 +51,7 @@ class ComparisonService:
 
     async def get_course_comparison(
         self, course_slug: str
-    ) -> CourseComparison | SampledCourseComparison:
+    ) -> CourseComparison | SampledCourseComparison | ResearchCourseComparison:
         return await run_in_threadpool(
             self._repository.get_course_comparison, course_slug
         )
@@ -114,14 +114,14 @@ async def javascript() -> Response:
 
 @app.get(
     "/api/courses/{course_slug}/comparison",
-    response_model=CourseComparison | SampledCourseComparison,
+    response_model=CourseComparison | SampledCourseComparison | ResearchCourseComparison,
     response_model_exclude_none=False,
 )
 async def get_course_comparison(
     course_slug: str,
     response: Response,
     repository: Annotated[ComparisonService, Depends(get_repository)],
-) -> CourseComparison | SampledCourseComparison:
+) -> CourseComparison | SampledCourseComparison | ResearchCourseComparison:
     try:
         comparison = await repository.get_course_comparison(course_slug)
         response.headers["Cache-Control"] = "public, max-age=300"

@@ -69,7 +69,11 @@ const elements = {
   timeline: document.querySelector("#charts-timeline"),
   countHeading: document.querySelector("#count-heading"),
   timingHeading: document.querySelector("#timing-heading"),
+  publishedHeading: document.querySelector("#published-heading"),
+  changeHeading: document.querySelector("#change-heading"),
   interpretation: document.querySelector("#interpretation-text"),
+  researchDetails: document.querySelector("#research-details"),
+  researchNotes: document.querySelector("#research-notes"),
   paceChartTitle: document.querySelector("#pace-chart-title"),
   paceChartDirection: document.querySelector("#pace-chart-direction"),
   paceChart: document.querySelector("#pace-chart"),
@@ -86,6 +90,10 @@ let loadSequence = 0;
 
 function isSampled(data) {
   return data.scope === "top_1000";
+}
+
+function isResearch(data) {
+  return data.scope === "research_capture";
 }
 
 function formatPace(value) {
@@ -140,23 +148,44 @@ function appendCell(row, text, className = "") {
 
 function renderTable(data) {
   elements.rows.replaceChildren();
-  elements.countHeading.textContent = isSampled(data) ? "Sampled results" : "Finishers";
+  elements.countHeading.textContent = isResearch(data)
+    ? "Accepted records" : isSampled(data) ? "Sampled results" : "Finishers";
   elements.timingHeading.hidden = !isSampled(data);
+  elements.publishedHeading.hidden = !isResearch(data);
+  elements.changeHeading.hidden = isResearch(data);
   for (const edition of data.editions) {
     const row = document.createElement("tr");
     const year = appendCell(row, editionLabel(edition, needsDateLabels(data)), "edition-year");
-    if (!["comparable", "descriptive_sample"].includes(edition.comparison_status)) {
+    if (!["comparable", "descriptive_sample", "descriptive_research_capture"].includes(edition.comparison_status)) {
       const note = document.createElement("span");
       note.className = "comparison-note";
       note.textContent = edition.comparison_status === "unknown_timing_basis"
         ? "timing basis unknown" : edition.comparison_status.replaceAll("_", " ");
       year.append(note);
     }
-    appendCell(row, formatInteger(isSampled(data) ? edition.sample_size : edition.finishers));
+    const count = appendCell(row, formatInteger(isResearch(data)
+      ? edition.accepted_count : isSampled(data) ? edition.sample_size : edition.finishers));
+    if (isResearch(data) && edition.held_count > 0) {
+      const note = document.createElement("span");
+      note.className = "comparison-note";
+      note.textContent = `${formatInteger(edition.held_count)} held; ${formatInteger(edition.captured_count)} captured`;
+      count.append(note);
+    }
     if (isSampled(data)) {
       const timing = edition.timing;
       const cell = appendCell(row, `${timing.chip} / ${timing.gun} / ${timing.unknown}`);
       cell.title = timing.note;
+    }
+    if (isResearch(data)) {
+      const published = appendCell(row, edition.published_count === null
+        ? "Unknown" : formatInteger(edition.published_count));
+      const gap = edition.count_difference_from_published;
+      if (Number.isInteger(gap) && gap !== 0) {
+        const note = document.createElement("span");
+        note.className = "comparison-note";
+        note.textContent = `capture difference ${gap > 0 ? "+" : ""}${formatInteger(gap)}`;
+        published.append(note);
+      }
     }
     appendCell(row, formatPace(edition.pace.median_s_per_km));
     appendCell(row, formatPace(edition.pace.mean_s_per_km));
@@ -169,13 +198,15 @@ function renderTable(data) {
     appendCell(row, formatNumber(edition.weather.median_wind_mps, " m/s", 2));
     appendCell(row, formatNumber(edition.weather.median_humidity_pct, "%", 0));
     appendCell(row, formatNumber(
-      isSampled(data) ? edition.weather.precipitation_mm : edition.weather.median_precipitation_mm,
+      edition.weather.precipitation_mm ?? edition.weather.median_precipitation_mm,
       " mm", 1,
     ));
-    const change = formatChange(isSampled(data)
-      ? edition.median_pace_change_pct
-      : edition.change_from_baseline.median_pace_pct);
-    appendCell(row, change.text, change.className);
+    if (!isResearch(data)) {
+      const change = formatChange(isSampled(data)
+        ? edition.median_pace_change_pct
+        : edition.change_from_baseline.median_pace_pct);
+      appendCell(row, change.text, change.className);
+    }
     elements.rows.append(row);
   }
 }
@@ -313,8 +344,8 @@ function renderCharts(data) {
     caption: elements.paceChartCaption,
   });
   const weatherMetric = weatherMetrics[elements.weatherMetric.value];
-  renderChart(data, isSampled(data) && elements.weatherMetric.value === "precipitation"
-    ? { ...weatherMetric, label: "10:00–14:00 precipitation" }
+  renderChart(data, (isSampled(data) || isResearch(data)) && elements.weatherMetric.value === "precipitation"
+    ? { ...weatherMetric, label: isResearch(data) ? "09:00–15:00 precipitation" : "10:00–14:00 precipitation" }
     : weatherMetric, {
     chart: elements.weatherChart,
     title: elements.weatherChartTitle,
@@ -335,10 +366,18 @@ function updateUrl() {
 function render(data) {
   comparison = data;
   elements.courseName.textContent = data.course_name;
-  const baseline = data.editions.find((edition) => edition.event_id === data.baseline_event_id);
-  const baselineLabel = baseline ? editionLabel(baseline, needsDateLabels(data)) : "stated event";
-  elements.courseMeta.textContent = `${data.editions.length} editions · ${(data.distance_m / 1000).toFixed(1)} km · baseline ${baselineLabel}${isSampled(data) ? ` · ${data.sample_label}` : ""}`;
-  elements.interpretation.textContent = isSampled(data)
+  if (isResearch(data)) {
+    elements.courseMeta.textContent = `${data.editions.length} editions · ${(data.distance_m / 1000).toFixed(3)} km · Research capture`;
+  } else {
+    const baseline = data.editions.find((edition) => edition.event_id === data.baseline_event_id);
+    const baselineLabel = baseline ? editionLabel(baseline, needsDateLabels(data)) : "stated event";
+    elements.courseMeta.textContent = `${data.editions.length} editions · ${(data.distance_m / 1000).toFixed(1)} km · baseline ${baselineLabel}${isSampled(data) ? ` · ${data.sample_label}` : ""}`;
+  }
+  elements.researchDetails.hidden = !isResearch(data);
+  elements.researchNotes.textContent = isResearch(data) ? `${data.population_note} ${data.course_note}` : "";
+  elements.interpretation.textContent = isResearch(data)
+    ? "These are captured research results, not verified full fields. Timing basis and individual starts are unknown; smaller route changes aren't verified. Weather is a fixed 09:00–15:00 Europe/Berlin ERA5 estimate near the finish, not each runner's exposure. Fastest 20 uses recorded durations, not official places. Differences do not prove a weather effect."
+    : isSampled(data)
     ? `${data.sample_note} Weather is a fixed 10:00–14:00 local ERA5 estimate at an approximate start-area point, not each runner's exposure or whole-course weather. Published times may use chip, gun or unknown timing bases; the table shows their counts. Pace differences do not prove a weather effect.`
     : data.course_slug === "battersea-park-10k"
       ? "Weather is an ERA5 park-area estimate matched to runner midpoints. The published results are manually timed without a chip/gun distinction, so baseline pace changes are unavailable. Different runners enter each race; the chart does not show a weather effect."

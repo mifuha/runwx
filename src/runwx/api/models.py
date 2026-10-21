@@ -99,3 +99,43 @@ class SampledCourseComparison(ApiModel):
     sample_note: str
     pace_unit: Literal["seconds_per_kilometre"] = "seconds_per_kilometre"
     editions: list[SampledEditionComparison]
+
+
+class ResearchWeatherSummary(SampledWeatherSummary):
+    basis: Literal["fixed_edition_window"]
+    timezone: Literal["Europe/Berlin"]
+    start_local: Literal["09:00"]
+    end_local: Literal["15:00"]
+    start_utc: AwareDatetime
+    end_utc: AwareDatetime
+    observation_count: Literal[7]
+    median_temperature_c: float
+    median_wind_mps: float = Field(ge=0)
+    median_humidity_pct: float = Field(ge=0, le=100)
+    precipitation_mm: float = Field(ge=0)
+
+
+class ResearchEditionComparison(ApiModel):
+    year: int = Field(ge=1900, le=2200)
+    race_date: date
+    comparison_status: Literal["descriptive_research_capture"]
+    captured_count: int = Field(ge=0)
+    accepted_count: int = Field(ge=0)
+    held_count: int = Field(ge=0)
+    published_count: int | None = Field(ge=0)
+    count_difference_from_published: int | None
+    timing_basis: None
+    pace: PaceSummary
+    weather: ResearchWeatherSummary
+
+
+class ResearchCourseComparison(ApiModel):
+    course_slug: str
+    course_name: str
+    course_id: str
+    distance_m: int = Field(gt=0)
+    scope: Literal["research_capture"] = "research_capture"
+    population_note: str
+    course_note: str
+    pace_unit: Literal["seconds_per_kilometre"] = "seconds_per_kilometre"
+    editions: list[ResearchEditionComparison]
