@@ -49,9 +49,17 @@ grant remains available for rollback. The API's Battersea query cap is now 200 M
 The deployed image serves the verified 18-edition response. The other courses
 were unchanged, and the post-apply Terraform plan was no-op.
 
-Berlin support is prepared, not deployed. This root adds one table-level Data
-Viewer grant for `runwx_dbt_berlin_research_v1.mart_berlin_edition_summary`.
-It is a materialized table, so the API needs no Berlin raw-snapshot access.
-The explicit dependency list grows from 110 to 111 grants; existing grants stay
-unchanged. The API keeps its 64 MiB Berlin query cap. A reviewed immutable image,
-saved plan and separate apply approval are still needed before it appears live.
+## Current deployment
+
+Berlin and all five course scatter plots are live. Berlin's materialized summary
+`runwx_dbt_berlin_research_v1.mart_berlin_edition_summary` has one table-level Data
+Viewer grant; the API has no Berlin raw-snapshot access. There are 111 explicit
+table grants. Berlin keeps its 64 MiB query cap.
+
+The latest deployment on 21 October 2026 changed only the existing service image:
+**0 additions, 1 update, 0 deletions**. Revision `runwx-api-00012-hft` receives all
+traffic and uses the verified image digest
+`sha256:50daa1ae680b2b3f6cfea2a62e3facee49179d5f3ea8b3294d5f0c01f9497ffc`.
+IAM and other service settings were unchanged. Live health, pages, assets and all
+five course responses passed checks; desktop/mobile scatter checks passed and the
+final Terraform plan was no-op. No source data or dbt models were rebuilt.

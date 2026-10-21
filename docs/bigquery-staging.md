@@ -1,4 +1,10 @@
-# First BigQuery staging load
+# BigQuery snapshot loading
+
+The loader now supports full-field editions, GNR samples and
+[Berlin research captures](berlin-research-load.md). Each uses its explicit schema
+and reviewed destination. Complete validation, no-overwrite loading and full row
+readback preserve the snapshot; identical reruns verify existing rows.
+The original synthetic load below remains the first execution record.
 
 For several qualified Great North Run editions, use the
 [batch preparation/loading command](batch-ingestion.md). It reuses the same safe

@@ -10,7 +10,7 @@ explains the path from fixed inputs to the chart, using Folkestone 2019 as one
 example.
 The pages link to each other. The comparison page uses the endpoint below to
 populate course, pace and weather selectors, two aligned accessible SVG trend
-plots and a compact edition table. Pace stays visible beside the selected weather
+plots, a temperature–pace scatter and a compact edition table. Pace stays visible beside the selected weather
 measure. The HTML, CSS and JavaScript are packaged with the API; the page has no
 external frontend or chart dependency.
 
@@ -19,8 +19,8 @@ GET /api/courses/{course_slug}/comparison
 ```
 
 The reviewed course slugs in this code are `lydd-half`, `folkestone-half`,
-`great-north-run`, `battersea-park-10k` and `berlin-marathon`. Berlin support is
-prepared locally; the live site still has the other four courses. Each slug maps
+`great-north-run`, `battersea-park-10k` and `berlin-marathon`. All five are live,
+covering 61 editions. Each slug maps
 to one explicit BigQuery mart. The URL cannot select a table or submit SQL.
 Existing course queries select fixed public columns, bind the expected course ID
 and read at most 50 editions. Berlin reads at most 17 rows from its materialized
@@ -80,8 +80,11 @@ Berlin and GNR's fixed weather windows from the other courses' runner-midpoint
 weather summaries, which depend on finishing durations. GNR remains a top-1,000
 sample. Small cohorts carry a caution. Courses are kept separate, with no fitted
 curve or correlation score. The plot reuses the existing API response.
-Berlin's scatter is deployed; the extension to the other courses is local work
-awaiting publication and deployment.
+All five scatter plots are deployed. On 21 October 2026, the image-only update
+passed live page, asset, health and cache checks. All five course responses kept
+their verified values. Desktop/mobile checks covered all 61 dots, keyboard focus
+and pace switching; the final Terraform plan reported no changes. See the
+[deployment summary](../infra/gcp/api/README.md#current-deployment).
 
 An unknown course returns `404`. A full-field course with no rows returns an empty
 `editions` list. A missing GNR sample or Berlin edition, warehouse timeout or

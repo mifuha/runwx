@@ -7,8 +7,8 @@ validation, BigQuery and dbt into a comparison view with explicit snapshot prove
 I'm building it to practise data engineering using something I care about: running.
 
 Try the [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/): choose Lydd,
-Folkestone, Great North Run or Battersea Park 10K and view pace beside the weather
-for each edition. Great North Run covers 19 editions, using the fastest 1,000
+Folkestone, Great North Run, Battersea Park 10K or Berlin Marathon. View pace
+beside the weather for each edition. Great North Run covers 19 editions, using the fastest 1,000
 available running results per edition, with a fixed start-area weather window.
 Battersea covers 18 full-field editions from 2019 and 2022–2024. The live
 [How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
@@ -17,9 +17,11 @@ follows Folkestone 2019 from saved inputs to the chart.
 Short on time? [Take the two-minute tour](docs/walkthrough.md): the live result,
 the main design choices, and one real failure and recovery.
 
-Berlin's 16-edition research cohort (2003–2018, 541,730 accepted records) is also
-verified in BigQuery/dbt. Its comparison-page support is prepared, pending
-deployment. [Source limits and checks](docs/berlin-statistics.md) stay explicit.
+The live site covers **five courses and 61 editions**, including Berlin's 16-edition
+research cohort (2003–2018, 541,730 accepted records). Choose median, mean or
+fastest-20 median pace; explore trends, a temperature–pace scatter plot and the
+edition table. Each scatter dot is one edition of the selected course.
+[Source limits and checks](docs/berlin-statistics.md) stay explicit.
 
 ## Real historical comparison
 
@@ -60,25 +62,26 @@ flowchart TD
     export --> artifacts["Audit report + result rows<br/>local or Cloud Storage"]
     artifacts --> loader["Validate and load snapshot"]
     loader --> snapshots[("BigQuery snapshots")]
-    snapshots --> runner["dbt stage runner<br/>local or separate Cloud Run job"]
-    runner --> edition["Edition build"]
-    edition --> comparison["Comparison build"]
+    snapshots --> runner["dbt builds + tests"]
+    runner --> edition["Edition models"]
+    edition --> comparison["Comparison / research summaries"]
     comparison --> reconciliation["Independent reconciliation"]
     comparison --> output["Comparison output"]
     output --> api["Read-only Cloud Run API"]
-    api --> page["Comparison + How it works pages"]
+    api --> page["Trends, scatter plots + tables<br/>How it works page"]
     runner --> evidence["Success/failure evidence"]
     api -. "HTTPS /health" .-> monitoring["Cloud Monitoring<br/>availability checks + email alerts"]
 ```
 
-The same stage runner works locally and inside the Cloud Run dbt job. It runs the
-edition build before the comparison build, stops later work after a failure and
+The shared stage runner works locally and inside the Cloud Run dbt job. It runs
+the edition build before the comparison build, stops later work after a failure and
 keeps useful evidence for successful and failed runs. After both builds pass, it
 independently checks the important BigQuery results. Each full-field edition has a dedicated
 source table and output dataset; the comparison reads an explicit list of edition
 datasets and a named baseline. Exact export reruns verify existing rows without
 another upload. A deliberately corrected snapshot uses a separate destination and
-retains its own provenance.
+retains its own provenance. Berlin uses a separate opt-in summary build over its
+research snapshots, followed by independent reconciliation.
 
 The Lydd 2025 addition passed **28 native dbt tests**: 21 for the new edition and
 seven for the five-edition comparison. Full result readbacks matched the saved
@@ -98,8 +101,8 @@ frozen warehouse input. The dbt job then rebuilt the Folkestone 2019 edition and
 three-edition comparison, reconciled the important BigQuery values and saved its
 execution evidence. A separate Cloud Run service now serves the read-only API and
 comparison page. Its responses match the saved results for five Lydd, three
-Folkestone, 19 sampled Great North Run and 18 full-field Battersea editions; see
-the [deployment checks](docs/api.md).
+Folkestone, 19 sampled Great North Run, 18 full-field Battersea and 16 Berlin
+research editions; see the [deployment checks](docs/api.md).
 [Cloud Monitoring](infra/gcp/monitoring/README.md) checks API availability and
 emails on sustained failure and recovery. Data correctness is checked separately
 by dbt tests and reconciliation.
