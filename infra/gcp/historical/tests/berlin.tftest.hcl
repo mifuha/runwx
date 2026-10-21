@@ -15,7 +15,7 @@ variables {
   dbt_runtime_service_account_email = null
   dbt_runtime_access                = {}
   berlin_research_tables            = {}
-  berlin_analysis_dataset_id         = null
+  berlin_analysis_dataset_id        = null
 }
 
 run "berlin_is_opt_in" {
