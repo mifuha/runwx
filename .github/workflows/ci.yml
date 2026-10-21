@@ -27,7 +27,7 @@ jobs:
       - name: Run tests
         run: pytest -q tests
 
-      - name: Check chart date labels
+      - name: Check comparison charts
         run: node tests/ui_chart_dates.cjs
 
   airflow:

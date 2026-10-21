@@ -6,11 +6,12 @@ const source = fs.readFileSync('src/runwx/api/static/app.js', 'utf8');
 const chartCode = source.slice(0, source.indexOf('elements.course.addEventListener'));
 function element(name) {
   return {
-    name, attributes: {}, children: [], style: {},
+    name, attributes: {}, children: [], style: {}, listeners: {},
     classList: { add() {}, remove() {} },
     setAttribute(key, value) { this.attributes[key] = value; },
     append(...children) { this.children.push(...children); },
     replaceChildren() { this.children = []; },
+    addEventListener(name, callback) { this.listeners[name] = callback; },
   };
 }
 const context = vm.createContext({
@@ -113,6 +114,8 @@ assert.equal(renderedElements.rows.children[0].children[1].children[0].textConte
 assert.equal(renderedElements.rows.children[0].children[10].textContent, '0.0 mm');
 assert.equal(renderedElements.weatherChartTitle.textContent, '09:00–15:00 precipitation');
 assert.equal(renderedElements.researchDetails.hidden, false);
+assert.equal(renderedElements.scatterPanel.hidden, false);
+assert.equal(renderedElements.scatterChart.children[0].children.filter(child => child.name === 'circle').length, 16);
 assert.match(renderedElements.interpretation.textContent, /Timing basis and individual starts are unknown/);
 assert.match(renderedElements.interpretation.textContent, /09:00–15:00 Europe\/Berlin/);
 assert.ok(parseInt(renderedElements.timeline.style.minWidth, 10) >= 780);
@@ -158,3 +161,79 @@ assert.equal(renderedElements.weatherChartTitle.textContent, 'Median precipitati
 assert.match(renderedElements.courseMeta.textContent, /baseline 2003/);
 assert.equal(renderedElements.rows.children[0].children[9].textContent, '0.2 mm');
 console.log('Berlin retains all 16 points, research caveats and count gaps; switching course scopes resets the table.');
+
+// Scatter coordinates must reflect paired values, not date order or runner count.
+const scatterData = { ...research, editions: [
+  { ...research.editions[0], year: 2006,
+    pace: { ...research.editions[0].pace, median_s_per_km: 360, mean_s_per_km: 370, fastest_n_median_s_per_km: 198 },
+    weather: { median_temperature_c: 24 } },
+  { ...research.editions[0], year: 2004,
+    pace: { ...research.editions[0].pace, median_s_per_km: 340, mean_s_per_km: 350, fastest_n_median_s_per_km: 188 },
+    weather: { median_temperature_c: 10.5 } },
+  { ...research.editions[0], year: 2013,
+    pace: { ...research.editions[0].pace, median_s_per_km: 345, mean_s_per_km: 355, fastest_n_median_s_per_km: 190 },
+    weather: { median_temperature_c: 12.3 } },
+] };
+function scatter(data, metric = 'median-pace', width = 640) {
+  context.testData = data;
+  renderedElements.paceMetric.value = metric;
+  renderedElements.scatterChart.clientWidth = width;
+  vm.runInContext('renderScatter(testData)', context);
+  const svg = renderedElements.scatterChart.children[0];
+  return {svg, points: svg ? svg.children.filter(child => child.name === 'circle') : []};
+}
+let plotted = scatter(scatterData);
+assert.equal(renderedElements.scatterPanel.hidden, false);
+assert.equal(plotted.points.length, 3);
+const [warm, cool, middle] = plotted.points;
+assert.ok(Number(warm.attributes.cx) > Number(cool.attributes.cx));
+assert.ok(Number(warm.attributes.cy) < Number(cool.attributes.cy));
+assert.ok(Number(middle.attributes.cx) > Number(cool.attributes.cx));
+const xFraction = (Number(middle.attributes.cx) - Number(cool.attributes.cx)) /
+  (Number(warm.attributes.cx) - Number(cool.attributes.cx));
+const yFraction = (Number(cool.attributes.cy) - Number(middle.attributes.cy)) /
+  (Number(cool.attributes.cy) - Number(warm.attributes.cy));
+assert.ok(Math.abs(xFraction - 1.8 / 13.5) < 1e-12);
+assert.ok(Math.abs(yFraction - 5 / 20) < 1e-12);
+assert.equal(plotted.svg.children.filter(child => child.name === 'path').length, 0);
+assert.match(plotted.svg.attributes['aria-label'], /temperature.*Median pace/i);
+assert.match(renderedElements.scatterCaption.textContent, /3 of 3 editions/);
+assert.match(renderedElements.scatterCaption.textContent, /Association does not establish a weather effect/);
+assert.match(renderedElements.scatterCaption.textContent, /09:00–15:00 Europe\/Berlin/);
+assert.equal(warm.attributes.tabindex, '0');
+assert.match(warm.attributes['aria-label'], /2006.*24\.0°C.*6:00\/km/);
+for (const interaction of ['focus', 'pointerenter', 'click']) {
+  warm.listeners[interaction]();
+  assert.match(renderedElements.scatterDetail.textContent, /2006.*24\.0°C.*6:00\/km/);
+}
+plotted = scatter(scatterData, 'fastest-pace', 320);
+assert.match(plotted.points[0].attributes['aria-label'], /3:18\/km/);
+assert.match(renderedElements.scatterPaceLabel.textContent, /Fastest 20.*Higher means slower/);
+assert.equal(plotted.svg.attributes.viewBox, '0 0 320 320');
+plotted = scatter(scatterData, 'mean-pace');
+assert.match(plotted.points[0].attributes['aria-label'], /6:10\/km/);
+
+// Missing/non-finite pairs are excluded together; zero is a valid temperature.
+const incomplete = { ...research, editions: [
+  ...scatterData.editions,
+  { ...research.editions[0], year: 2000, weather: { median_temperature_c: null } },
+  { ...research.editions[0], year: 2001, pace: { median_s_per_km: null } },
+  { ...research.editions[0], year: 2002, weather: { median_temperature_c: Infinity } },
+  { ...research.editions[0], year: 1998, pace: { median_s_per_km: NaN } },
+  { ...research.editions[0], year: 1999, weather: { median_temperature_c: 0 } },
+] };
+plotted = scatter(incomplete);
+assert.equal(plotted.points.length, 4);
+assert.match(renderedElements.scatterCaption.textContent, /4 of 8 editions/);
+plotted = scatter({ ...research, editions: [incomplete.editions[3]] });
+assert.equal(plotted.points.length, 0);
+assert.match(plotted.svg.textContent, /No paired temperature and pace values/);
+for (const data of [{ ...research, editions: [] }, { ...research, editions: [research.editions[0]] },
+  { ...research, editions: [research.editions[0], research.editions[0]] }]) {
+  plotted = scatter(data);
+  assert.ok(plotted.points.every(point => Number.isFinite(Number(point.attributes.cx)) && Number.isFinite(Number(point.attributes.cy))));
+}
+scatter(ordinary);
+assert.equal(renderedElements.scatterPanel.hidden, true);
+assert.equal(renderedElements.scatterChart.children.length, 0);
+console.log('Berlin scatter preserves paired values, labels and accessible details across metrics and screen widths.');

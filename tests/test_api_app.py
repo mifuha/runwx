@@ -269,6 +269,9 @@ def test_home_page_serves_the_minimal_comparison_interface():
     assert 'value="berlin-marathon"' in result.text
     assert 'id="published-heading" hidden' in result.text
     assert 'id="research-details" hidden' in result.text
+    assert 'id="scatter-panel"' in result.text
+    assert 'aria-labelledby="scatter-title" hidden' in result.text
+    assert 'id="scatter-detail" aria-live="polite"' in result.text
     assert 'id="timing-heading"' in result.text
     assert "Simple statistics, fixed historical snapshots, no prediction." in result.text
     assert 'src="http' not in result.text
@@ -294,6 +297,7 @@ def test_frontend_assets_are_local_packaged_and_cache_bounded():
     assert "median-pace" in javascript.text
     assert "precipitation" in javascript.text
     assert "renderCharts" in javascript.text
+    assert "renderScatter" in javascript.text
     assert "textContent" in javascript.text
     assert "innerHTML" not in javascript.text
 

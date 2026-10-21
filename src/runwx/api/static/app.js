@@ -82,6 +82,11 @@ const elements = {
   weatherChartDirection: document.querySelector("#weather-chart-direction"),
   weatherChart: document.querySelector("#weather-chart"),
   weatherChartCaption: document.querySelector("#weather-chart-caption"),
+  scatterPanel: document.querySelector("#scatter-panel"),
+  scatterChart: document.querySelector("#scatter-chart"),
+  scatterPaceLabel: document.querySelector("#scatter-pace-label"),
+  scatterDetail: document.querySelector("#scatter-detail"),
+  scatterCaption: document.querySelector("#scatter-caption"),
   rows: document.querySelector("#comparison-rows"),
 };
 
@@ -331,6 +336,92 @@ function renderChart(data, metric, target) {
     (showDates ? " The table lists every race date." : "");
 }
 
+function renderScatter(data) {
+  const visible = isResearch(data) && data.course_slug === "berlin-marathon";
+  elements.scatterPanel.hidden = !visible;
+  elements.scatterChart.replaceChildren();
+  elements.scatterDetail.textContent = "Hover, focus or tap a dot for its year and values.";
+  elements.scatterCaption.textContent = "";
+  if (!visible) return;
+
+  const metric = paceMetrics[elements.paceMetric.value];
+  const points = data.editions.map((edition) => ({
+    year: edition.year,
+    temperature: edition.weather.median_temperature_c,
+    pace: metric.value(edition),
+  })).filter((point) => Number.isFinite(point.temperature) && Number.isFinite(point.pace));
+  elements.scatterPaceLabel.textContent = `${metric.label} · Higher means slower.`;
+  elements.scatterCaption.textContent = `${points.length} of ${data.editions.length} editions have both values. ` +
+    "Temperature is the fixed 09:00–15:00 Europe/Berlin finish-area ERA5 context. " +
+    "Association does not establish a weather effect.";
+  if (!points.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "No paired temperature and pace values are available.";
+    elements.scatterChart.append(empty);
+    return;
+  }
+
+  // Redraw to the panel width so mobile axes remain readable without zooming.
+  const width = Math.max(280, elements.scatterChart.clientWidth || 640);
+  const height = 320;
+  const margin = { top: 20, right: 20, bottom: 58, left: 62 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const minTemp = Math.floor(Math.min(...points.map((point) => point.temperature))) - 1;
+  const maxTemp = Math.ceil(Math.max(...points.map((point) => point.temperature))) + 1;
+  const minPace = Math.floor((Math.min(...points.map((point) => point.pace)) - 3) / 15) * 15;
+  const maxPace = Math.ceil((Math.max(...points.map((point) => point.pace)) + 3) / 15) * 15;
+  const x = (value) => margin.left + (value - minTemp) / (maxTemp - minTemp) * plotWidth;
+  // Conventional scatter axes: larger seconds/km (slower pace) appear higher.
+  const y = (value) => margin.top + (maxPace - value) / (maxPace - minPace) * plotHeight;
+  const svg = svgElement("svg", {
+    viewBox: `0 0 ${width} ${height}`, role: "group",
+    "aria-label": `Berlin temperature and ${metric.label} across ${points.length} editions`,
+    "aria-describedby": "scatter-caption",
+  });
+  for (let step = 0; step <= 3; step += 1) {
+    const value = minPace + (maxPace - minPace) * step / 3;
+    svg.append(svgElement("line", {
+      x1: margin.left, x2: width - margin.right, y1: y(value), y2: y(value), class: "chart-grid",
+    }));
+    const label = svgElement("text", {
+      x: margin.left - 10, y: y(value) + 4, "text-anchor": "end", class: "chart-axis-label",
+    });
+    label.textContent = formatPace(value);
+    svg.append(label);
+  }
+  const steps = width < 450 ? 2 : 4;
+  for (let step = 0; step <= steps; step += 1) {
+    const value = minTemp + (maxTemp - minTemp) * step / steps;
+    const label = svgElement("text", {
+      x: x(value), y: height - margin.bottom + 24, "text-anchor": "middle", class: "chart-axis-label",
+    });
+    label.textContent = formatNumber(value, "°", 1);
+    svg.append(label);
+  }
+  const axis = svgElement("text", {
+    x: margin.left + plotWidth / 2, y: height - 8, "text-anchor": "middle", class: "chart-axis-label",
+  });
+  axis.textContent = "Fixed-window temperature (°C)";
+  svg.append(axis);
+  for (const point of points) {
+    const description = `${point.year} · ${formatNumber(point.temperature, "°C", 1)} · ${metric.label}: ${metric.format(point.pace)}`;
+    const circle = svgElement("circle", {
+      cx: x(point.temperature), cy: y(point.pace), r: 6, class: "scatter-point",
+      tabindex: 0, role: "img", "aria-label": description,
+    });
+    const title = svgElement("title");
+    title.textContent = description;
+    circle.append(title);
+    for (const event of ["pointerenter", "focus", "click"]) {
+      circle.addEventListener(event, () => { elements.scatterDetail.textContent = description; });
+    }
+    svg.append(circle);
+  }
+  elements.scatterChart.append(svg);
+}
+
 function renderCharts(data) {
   const years = data.editions.map((edition) => edition.year);
   const yearSpan = years.length ? Math.max(...years) - Math.min(...years) : 0;
@@ -352,6 +443,7 @@ function renderCharts(data) {
     direction: elements.weatherChartDirection,
     caption: elements.weatherChartCaption,
   });
+  renderScatter(data);
 }
 
 function updateUrl() {
@@ -382,9 +474,9 @@ function render(data) {
     : data.course_slug === "battersea-park-10k"
       ? "Weather is an ERA5 park-area estimate matched to runner midpoints. The published results are manually timed without a chip/gun distinction, so baseline pace changes are unavailable. Different runners enter each race; the chart does not show a weather effect."
       : "Weather values are ERA5 estimates matched to runner midpoints. Editions contain different runners, so differences are descriptive and do not prove a weather effect.";
+  elements.comparison.hidden = false;
   renderTable(data);
   renderCharts(data);
-  elements.comparison.hidden = false;
   elements.status.textContent = "";
   elements.status.classList.remove("error");
 }
@@ -441,6 +533,9 @@ elements.weatherMetric.addEventListener("change", () => {
   if (comparison) renderCharts(comparison);
 });
 elements.controls.addEventListener("submit", (event) => event.preventDefault());
+window.addEventListener("resize", () => {
+  if (comparison) renderScatter(comparison);
+});
 
 useInitialSelection();
 loadCourse();
