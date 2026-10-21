@@ -72,6 +72,14 @@ baseline change, official places, inferred starts or matched-runner coverage.
 The page labels these differences and keeps the existing courses' responses intact.
 See [Berlin statistics and verification](berlin-statistics.md).
 
+The prepared Berlin page also has a temperature-versus-pace scatter plot. Each
+dot is one edition, with its year and values available on hover, keyboard focus or
+tap. Pace follows the existing selector; the horizontal axis always uses the fixed
+temperature window. Higher seconds per kilometre means slower pace. This is an
+edition-level exploratory view, with no fitted curve or correlation score. The
+existing table retains the exact counts and source limitations. This page change
+uses the same API response and is not deployed yet.
+
 An unknown course returns `404`. A full-field course with no rows returns an empty
 `editions` list. A missing GNR sample or Berlin edition, warehouse timeout or
 invalid mart row returns `503` without exposing internal details.
