@@ -11,6 +11,12 @@ edition summary and comparison views. Historical builds have run from local
 containers; the same export and dbt code has also run in separate Cloud Run jobs
 for Folkestone 2019.
 
+Berlin's separate research mart is also verified: 16 editions from 2003–2018 and
+541,730 accepted records. Its opt-in dbt build produces a materialized summary,
+with independent reconciliation. API/chart support is prepared locally, not live.
+It preserves captured populations, unknown timing and fixed-window weather rather
+than treating the records as verified official fields. See [Berlin statistics](berlin-statistics.md).
+
 ```mermaid
 flowchart TD
     inputs["Saved race + ERA5 inputs<br/>local files or Cloud Storage"] --> export["Python validation/export<br/>local or Cloud Run report job"]
@@ -85,7 +91,7 @@ root is not part of the historical workflow. Source tables have no automatic exp
 <a id="planned-dbt-models"></a>
 ## dbt models and validation
 
-Each snapshot has three views. The optional comparison adds one logical view in an
+Each full-field snapshot has three views. The optional comparison adds one logical view in an
 explicitly chosen output dataset; two ephemeral input models assemble SQL over the
 selected edition datasets. Querying these views recomputes results from the retained
 source tables.

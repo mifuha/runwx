@@ -41,6 +41,7 @@
               <option value="folkestone-half">Folkestone Half Marathon</option>
               <option value="battersea-park-10k">Battersea Park 10K</option>
               <option value="great-north-run">Great North Run</option>
+              <option value="berlin-marathon">Berlin Marathon · research capture</option>
             </select>
           </label>
           <label>
@@ -118,6 +119,7 @@
                   <th scope="col">Edition</th>
                   <th scope="col" id="count-heading">Finishers</th>
                   <th scope="col" id="timing-heading" hidden>Chip / gun / unknown</th>
+                  <th scope="col" id="published-heading" hidden>Published total</th>
                   <th scope="col">Median</th>
                   <th scope="col">Mean</th>
                   <th scope="col">Middle 50%</th>
@@ -126,7 +128,7 @@
                   <th scope="col">Wind</th>
                   <th scope="col">Humidity</th>
                   <th scope="col">Rain</th>
-                  <th scope="col">vs baseline</th>
+                  <th scope="col" id="change-heading">vs baseline</th>
                 </tr>
               </thead>
               <tbody id="comparison-rows"></tbody>
@@ -140,6 +142,12 @@
             Weather values are ERA5 estimates matched to runner midpoints. Editions contain
             different runners, so differences are descriptive and do not prove a weather effect.
           </p>
+          <details id="research-details" hidden>
+            <summary>Source and coverage</summary>
+            <p id="research-notes"></p>
+            <a href="https://www.kaggle.com/datasets/aiaiaidavid/berlin-marathons-data/versions/2">Research dataset · version 2</a>
+            · <a href="https://github.com/mifuha/runwx/blob/master/docs/berlin-statistics.md">Validation and limitations</a>
+          </details>
         </aside>
       </section>
 

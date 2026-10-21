@@ -20,7 +20,9 @@ run "public_api_has_bounded_runtime_and_exact_reads" {
 
   assert {
     condition = (
-      length(google_bigquery_table_iam_member.query_reader) == 110 &&
+      length(google_bigquery_table_iam_member.query_reader) == 111 &&
+      contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_dbt_berlin_research_v1.mart_berlin_edition_summary") &&
+      alltrue([for key in keys(google_bigquery_table_iam_member.query_reader) : !startswith(key, "runwx_staging.berlin_")]) &&
       contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_dbt_gnr_top1000_v1.mart_gnr_edition_summary") &&
       contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_dbt_gnr_top1000_v1.mart_gnr_sample_comparison") &&
       contains(keys(google_bigquery_table_iam_member.query_reader), "runwx_dbt_battersea_2022_03_26_18f9f3ba0578.mart_course_comparison") &&
@@ -32,7 +34,7 @@ run "public_api_has_bounded_runtime_and_exact_reads" {
         grant.role == "roles/bigquery.dataViewer" && grant.project == var.project_id
       ])
     )
-    error_message = "The API must read only the 110 named tables and views in the approved mart dependency chains."
+    error_message = "The API must read only the 111 named tables/views; Berlin adds its materialized summary only, no raw snapshots."
   }
 
   assert {

@@ -17,6 +17,10 @@ follows Folkestone 2019 from saved inputs to the chart.
 Short on time? [Take the two-minute tour](docs/walkthrough.md): the live result,
 the main design choices, and one real failure and recovery.
 
+Berlin's 16-edition research cohort (2003–2018, 541,730 accepted records) is also
+verified in BigQuery/dbt. Its comparison-page support is prepared, pending
+deployment. [Source limits and checks](docs/berlin-statistics.md) stay explicit.
+
 ## Real historical comparison
 
 The **Lydd Half Marathon 2022–2026** snapshots are verified in
@@ -70,7 +74,7 @@ flowchart TD
 The same stage runner works locally and inside the Cloud Run dbt job. It runs the
 edition build before the comparison build, stops later work after a failure and
 keeps useful evidence for successful and failed runs. After both builds pass, it
-independently checks the important BigQuery results. Each edition has a dedicated
+independently checks the important BigQuery results. Each full-field edition has a dedicated
 source table and output dataset; the comparison reads an explicit list of edition
 datasets and a named baseline. Exact export reruns verify existing rows without
 another upload. A deliberately corrected snapshot uses a separate destination and

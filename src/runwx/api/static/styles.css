@@ -119,6 +119,8 @@ main {
 .site-nav a:focus-visible,
 .intro-links a:focus-visible,
 .pipeline summary:focus-visible,
+.interpretation summary:focus-visible,
+.interpretation a:focus-visible,
 .explainer a:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
@@ -496,6 +498,20 @@ tbody tr:hover {
   margin: 0;
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+.interpretation details {
+  grid-column: 2;
+  font-size: 0.88rem;
+}
+
+.interpretation summary {
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.interpretation details p {
+  margin-top: 12px;
 }
 
 .empty-state,
@@ -1068,6 +1084,10 @@ footer {
   .interpretation {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .interpretation details {
+    grid-column: 1;
   }
 
   footer {
