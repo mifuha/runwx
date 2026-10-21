@@ -337,22 +337,26 @@ function renderChart(data, metric, target) {
 }
 
 function renderScatter(data) {
-  const visible = isResearch(data) && data.course_slug === "berlin-marathon";
-  elements.scatterPanel.hidden = !visible;
+  elements.scatterPanel.hidden = false;
   elements.scatterChart.replaceChildren();
-  elements.scatterDetail.textContent = "Hover, focus or tap a dot for its year and values.";
+  elements.scatterDetail.textContent = "Hover, focus or tap a dot for its edition and values.";
   elements.scatterCaption.textContent = "";
-  if (!visible) return;
-
+  const showDates = needsDateLabels(data);
+  const fixedWindow = isResearch(data) || isSampled(data);
   const metric = paceMetrics[elements.paceMetric.value];
   const points = data.editions.map((edition) => ({
-    year: edition.year,
+    label: editionLabel(edition, showDates),
     temperature: edition.weather.median_temperature_c,
     pace: metric.value(edition),
   })).filter((point) => Number.isFinite(point.temperature) && Number.isFinite(point.pace));
   elements.scatterPaceLabel.textContent = `${metric.label} · Higher means slower.`;
+  const weatherNote = isResearch(data)
+    ? "Temperature is the fixed 09:00–15:00 Europe/Berlin finish-area ERA5 context. "
+    : isSampled(data)
+      ? "Top 1,000 only: sampled results, not full fields. Temperature is the fixed 10:00–14:00 Europe/London start-area ERA5 context. "
+      : "Temperature summarises weather matched to runners’ midpoint times; it depends on finishing durations and is not a fixed-window exposure. ";
   elements.scatterCaption.textContent = `${points.length} of ${data.editions.length} editions have both values. ` +
-    "Temperature is the fixed 09:00–15:00 Europe/Berlin finish-area ERA5 context. " +
+    weatherNote + (points.length < 6 ? "Few editions: interpret any pattern cautiously. " : "") +
     "Association does not establish a weather effect.";
   if (!points.length) {
     const empty = document.createElement("p");
@@ -377,7 +381,7 @@ function renderScatter(data) {
   const y = (value) => margin.top + (maxPace - value) / (maxPace - minPace) * plotHeight;
   const svg = svgElement("svg", {
     viewBox: `0 0 ${width} ${height}`, role: "group",
-    "aria-label": `Berlin temperature and ${metric.label} across ${points.length} editions`,
+    "aria-label": `${data.course_name} temperature and ${metric.label} across ${points.length} editions`,
     "aria-describedby": "scatter-caption",
   });
   for (let step = 0; step <= 3; step += 1) {
@@ -403,10 +407,10 @@ function renderScatter(data) {
   const axis = svgElement("text", {
     x: margin.left + plotWidth / 2, y: height - 8, "text-anchor": "middle", class: "chart-axis-label",
   });
-  axis.textContent = "Fixed-window temperature (°C)";
+  axis.textContent = fixedWindow ? "Fixed-window temperature (°C)" : "Midpoint-matched temperature (°C)";
   svg.append(axis);
   for (const point of points) {
-    const description = `${point.year} · ${formatNumber(point.temperature, "°C", 1)} · ${metric.label}: ${metric.format(point.pace)}`;
+    const description = `${point.label} · ${formatNumber(point.temperature, "°C", 1)} · ${metric.label}: ${metric.format(point.pace)}`;
     const circle = svgElement("circle", {
       cx: x(point.temperature), cy: y(point.pace), r: 6, class: "scatter-point",
       tabindex: 0, role: "img", "aria-label": description,
