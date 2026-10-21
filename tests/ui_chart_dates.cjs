@@ -233,7 +233,35 @@ for (const data of [{ ...research, editions: [] }, { ...research, editions: [res
   plotted = scatter(data);
   assert.ok(plotted.points.every(point => Number.isFinite(Number(point.attributes.cx)) && Number.isFinite(Number(point.attributes.cy))));
 }
-scatter(ordinary);
-assert.equal(renderedElements.scatterPanel.hidden, true);
-assert.equal(renderedElements.scatterChart.children.length, 0);
-console.log('Berlin scatter preserves paired values, labels and accessible details across metrics and screen widths.');
+for (const [slug, count, scope] of [
+  ['lydd-half', 5, undefined], ['folkestone-half', 3, undefined],
+  ['great-north-run', 19, 'top_1000'], ['battersea-park-10k', 18, undefined],
+]) {
+  const cohort = { ...ordinary, course_slug: slug, course_name: slug, scope,
+    editions: Array.from({ length: count }, (_, index) => ({
+      ...ordinary.editions[0], year: slug === 'battersea-park-10k' ? 2023 : 2000 + index,
+      started_at_utc: `2023-${String(1 + Math.floor(index / 2)).padStart(2, '0')}-${index % 2 ? '20' : '01'}T08:30:00Z`,
+      weather: { median_temperature_c: 5 + index },
+    })),
+  };
+  plotted = scatter(cohort);
+  assert.equal(renderedElements.scatterPanel.hidden, false);
+  assert.equal(plotted.points.length, count);
+  assert.match(plotted.svg.attributes['aria-label'], new RegExp(slug));
+  assert.match(renderedElements.scatterCaption.textContent,
+    scope ? /Top 1,000 only.*10:00–14:00 Europe\/London/ : /midpoint times.*not a fixed-window exposure/);
+  assert.equal(renderedElements.scatterCaption.textContent.includes('Few editions'), count < 6);
+  assert.equal(renderedElements.scatterCaption.textContent.includes('Europe/Berlin'), false);
+  if (slug === 'battersea-park-10k') {
+    assert.match(plotted.points[0].attributes['aria-label'], /1 Jan 2023/);
+    assert.match(plotted.points[1].attributes['aria-label'], /20 Jan 2023/);
+  }
+  for (const metric of ['mean-pace', 'fastest-pace']) {
+    assert.equal(scatter(cohort, metric, 320).points.length, count);
+  }
+}
+// Switching back restores Berlin's fixed window and clears the small-cohort note.
+scatter(research);
+assert.match(renderedElements.scatterCaption.textContent, /09:00–15:00 Europe\/Berlin/);
+assert.equal(renderedElements.scatterCaption.textContent.includes('Few editions'), false);
+console.log('All-course scatter preserves paired values, labels and accessible details across metrics and screen widths.');

@@ -72,13 +72,16 @@ baseline change, official places, inferred starts or matched-runner coverage.
 The page labels these differences and keeps the existing courses' responses intact.
 See [Berlin statistics and verification](berlin-statistics.md).
 
-The prepared Berlin page also has a temperature-versus-pace scatter plot. Each
-dot is one edition, with its year and values available on hover, keyboard focus or
-tap. Pace follows the existing selector; the horizontal axis always uses the fixed
-temperature window. Higher seconds per kilometre means slower pace. This is an
-edition-level exploratory view, with no fitted curve or correlation score. The
-existing table retains the exact counts and source limitations. This page change
-uses the same API response and is not deployed yet.
+The comparison page has a temperature-versus-pace scatter plot for each course.
+Each dot is one edition; hover, keyboard focus or tap shows its values. Battersea
+uses full dates to distinguish races in the same year. Pace follows the existing
+selector; higher seconds per kilometre means slower pace. Captions distinguish
+Berlin and GNR's fixed weather windows from the other courses' runner-midpoint
+weather summaries, which depend on finishing durations. GNR remains a top-1,000
+sample. Small cohorts carry a caution. Courses are kept separate, with no fitted
+curve or correlation score. The plot reuses the existing API response.
+Berlin's scatter is deployed; the extension to the other courses is local work
+awaiting publication and deployment.
 
 An unknown course returns `404`. A full-field course with no rows returns an empty
 `editions` list. A missing GNR sample or Berlin edition, warehouse timeout or
