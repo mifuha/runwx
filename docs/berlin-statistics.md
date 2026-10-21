@@ -23,8 +23,15 @@ no summary and fail the completeness test.
 
 Pass only reviewed, loaded Berlin tables from the target project. One table is
 enough for a first edition summary; multiple editions produce one row each in the
-same mart. Choose one snapshot per year. For example, after a separately approved
-load and with an approved output dataset:
+same mart. Choose one snapshot per year.
+
+The [historical Terraform root](../infra/gcp/historical/README.md) can prepare that
+dataset with `berlin_analysis_dataset_id`, for example
+`runwx_dbt_berlin_research_v1`. It stays separate from the source snapshot tables;
+review and approve the saved plan before applying it. The option defaults to off
+and adds no runtime access.
+
+After a separately approved load and with an approved output dataset:
 
 ```bash
 RUNWX_DBT_PROJECT=runwx-learning-mifuha \

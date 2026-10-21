@@ -18,6 +18,11 @@ tables with their own schema. It defaults to empty and adds no dataset or IAM gr
 These are captured research populations with unknown official places and timing,
 plus fixed-window weather. They do not use the full-field or GNR schema.
 
+The optional `berlin_analysis_dataset_id` creates one private, protected dataset
+for Berlin dbt summaries in the staging dataset's region. It defaults to `null`.
+For example, `runwx_dbt_berlin_research_v1` can hold the first edition summary.
+It adds no runtime grants and does not load data or run dbt. Project IAM still applies.
+
 Run Terraform from this directory, with its own state. The parent root's state
 also owns earlier cloud demonstrations and a parked revision spike. Reusing that
 state with the simplified configuration could plan removal of omitted resources.

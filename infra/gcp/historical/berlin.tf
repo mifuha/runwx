@@ -35,3 +35,41 @@ resource "google_bigquery_table" "berlin_research" {
 output "berlin_research_tables" {
   value = { for name, table in google_bigquery_table.berlin_research : name => "${table.project}.${table.dataset_id}.${table.table_id}" }
 }
+
+variable "berlin_analysis_dataset_id" {
+  description = "Optional private dataset for Berlin research edition summaries."
+  type        = string
+  default     = null
+  nullable    = true
+  validation {
+    condition = (
+      var.berlin_analysis_dataset_id == null ? true :
+      can(regex("^runwx_dbt_berlin_[A-Za-z0-9_]+$", var.berlin_analysis_dataset_id))
+    )
+    error_message = "Use a runwx_dbt_berlin_ dataset ID."
+  }
+}
+
+resource "google_bigquery_dataset" "berlin_analysis" {
+  count                      = var.berlin_analysis_dataset_id == null ? 0 : 1
+  project                    = var.project_id
+  dataset_id                 = var.berlin_analysis_dataset_id
+  location                   = var.region
+  description                = "Berlin research edition pace summaries and fixed-window weather context."
+  delete_contents_on_destroy = false
+  access {
+    role          = "OWNER"
+    special_group = "projectOwners"
+  }
+  lifecycle {
+    prevent_destroy = true
+    precondition {
+      condition     = data.google_bigquery_dataset.staging.location == var.region
+      error_message = "The Berlin output dataset must share the staging dataset's region."
+    }
+  }
+}
+
+output "berlin_analysis_dataset" {
+  value = var.berlin_analysis_dataset_id
+}
