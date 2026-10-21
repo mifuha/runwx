@@ -52,6 +52,22 @@ and compiles models and data-test SQL with network blocked and a dummy identity.
 and checking real warehouse output require BigQuery. Offline compilation is not a
 successful native build.
 
+## Berlin 2018 validation — 21 October 2026
+
+The private 2018 summary was built in BigQuery: one table, seven data tests and
+two unit tests passed. All 44 checked fields, including pace statistics, counts,
+source hashes and the full saved weather context, reconciled with the independent
+calculations and hash-verified preparation report using the existing floating-point
+tolerance. The source snapshot stayed unchanged.
+
+The first attempts stopped on two unit-fixture problems: a reserved SQL name and
+different expected columns between rows. Correcting the fixtures let the existing
+statistics SQL run unchanged. An offline regression now checks the expected columns.
+
+This covers 40,641 captured accepted results, compared with 40,651 published
+finishers. The ten-record gap remains explicit. Berlin is not on the public
+comparison page yet; this validates one research edition, not a weather effect.
+
 ## Interpretation
 
 These summaries describe a published research capture, not confirmed complete

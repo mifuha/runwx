@@ -45,15 +45,27 @@ unit_tests:
           accepted_count: 0
           held_count: 1
           finisher_count: 0
+          distinct_source_rows: 1
+          unknown_timing_count: 1
           best_duration_s: null
           mean_duration_s: null
+          duration_p25_s: null
           median_duration_s: null
+          duration_p75_s: null
           top_n_median_duration_s: null
           top_n_mean_duration_s: null
+          best_pace_s_per_km: null
+          mean_pace_s_per_km: null
           median_pace_s_per_km: null
+          pace_p25_s_per_km: null
+          pace_p75_s_per_km: null
+          top_n_median_pace_s_per_km: null
           top_n_requested: 2
           top_n_effective: 0
+          published_count: null
+          count_difference_from_published: null
           median_temp_c: 18.0
+          precipitation_mm: 0.5
           comparison_status: descriptive_research_capture
   - name: berlin_top_n_clamps_to_available_accepted_results
     model: mart_berlin_edition_summary

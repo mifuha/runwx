@@ -64,6 +64,17 @@ class ConfigurationTests(unittest.TestCase):
         for n in (1, 20, 1000):
             environment({'top_n': n}).from_string(model).render()
 
+    def test_unit_expected_rows_use_consistent_columns(self):
+        import yaml
+
+        fixtures = yaml.safe_load((ROOT / 'models/berlin/unit_tests.yml').read_text())
+        for fixture in fixtures['unit_tests']:
+            rows = fixture['expect']['rows']
+            # dbt unions expected rows in their supplied column order.
+            for row in rows[1:]:
+                with self.subTest(fixture=fixture['name']):
+                    self.assertEqual(list(row), list(rows[0]))
+
 
 def compile_offline():
     import google.auth
