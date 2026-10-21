@@ -197,10 +197,13 @@ def load_prepared(client, prepared) -> dict:
             max_bad_records=0, ignore_unknown_values=False,
         )
         try:
+            # The SDK sends resumable chunks up to 100 MiB. Large historical
+            # exports can exceed the small-file write timeout on a local uplink.
+            upload_timeout = 180 if len(prepared.payload) > 5 * 1024 * 1024 else 30
             job = client.load_table_from_file(
                 BytesIO(prepared.payload), prepared.table_id, size=len(prepared.payload),
                 location=prepared.location, job_id=prepared.job_id, job_config=config,
-                num_retries=0, timeout=30,
+                num_retries=0, timeout=upload_timeout,
             )
         except Conflict:
             job = client.get_job(prepared.job_id, project=project, location=prepared.location,
