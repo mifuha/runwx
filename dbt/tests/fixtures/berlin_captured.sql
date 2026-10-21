@@ -1,5 +1,5 @@
 -- Two equal anonymous results stay distinct; the held row has no usable duration.
-with rows as (
+with captured_results as (
     select 1 as source_row_number, 10800 as duration_s, 'accepted' as validation_status, 'normal' as edition
     union all select 2, 14400, 'accepted', 'normal'
     union all select 3, 14400, 'accepted', 'normal'
@@ -35,4 +35,4 @@ select *,
         if(source_row_number = 8, 99.0, 18.0) as median_temp_c,
         3.0 as median_wind_mps, 60.0 as median_humidity_pct, 0.5 as precipitation_mm
     ) as weather_context
-from rows
+from captured_results
