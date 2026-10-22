@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from io import StringIO
 import json
+from math import isfinite
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.parse import parse_qs, urlsplit
@@ -70,6 +71,17 @@ def weather_csv(raw: bytes, race_date: str) -> bytes:
         raise ValueError("weather response must be a JSON object")
     if payload.get("utc_offset_seconds") != 0 or payload.get("hourly_units") != EXPECTED_UNITS:
         raise ValueError("weather timezone/units changed")
+    for key, limit, venue in (
+        ("latitude", 90, battersea_pdf.VENUE_LATITUDE),
+        ("longitude", 180, battersea_pdf.VENUE_LONGITUDE),
+    ):
+        value = payload.get(key)
+        if type(value) not in (int, float) or abs(value) > limit or not isfinite(value):
+            raise ValueError(f"invalid weather grid {key}")
+        # ERA5 returns a grid cell, not the exact venue. Keep the same coarse
+        # proximity guard used for GNR/Berlin; this does not prove venue exposure.
+        if abs(value - venue) > 0.5:
+            raise ValueError("weather grid is not near the Battersea venue")
     hourly = payload.get("hourly")
     if not isinstance(hourly, dict):
         raise ValueError("weather hourly data missing")
