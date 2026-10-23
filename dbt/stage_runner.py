@@ -29,8 +29,12 @@ MODELS = {
 
 
 def validate_config(config):
-    if not isinstance(config, dict) or set(config) != FIELDS:
-        raise ValueError('Configuration must contain exactly: ' + ', '.join(sorted(FIELDS)))
+    if (not isinstance(config, dict) or not FIELDS <= set(config)
+            or set(config) - FIELDS - {'comparison_materialization'}):
+        raise ValueError('Configuration requires: ' + ', '.join(sorted(FIELDS))
+                         + '; optional: comparison_materialization')
+    if config.get('comparison_materialization', 'view') not in ('view', 'table'):
+        raise ValueError('comparison_materialization must be view or table')
     project = config['project']
     if not isinstance(project, str) or not re.fullmatch(r'[a-z][a-z0-9-]{4,28}[a-z0-9]', project):
         raise ValueError('Invalid project ID')
@@ -151,6 +155,8 @@ def build_plan(config, output_dir, project_dir):
                      'source_table': config['source_table'], 'top_n': config['top_n']}
         if stage == 'comparison':
             variables.update({key: config[key] for key in ('comparison_datasets', 'comparison_baseline')})
+            if 'comparison_materialization' in config:
+                variables['comparison_materialization'] = config['comparison_materialization']
         folder = output_dir / stage
         command = [sys.executable, '-m', 'dbt.cli.main',
                    '--no-partial-parse', '--write-json', 'build',

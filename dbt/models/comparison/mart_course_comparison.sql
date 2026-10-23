@@ -1,3 +1,8 @@
+{% set storage = var('comparison_materialization', 'view') %}
+{% if storage not in ['view', 'table'] %}
+    {{ exceptions.raise_compiler_error('comparison_materialization must be view or table') }}
+{% endif %}
+{{ config(materialized=storage) }}
 {% set datasets = comparison_datasets() %}
 with summaries as (
     select * from {{ ref('int_comparison_summaries') }}

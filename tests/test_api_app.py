@@ -4,6 +4,7 @@ from hashlib import sha256
 from unittest.mock import Mock
 
 import httpx
+from bs4 import BeautifulSoup
 
 from runwx.api.app import ComparisonService, app, get_repository
 from runwx.api.models import (
@@ -328,7 +329,8 @@ def test_how_it_works_page_keeps_the_path_visible_and_links_to_evidence():
     assert 'aria-current="page"' in page.text
     assert 'href="#main"' in page.text
     assert page.text.count('<li class="pipeline-step">') == 6
-    assert page.text.count("<details>") == page.text.count("<summary>") == 6
+    soup = BeautifulSoup(page.text, "html.parser")
+    assert len(soup.select(".pipeline-step details > summary")) == 6
     assert page.text.index("Qualify the inputs") < page.text.index("Validate and export")
     assert page.text.index("Validate and export") < page.text.index("Store and read back")
     assert page.text.index("Store and read back") < page.text.index("Build the comparison")
@@ -368,3 +370,27 @@ def test_explainer_uses_the_packaged_stylesheet_with_the_same_cache_key():
     assert ".site-nav a:focus-visible" in stylesheet.text
     assert ".skip-link:focus" in stylesheet.text
     assert "@media (max-width: 720px)" in stylesheet.text
+
+
+def test_serving_example_keeps_current_and_proposed_paths_distinct():
+    repository = Repository(error=AssertionError("static example must not query BigQuery"))
+    page = asyncio.run(request(repository, "/how-it-works"))
+    soup = BeautifulSoup(page.text, "html.parser")
+    example = soup.select_one(".design-section .serving-example")
+
+    assert repository.requests == []
+    assert example is not None
+    assert "Pilot verified" in example.get_text()
+    assert "live comparison still uses the current view" in example.get_text()
+    paths = example.select(".serving-path")
+    assert len(paths) == 2
+    for path in paths:
+        assert path.find_parent("details") is None  # Essential flow is always visible.
+        assert len(path.select("ol > li")) == 3
+    assert "18 snapshots" in paths[0].get_text()
+    assert "18 edition rows" in paths[1].get_text()
+    details = example.find("details")
+    assert details.find("summary").get_text() == "How we checked"
+    assert not details.has_attr("open")
+    assert details.find("a")["href"].endswith("/docs/battersea-serving.md")
+    assert "Calculate once, then serve the result" not in page.text

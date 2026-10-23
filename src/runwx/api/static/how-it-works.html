@@ -204,10 +204,11 @@
           </article>
           <article class="decision-card">
             <span class="decision-number">03 / Warehouse models</span>
-            <h3>Calculate once, then serve the result.</h3>
+            <h3>Keep the calculations in dbt.</h3>
             <p>BigQuery stores checked rows; dbt builds and tests the edition and
               comparison views. The API reads approved aggregate results, so the
-              chart does not calculate pace statistics.</p>
+              chart does not calculate pace statistics. Logical views can still
+              run those calculations when queried; they do not store the results.</p>
           </article>
           <article class="decision-card">
             <span class="decision-number">04 / Airflow</span>
@@ -228,6 +229,50 @@
               shows how its stages, access and evidence fit together.</p>
           </article>
         </div>
+        <article class="serving-example" aria-labelledby="serving-title">
+          <span class="decision-number">Battersea / Pilot verified</span>
+          <h3 id="serving-title">Making the comparison cheaper to serve</h3>
+          <p class="serving-intro">Could we do less work each time someone opens the page?
+            The pilot passed. The live comparison still uses the current view.</p>
+          <div class="serving-paths">
+            <div class="serving-path">
+              <h4>Current path</h4>
+              <ol>
+                <li>Comparison views over <strong>18 snapshots</strong></li>
+                <li>BigQuery evaluates the query<br>or reuses a cached result</li>
+                <li>Read-only API <span aria-hidden="true">→</span> chart</li>
+              </ol>
+            </div>
+            <div class="serving-path serving-path-proposed">
+              <h4>Verified pilot, not deployed</h4>
+              <ol>
+                <li>dbt rebuilds after a data refresh</li>
+                <li>Stored summary with <strong>18 edition rows</strong></li>
+                <li>Read-only API <span aria-hidden="true">→</span> chart</li>
+              </ol>
+            </div>
+          </div>
+          <p class="serving-tradeoff">The historical inputs rarely change. Storing the
+            calculated summary could reduce work when someone opens the page.
+            We must explicitly rebuild and check that summary when the data changes.</p>
+          <details>
+            <summary>How we checked</summary>
+            <div class="serving-evidence">
+              <p>In a bounded test on 23 October 2026, uncached reads processed
+                1,354,325 bytes from the view and 4,464 bytes from the stored summary.
+                Billed data fell from <strong>180 MiB to 10 MiB per read</strong>.</p>
+              <p>Median local API response time was <strong>2.56 seconds versus
+                0.29 seconds</strong>, from three uncached reads per path. These are
+                local tests with real BigQuery, not live website timings.</p>
+              <p>All 18 editions and 2,725 finishers kept the same public values.
+                Each path also had a cache hit with zero billed bytes. Building and
+                testing the summary billed 390 MiB, so refreshes have a cost too.</p>
+              <p>The API's permissions have not changed. This is a verified pilot,
+                not a deployed saving or a promise about monthly costs.</p>
+              <a href="https://github.com/mifuha/runwx/blob/master/docs/battersea-serving.md">Read the pilot measurements and refresh checks</a>
+            </div>
+          </details>
+        </article>
       </section>
 
       <section class="model-section" aria-labelledby="models-title">
