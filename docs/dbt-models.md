@@ -359,3 +359,7 @@ $0.006/min default machine before its promotional allowance; see
 [Cloud Build pricing](https://cloud.google.com/build/pricing). Artifact Registry,
 evidence storage, operations and logging remain separately billable. These are
 conservative bounds, not verified charges or a spending cap.
+
+The [Battersea serving pilot](battersea-serving.md) records the measured table/view
+comparison and the optional `comparison_materialization` runner setting. Existing
+configurations still use views; the live Battersea path has not switched yet.

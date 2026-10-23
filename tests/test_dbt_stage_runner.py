@@ -368,3 +368,23 @@ def test_query_failure_preserves_job_identity(config, expectations, tmp_path, mo
     assert evidence['queries'][0]['bytes_billed'] == 10485760
     assert evidence['queries'][0]['errors'] is None
     assert client.closed
+
+
+@pytest.mark.parametrize('storage', ['view', 'table'])
+def test_comparison_storage_is_explicit_and_does_not_change_edition(config, tmp_path, storage):
+    original = runner.build_plan(config, tmp_path, tmp_path)
+    config['comparison_materialization'] = storage
+    plans = runner.build_plan(config, tmp_path, tmp_path)
+    assert plans[0] == original[0]
+    command = plans[1]['command']
+    variables = json.loads(command[command.index('--vars') + 1])
+    assert variables.pop('comparison_materialization') == storage
+    previous = original[1]['command']
+    assert variables == json.loads(previous[previous.index('--vars') + 1])
+
+
+@pytest.mark.parametrize('storage', ['incremental', '', None, True, 1, {}])
+def test_invalid_comparison_storage_is_rejected(config, storage):
+    config['comparison_materialization'] = storage
+    with pytest.raises(ValueError, match='comparison_materialization'):
+        runner.validate_config(config)

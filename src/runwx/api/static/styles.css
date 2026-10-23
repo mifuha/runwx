@@ -898,6 +898,107 @@ footer {
   line-height: 1.6;
 }
 
+.explainer .serving-example {
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.explainer .serving-example h3 {
+  margin: 0 0 10px;
+  font-size: 1.3rem;
+  letter-spacing: -0.035em;
+}
+
+.explainer .serving-example p {
+  max-width: 760px;
+  color: #4d5751;
+  font-size: 0.87rem;
+  line-height: 1.65;
+}
+
+.explainer .serving-paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-block: 26px;
+}
+
+.explainer .serving-path h4 {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.explainer .serving-path ol {
+  display: grid;
+  gap: 22px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.explainer .serving-path li {
+  position: relative;
+  display: block;
+  align-content: center;
+  min-height: 72px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.explainer .serving-path li strong {
+  font-weight: 650;
+}
+
+.explainer .serving-path li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  bottom: -18px;
+  left: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid var(--muted);
+  border-bottom: 1px solid var(--muted);
+  transform: rotate(45deg);
+}
+
+.explainer .serving-path-proposed li {
+  background: var(--accent-soft);
+}
+
+.explainer .serving-example details {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 0.87rem;
+}
+
+.explainer .serving-example summary {
+  width: fit-content;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.explainer .serving-example summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
+  border-radius: 2px;
+}
+
+.explainer .serving-evidence a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
 .model-heading {
   display: flex;
   align-items: end;
@@ -1053,6 +1154,15 @@ footer {
 
   .decision-card-wide {
     grid-column: auto;
+  }
+
+  .explainer .serving-example {
+    padding: 22px 18px;
+  }
+
+  .explainer .serving-paths {
+    grid-template-columns: 1fr;
+    gap: 28px;
   }
 
   .model-heading {
