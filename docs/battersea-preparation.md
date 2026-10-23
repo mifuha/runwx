@@ -26,8 +26,11 @@ The command rejects duplicate or unqualified dates, changed hashes, wrong reques
 settings and malformed weather. The saved request must name the Battersea venue,
 that race date, ERA5, UTC, wind in m/s and the four established hourly variables.
 The response must contain that day's 24 hours with the expected units and valid
-numbers. Checking a saved URL and hash preserves the reviewed input contract;
-it does not independently authenticate the provider response.
+numbers. Its returned grid coordinates must be finite, within geographic bounds
+and within 0.5 degrees of the venue on each axis. ERA5 returns a grid cell rather
+than the exact requested point; this coarse check rejects unrelated locations
+without claiming precise venue exposure. Checking a saved URL and hash preserves
+the reviewed input contract; it does not independently authenticate the provider response.
 
 Settings stay fixed: 10 km, 08:30 Europe/London using the evidenced series
 convention, top-20, a 30-minute weather gap and unknown chip/gun timing basis.

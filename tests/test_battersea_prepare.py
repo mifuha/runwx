@@ -175,6 +175,45 @@ def test_weather_csv_preserves_retained_converter_bytes():
     assert weather_csv(json.dumps(_weather(date)).encode(), date) == expected.encode()
 
 
+@pytest.mark.parametrize("key,limit", [("latitude", 90), ("longitude", 180)])
+@pytest.mark.parametrize("value", [None, "51.5", True, False, float("nan"),
+                                   float("inf"), -float("inf"), 10, 10**400, "out_of_range",
+                                   "below_range"])
+def test_weather_csv_rejects_invalid_or_distant_grid(key, limit, value):
+    date = "2022-05-21"
+    payload = _weather(date)
+    payload[key] = (limit + 1 if value == "out_of_range" else
+                    -limit - 1 if value == "below_range" else value)
+    with pytest.raises(ValueError, match="weather grid"):
+        weather_csv(json.dumps(payload).encode(), date)
+
+
+@pytest.mark.parametrize("key", ["latitude", "longitude"])
+def test_weather_csv_requires_returned_grid_coordinates(key):
+    date = "2022-05-21"
+    payload = _weather(date)
+    payload.pop(key)
+    with pytest.raises(ValueError, match="weather grid"):
+        weather_csv(json.dumps(payload).encode(), date)
+
+
+@pytest.mark.parametrize("key,venue", [
+    ("latitude", battersea_pdf.VENUE_LATITUDE),
+    ("longitude", battersea_pdf.VENUE_LONGITUDE),
+])
+@pytest.mark.parametrize("offset", [-0.500001, -0.5, 0.5, 0.500001])
+def test_weather_grid_proximity_boundary_preserves_csv_bytes(key, venue, offset):
+    date = "2022-05-21"
+    payload = _weather(date)
+    payload[key] = venue + offset
+    raw = json.dumps(payload).encode()
+    if abs(offset) > 0.5:
+        with pytest.raises(ValueError, match="weather grid"):
+            weather_csv(raw, date)
+    else:
+        assert weather_csv(raw, date) == weather_csv(json.dumps(_weather(date)).encode(), date)
+
+
 @pytest.mark.parametrize("case", ["duplicate", "held", "pdf_hash", "weather_hash"])
 def test_unqualified_or_changed_inputs_fail_without_publishing(batch, case):
     config, output = batch
@@ -223,6 +262,8 @@ def test_unreviewed_weather_url_or_repeated_parameters_are_rejected(batch, rewri
 
 
 @pytest.mark.parametrize("change", [
+    lambda p: p.update(latitude=0.0, longitude=0.0),
+    lambda p: p.pop("latitude"),
     lambda p: p["hourly_units"].update(wind_speed_10m="km/h"),
     lambda p: p.update(utc_offset_seconds=3600),
     lambda p: p["hourly"]["time"].__setitem__(0, "2019-11-29T00:00"),
