@@ -265,7 +265,7 @@ def test_comparison_failure_preserves_edition_success(config, expectations, tmp_
 def test_missing_configuration_field(config, expectations, tmp_path, monkeypatch):
     del config['source_table']
     monkeypatch.setattr(runner.subprocess, 'run', lambda *a, **k: pytest.fail('missing source invoked dbt'))
-    with pytest.raises(ValueError, match='exactly'):
+    with pytest.raises(ValueError, match='Configuration requires:.*source_table'):
         runner.execute(config, expectations, tmp_path / 'out', tmp_path)
 
 
