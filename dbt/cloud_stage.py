@@ -145,7 +145,7 @@ def run_cloud_stage(
     return manifest
 
 
-def main(*, client=None):
+def _main(*, client=None, failure_context):
     config = json.loads(os.environ["RUNWX_DBT_CONFIG"])
     expectations = json.loads(os.environ["RUNWX_DBT_EXPECTATIONS"])
     execution = {
@@ -164,6 +164,8 @@ def main(*, client=None):
         from google.cloud import storage
 
         client = storage.Client(project=config["project"])
+    failure_context["stage"] = "dbt_execution"
+    failure_context["edition"] = config["edition_dataset"]
     result = run_cloud_stage(
         client,
         config=config,
@@ -173,6 +175,37 @@ def main(*, client=None):
     )
     print(json.dumps(result, sort_keys=True))
     return result
+
+
+def main(*, client=None):
+    """Keep failure signalling outside the runner; never turn failure into success."""
+    context = {"stage": "configuration", "edition": "unknown"}
+    try:
+        return _main(client=client, failure_context=context)
+    except Exception as exc:
+        # No input rows, configuration, credentials or raw exception text in alerts.
+        def identifier(value):
+            return value if re.fullmatch(r"[a-zA-Z0-9_-]{1,128}", value) else "unknown"
+
+        event = {
+            "severity": "ERROR",
+            "message": "runwx dbt job failed; inspect execution logs and retained evidence",
+            "event": "runwx_dbt_failure",
+            "event_version": 1,
+            "stage": context["stage"],
+            "edition": identifier(context["edition"]),
+            "reason": identifier(type(exc).__name__),
+            "execution": identifier(os.environ.get("CLOUD_RUN_EXECUTION", "unknown")),
+            "purpose": (
+                "exercise" if os.environ.get("RUNWX_EXECUTION_PURPOSE") == "exercise"
+                else "operational"
+            ),
+        }
+        try:
+            print(json.dumps(event, sort_keys=True), flush=True)
+        except OSError:
+            pass  # A broken log stream must not replace the original exception.
+        raise
 
 
 def cli(argv=None):
