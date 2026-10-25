@@ -264,3 +264,109 @@ def test_folkestone_validation_case_matches_runner_contract():
     assert expectations["edition"]["mart"]["finisher_count"] == 459
     assert expectations["edition"]["weather"]["enriched_count"] == 459
     assert len(stage_runner.canonical_json(expectations).encode()) < 32768
+
+
+@pytest.fixture
+def failure_environment(config, expectations, execution, monkeypatch):
+    for key, value in {
+        'RUNWX_DBT_CONFIG': json.dumps(config),
+        'RUNWX_DBT_EXPECTATIONS': json.dumps(expectations),
+        'RUNWX_DBT_OUTPUT_PREFIX': 'gs://evidence/dbt-runs',
+        'RUNWX_IMAGE': execution['image'],
+        'RUNWX_SOURCE_REVISION': execution['source_revision'],
+        'CLOUD_RUN_JOB': execution['job'],
+        'CLOUD_RUN_EXECUTION': execution['name'],
+        'CLOUD_RUN_TASK_INDEX': '0', 'CLOUD_RUN_TASK_ATTEMPT': '0',
+    }.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.delenv('RUNWX_EXECUTION_PURPOSE', raising=False)
+
+
+@pytest.mark.parametrize('exercise', [False, True])
+def test_entrypoint_logs_one_safe_failure_and_preserves_evidence(
+        storage, failure_environment, monkeypatch, capsys, exercise):
+    client, saved, _ = storage
+    error = ValueError('private source detail must not appear in the alert')
+    runner = Mock(side_effect=error)
+    monkeypatch.setattr(cloud_stage.stage_runner, 'execute', runner)
+    if exercise:
+        monkeypatch.setenv('RUNWX_EXECUTION_PURPOSE', 'exercise')
+    with pytest.raises(ValueError) as caught:
+        cloud_stage.main(client=client)
+    assert caught.value is error
+    runner.assert_called_once()
+    event = json.loads(capsys.readouterr().out)
+    assert event == {
+        'severity': 'ERROR',
+        'message': 'runwx dbt job failed; inspect execution logs and retained evidence',
+        'event': 'runwx_dbt_failure', 'event_version': 1,
+        'stage': 'dbt_execution', 'edition': 'edition_a',
+        'reason': 'ValueError', 'execution': 'runwx-dbt-abc12',
+        'purpose': 'exercise' if exercise else 'operational',
+    }
+    assert len(saved) == 2
+    manifest = json.loads(saved['dbt-runs/runwx-dbt-abc12/task-0-attempt-0.json'][0])
+    assert manifest['status'] == 'failed'
+
+
+def test_malformed_config_signals_without_running_or_uploading(
+        storage, failure_environment, monkeypatch, capsys):
+    client, saved, _ = storage
+    monkeypatch.setenv('RUNWX_DBT_CONFIG', '{')
+    runner = Mock()
+    monkeypatch.setattr(cloud_stage.stage_runner, 'execute', runner)
+    with pytest.raises(json.JSONDecodeError):
+        cloud_stage.main(client=client)
+    event = json.loads(capsys.readouterr().out)
+    assert event['stage'] == 'configuration'
+    assert event['edition'] == 'unknown'
+    assert event['reason'] == 'JSONDecodeError'
+    runner.assert_not_called()
+    assert not saved
+
+
+def test_evidence_upload_failure_also_signals_failure(
+        storage, failure_environment, monkeypatch, capsys):
+    client, _, _ = storage
+    client.bucket.side_effect = OSError('private bucket detail')
+    monkeypatch.setattr(cloud_stage.stage_runner, 'execute', successful_runner)
+    with pytest.raises(OSError):
+        cloud_stage.main(client=client)
+    event = json.loads(capsys.readouterr().out)
+    assert event['reason'] == 'OSError'
+    assert 'private bucket' not in json.dumps(event)
+
+
+def test_logging_error_does_not_mask_original_failure(
+        failure_environment, monkeypatch):
+    error = ValueError('original failure')
+    monkeypatch.setattr(cloud_stage, '_main', Mock(side_effect=error))
+    monkeypatch.setattr(cloud_stage, 'print', Mock(side_effect=OSError('closed')), raising=False)
+    with pytest.raises(ValueError) as caught:
+        cloud_stage.main(client=Mock())
+    assert caught.value is error
+
+
+def test_real_runner_failure_stops_comparison_and_emits_event(
+        storage, failure_environment, monkeypatch, capsys):
+    client, saved, _ = storage
+    calls = []
+
+    def fail_edition(plan, stage):
+        calls.append(plan['stage'])
+        raise ValueError('deliberate edition failure')
+
+    monkeypatch.setattr(cloud_stage.stage_runner, 'execute_build', fail_edition)
+    reconcile = Mock()
+    monkeypatch.setattr(cloud_stage.stage_runner, 'reconcile', reconcile)
+    with pytest.raises(ValueError, match='deliberate edition failure'):
+        cloud_stage.main(client=client)
+    assert calls == ['edition']
+    reconcile.assert_not_called()
+    assert json.loads(capsys.readouterr().out)['event'] == 'runwx_dbt_failure'
+    archive = saved['dbt-runs/runwx-dbt-abc12/task-0-attempt-0.zip'][0]
+    with zipfile.ZipFile(BytesIO(archive)) as evidence:
+        record = json.loads(evidence.read('execution/execution.json'))
+    assert record['status'] == 'failed'
+    assert record['analytical_reconciliation'] == 'not_performed'
+    assert [stage['stage'] for stage in record['stages']] == ['edition']

@@ -100,3 +100,20 @@ run "reject_missing_email" {
   }
   expect_failures = [var.notification_email]
 }
+
+run "dbt_alert_is_disabled_and_scoped" {
+  command = plan
+  assert {
+    condition = (
+      !google_monitoring_alert_policy.dbt_failure.enabled &&
+      strcontains(google_monitoring_alert_policy.dbt_failure.conditions[0].condition_matched_log[0].filter, "resource.type = \"cloud_run_job\"") &&
+      strcontains(google_monitoring_alert_policy.dbt_failure.conditions[0].condition_matched_log[0].filter, "resource.labels.job_name = \"runwx-dbt\"") &&
+      strcontains(google_monitoring_alert_policy.dbt_failure.conditions[0].condition_matched_log[0].filter, "jsonPayload.purpose = \"operational\"") &&
+      strcontains(google_monitoring_alert_policy.dbt_failure.conditions[0].condition_matched_log[0].filter, "jsonPayload.event = \"runwx_dbt_failure\"") &&
+      length(coalesce(google_monitoring_alert_policy.dbt_failure.conditions[0].condition_matched_log[0].label_extractors, {})) == 0 &&
+      google_monitoring_alert_policy.dbt_failure.alert_strategy[0].notification_rate_limit[0].period == "900s" &&
+      google_monitoring_alert_policy.dbt_failure.alert_strategy[0].auto_close == "86400s"
+    )
+    error_message = "Keep the dbt alert disabled, job/event scoped and rate limited without per-execution alert labels."
+  }
+}

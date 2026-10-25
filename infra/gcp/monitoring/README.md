@@ -1,6 +1,6 @@
 # API availability monitoring
 
-This root manages one dashboard, one HTTPS uptime check, one alert policy and
+The deployed resources are one dashboard, one HTTPS uptime check, one alert policy and
 one email channel for the existing `runwx-api` service. They were deployed on
 14 October 2026, and the follow-up Terraform plan reported no changes.
 It uses its own Terraform state and does not manage the API, IAM or warehouse.
@@ -131,3 +131,11 @@ Google documents [checker locations](https://docs.cloud.google.com/monitoring/up
 and [uptime alerting](https://docs.cloud.google.com/monitoring/uptime-checks/uptime-alerting-policies).
 Its [response validation guidance](https://docs.cloud.google.com/monitoring/uptime-checks/response-validation)
 explains the JSON value encoding.
+
+## Prepared dbt failure alert
+
+`pipeline.tf` adds a disabled-by-default log alert for the existing dbt job's
+structured failure event. It reuses the email channel; it adds no metric or IAM
+grant. Set `enable_dbt_failure_alert` only after image deployment and an approved
+alert test. This is not yet live pipeline monitoring. See
+[scope, tests and response steps](../../../docs/pipeline-alerts.md).
