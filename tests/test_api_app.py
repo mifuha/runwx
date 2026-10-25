@@ -372,7 +372,7 @@ def test_explainer_uses_the_packaged_stylesheet_with_the_same_cache_key():
     assert "@media (max-width: 720px)" in stylesheet.text
 
 
-def test_serving_example_keeps_current_and_proposed_paths_distinct():
+def test_serving_example_distinguishes_live_storage_from_pilot_measurements():
     repository = Repository(error=AssertionError("static example must not query BigQuery"))
     page = asyncio.run(request(repository, "/how-it-works"))
     soup = BeautifulSoup(page.text, "html.parser")
@@ -380,8 +380,10 @@ def test_serving_example_keeps_current_and_proposed_paths_distinct():
 
     assert repository.requests == []
     assert example is not None
-    assert "Pilot verified" in example.get_text()
-    assert "live comparison still uses the current view" in example.get_text()
+    assert "Stored summary live" in example.get_text()
+    assert "edition models remain views" in example.get_text()
+    assert "not live website timings" in example.get_text()
+    assert "25 October 2026" in example.get_text()
     paths = example.select(".serving-path")
     assert len(paths) == 2
     for path in paths:

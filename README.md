@@ -66,7 +66,7 @@ flowchart TD
     runner --> edition["Edition models"]
     edition --> comparison["Comparison / research summaries"]
     comparison --> reconciliation["Independent reconciliation"]
-    comparison --> output["Comparison output"]
+    comparison --> output["Comparison views + stored summaries"]
     output --> api["Read-only Cloud Run API"]
     api --> page["Trends, scatter plots + tables<br/>How it works page"]
     runner --> evidence["Success/failure evidence"]
@@ -82,6 +82,9 @@ datasets and a named baseline. Exact export reruns verify existing rows without
 another upload. A deliberately corrected snapshot uses a separate destination and
 retains its own provenance. Berlin uses a separate opt-in summary build over its
 research snapshots, followed by independent reconciliation.
+Battersea also stores its final 18-row comparison as a table; its edition models
+remain views. This reduces repeated query work for fixed historical data. Rebuild
+and check the summary after changing inputs. [Measured trade-off](docs/battersea-serving.md).
 
 The Lydd 2025 addition passed **28 native dbt tests**: 21 for the new edition and
 seven for the five-edition comparison. Full result readbacks matched the saved

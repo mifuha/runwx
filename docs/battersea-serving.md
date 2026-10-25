@@ -1,13 +1,14 @@
-# Battersea stored-summary pilot
+# Battersea stored comparison
 
 Battersea compares 18 editions with 2,725 finishers. Its historical inputs rarely
 change. A stored summary can avoid recalculating the comparison on each uncached
 read, but it must be rebuilt and checked after a data refresh.
 
-The pilot passed on 23 October 2026. **The live API still uses the comparison
-view.** Other courses and API permissions are unchanged.
+The pilot passed on 23 October 2026. **The live API has read the stored comparison
+table since 25 October 2026.** Battersea’s edition models remain views. Other
+courses and public values are unchanged.
 
-## What we measured
+## What the pilot measured
 
 | Uncached API read | Existing view | Stored summary |
 |---|---:|---:|
@@ -45,6 +46,18 @@ A local measurement-directory error stopped the first attempt before queries.
 An offline regression test reproduced it; the corrected harness then ran the
 planned reads once. The successful dbt build was not repeated.
 
+## Verified switch — 25 October 2026
+
+One comparison model and seven tests passed on merged commit `78d8dad`.
+Independent full-row reconciliation passed for all 18 editions / 2,725 finishers.
+All five public course responses and health passed; metadata for all 72 source
+and edition relations was unchanged. The stored table has no automatic expiry.
+
+Replacing the view removed its direct API read grant. The same `dataViewer`
+binding was restored, with no broader access. The full API Terraform plan was
+no-op; no API image or service configuration changed. Twelve operator query jobs
+billed 400 MiB, excluding queries from the public API checks. Rollback was not needed.
+
 ## Explicit refresh and rollback
 
 The stage runner accepts optional `"comparison_materialization": "table"` in its
@@ -52,7 +65,7 @@ existing JSON configuration. Omission preserves `view`. Only the comparison stag
 receives this setting; edition models and analytical SQL are unchanged. Direct
 dbt use accepts the same variable through `--vars`.
 
-For the proposed Battersea promotion, use the reviewed 18-edition configuration
+For Battersea refreshes, use the reviewed 18-edition configuration
 and its independent expectations. Keep the existing `mart_course_comparison`
 relation name, so no API mapping or response change is needed. Do not enable the
 option for other courses as part of this change.
@@ -62,13 +75,14 @@ evidence directory: edition build, comparison build/tests, then independent
 reconciliation. A table will not update itself when its inputs change. A failed
 check must be investigated; it does not automatically undo a built table.
 
-Promotion must first review the saved live view definition and warehouse target.
+Any future change of relation type must first save the current definition and
+access policy and review the warehouse target.
 Changing a view to a table requires dbt to drop the view before creating the
 table; this is not an atomic switch and can briefly interrupt reads. Schedule the
 approved change accordingly. If it fails, restore the saved view definition or
 rebuild the same comparison with `"comparison_materialization": "view"`, then
 reconcile again. Rollback is an explicit cloud operation, not an automatic retry.
 
-The pilot does not prove reduced runtime access. Existing grants remain in place.
+The pilot did not test reduced runtime access. The same grants remain in place.
 Any narrower access proposal needs its own permission checks and rollback review.
 No deployment, IAM change or live refresh is authorised by this documentation.

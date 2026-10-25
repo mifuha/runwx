@@ -26,9 +26,13 @@ Existing course queries select fixed public columns, bind the expected course ID
 and read at most 50 editions. Berlin reads at most 17 rows from its materialized
 summary and requires the complete reviewed 16-edition cohort.
 Lydd, Folkestone, GNR and Berlin keep the 64 MiB query cap. Battersea uses
-a 200 MiB cap for its 18 underlying snapshot tables. During the original
+the existing 200 MiB cap, although its final comparison now reads an 18-row stored
+table. The cap is unchanged; it is not measured usage. During the original
 13-edition deployment, a 64 MiB query failed because BigQuery required at least
 130 MiB.
+
+The [Battersea serving update](battersea-serving.md) preserves every public value
+and the same API read access. Its edition models remain views.
 
 Battersea has 18 full-field editions from 2019 and 2022–2024. The page shows
 their dates so races in the same year remain distinct. Its published times are manually timed
@@ -91,7 +95,7 @@ An unknown course returns `404`. A full-field course with no rows returns an emp
 invalid mart row returns `503` without exposing internal details.
 
 Install and run locally with Application Default Credentials that can query the
-selected view and its dependencies:
+selected mart (table or view) and any view dependencies:
 
 ```bash
 python -m pip install -e '.[bigquery,api]'

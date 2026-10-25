@@ -3,7 +3,8 @@
 The shared runner builds editions, then comparisons, checks the warehouse results
 and retains success/failure evidence. It runs locally and in a separate Cloud Run
 dbt job. Full-field, sampled GNR and [Berlin research](berlin-statistics.md) models
-keep their source contracts explicit; Berlin stores a materialized summary.
+keep their source contracts explicit. Berlin stores a research summary; Battersea
+now stores its final comparison, while its edition models remain views.
 The sections below retain the original synthetic validation and later executions.
 
 Status: **executed and verified in BigQuery on 8 September 2026**. The source is
@@ -362,4 +363,5 @@ conservative bounds, not verified charges or a spending cap.
 
 The [Battersea serving pilot](battersea-serving.md) records the measured table/view
 comparison and the optional `comparison_materialization` runner setting. Existing
-configurations still use views; the live Battersea path has not switched yet.
+configurations default to views. Battersea explicitly uses a table for its final
+comparison; refreshes must rebuild and independently check it.
