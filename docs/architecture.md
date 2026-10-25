@@ -8,7 +8,7 @@ Great North Run editions and 18 full-field Battersea Park 10K editions with 2,72
 finishers. With 16 Berlin research editions, the live site covers **five courses
 and 61 editions**. It uses fixed race snapshots and real hourly ERA5 weather. Python
 prepares the inputs; BigQuery and dbt produce the staging, accepted-results fact,
-edition summary and comparison views. Historical builds have run from local
+edition summary and comparison models. Historical builds have run from local
 containers; the same export and dbt code has also run in separate Cloud Run jobs
 for Folkestone 2019.
 
@@ -28,7 +28,7 @@ flowchart TD
     loader --> snapshot[("BigQuery snapshot tables")]
     snapshot --> runner["dbt builds + tests"]
     runner --> edition["Edition models + tests"]
-    edition --> comparison["Comparison / research summaries + tests"]
+    edition --> comparison["Comparison views + stored summaries<br/>and tests"]
     comparison --> checks["Independent reconciliation"]
     comparison --> api["Read-only Cloud Run API"]
     api --> pages["Trends, scatter plots + tables<br/>How it works page"]
@@ -96,10 +96,13 @@ root is not part of the historical workflow. Source tables have no automatic exp
 <a id="planned-dbt-models"></a>
 ## dbt models and validation
 
-Each full-field snapshot has three views. The optional comparison adds one logical view in an
-explicitly chosen output dataset; two ephemeral input models assemble SQL over the
-selected edition datasets. Querying these views recomputes results from the retained
-source tables.
+Each full-field snapshot has three views. The comparison defaults to a logical
+view in an explicitly chosen output dataset; two ephemeral input models assemble
+SQL over the selected editions. Battersea now stores only its final comparison
+as an 18-row table. Its edition models remain views. Views retain query logic;
+the stored table retains results and needs an explicit rebuild after input changes.
+The [Battersea serving checks](battersea-serving.md) explain the measured benefit
+and refresh trade-off. Berlin already uses a stored research summary.
 
 | Model | What one row represents | Main checks |
 | --- | --- | --- |

@@ -230,13 +230,13 @@
           </article>
         </div>
         <article class="serving-example" aria-labelledby="serving-title">
-          <span class="decision-number">Battersea / Pilot verified</span>
+          <span class="decision-number">Battersea / Stored summary live</span>
           <h3 id="serving-title">Making the comparison cheaper to serve</h3>
           <p class="serving-intro">Could we do less work each time someone opens the page?
-            The pilot passed. The live comparison still uses the current view.</p>
+            Battersea now serves a stored summary. Its edition models remain views.</p>
           <div class="serving-paths">
             <div class="serving-path">
-              <h4>Current path</h4>
+              <h4>Before: comparison view</h4>
               <ol>
                 <li>Comparison views over <strong>18 snapshots</strong></li>
                 <li>BigQuery evaluates the query<br>or reuses a cached result</li>
@@ -244,7 +244,7 @@
               </ol>
             </div>
             <div class="serving-path serving-path-proposed">
-              <h4>Verified pilot, not deployed</h4>
+              <h4>Now: stored comparison table</h4>
               <ol>
                 <li>dbt rebuilds after a data refresh</li>
                 <li>Stored summary with <strong>18 edition rows</strong></li>
@@ -253,7 +253,7 @@
             </div>
           </div>
           <p class="serving-tradeoff">The historical inputs rarely change. Storing the
-            calculated summary could reduce work when someone opens the page.
+            calculated summary avoids repeating that work on uncached reads.
             We must explicitly rebuild and check that summary when the data changes.</p>
           <details>
             <summary>How we checked</summary>
@@ -267,8 +267,10 @@
               <p>All 18 editions and 2,725 finishers kept the same public values.
                 Each path also had a cache hit with zero billed bytes. Building and
                 testing the summary billed 390 MiB, so refreshes have a cost too.</p>
-              <p>The API's permissions have not changed. This is a verified pilot,
-                not a deployed saving or a promise about monthly costs.</p>
+              <p>The stored summary went live on 25 October 2026. All seven dbt tests,
+                independent reconciliation and checks of all five public course
+                responses passed. The API kept the same read access. These pilot
+                measurements are not a promise about monthly costs.</p>
               <a href="https://github.com/mifuha/runwx/blob/master/docs/battersea-serving.md">Read the pilot measurements and refresh checks</a>
             </div>
           </details>
