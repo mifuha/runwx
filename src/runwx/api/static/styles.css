@@ -974,24 +974,35 @@ footer {
   background: var(--accent-soft);
 }
 
-.explainer .serving-example details {
+.explainer .serving-example details,
+.explainer .failure-example {
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--line);
   font-size: 0.87rem;
 }
 
-.explainer .serving-example summary {
+.explainer .serving-example summary,
+.explainer .failure-example summary {
   width: fit-content;
   color: var(--accent);
   cursor: pointer;
   font-weight: 650;
 }
 
-.explainer .serving-example summary:focus-visible {
+.explainer .serving-example summary:focus-visible,
+.explainer .failure-example summary:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 5px;
   border-radius: 2px;
+}
+
+.explainer .failure-example {
+  margin-bottom: 20px;
+}
+
+.explainer .failure-example[open] summary {
+  margin-bottom: 16px;
 }
 
 .explainer .serving-evidence a {

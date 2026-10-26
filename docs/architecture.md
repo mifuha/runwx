@@ -33,7 +33,9 @@ flowchart TD
     comparison --> api["Read-only Cloud Run API"]
     api --> pages["Trends, scatter plots + tables<br/>How it works page"]
     runner --> evidence["Retained success/failure evidence"]
-    api -. "HTTPS /health" .-> monitoring["Cloud Monitoring<br/>availability checks + email alerts"]
+    api -. "HTTPS /health" .-> monitoring["Cloud Monitoring<br/>API availability + dbt failure alerts"]
+    runner -. "Cloud Run dbt failure" .-> logs["Cloud Logging"]
+    logs --> monitoring
 ```
 
 [Source qualification](historical-inputs.md) checks race date/start, timing fields,
@@ -72,6 +74,16 @@ A controlled test on 14 October 2026 verified an opening incident, recovery and
 cleanup. Both emails were confirmed received on 15 October. The test used shorter
 timing and left the production service and monitoring unchanged. See the
 [monitoring test and troubleshooting guide](../infra/gcp/monitoring/README.md#verified-alert-test).
+
+The Cloud Run dbt job has a separate enabled log-based failure alert. Its wrapper
+records a structured error and still fails the job; Monitoring sends the email.
+It covers caught dbt exceptions, while export, loading and failures before Python
+starts remain outside its scope. Refreshes are manual.
+
+On 26 October 2026, a marked configuration failure produced an incident and a
+confirmed email before any dbt or BigQuery work. The temporary test policy was
+removed, then the operational policy was enabled. See the
+[verified failure example and response steps](pipeline-alerts.md#verified-cloud-test).
 
 ## Fixed snapshot boundaries
 

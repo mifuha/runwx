@@ -396,3 +396,18 @@ def test_serving_example_distinguishes_live_storage_from_pilot_measurements():
     assert not details.has_attr("open")
     assert details.find("a")["href"].endswith("/docs/battersea-serving.md")
     assert "Calculate once, then serve the result" not in page.text
+
+
+def test_dbt_failure_example_distinguishes_monitoring_scope_and_links_to_record():
+    repository = Repository(error=AssertionError("static example must not query BigQuery"))
+    page = asyncio.run(request(repository, "/how-it-works"))
+    soup = BeautifulSoup(page.text, "html.parser")
+    example = soup.select_one(".explainer-notes details.failure-example")
+    assert example is not None and not example.has_attr("open")
+    assert example.find("summary").get_text(strip=True) == "Follow a dbt failure to an email"
+    assert "before any build or BigQuery work" in example.get_text(" ", strip=True)
+    assert "operational alert is enabled" in example.get_text(" ", strip=True)
+    assert "Refreshes are still manual" in example.get_text(" ", strip=True)
+    assert example.find("a")["href"].endswith("/docs/pipeline-alerts.md#verified-cloud-test")
+    assert "Export and loading failures are outside" in page.text
+    assert repository.requests == []

@@ -1,9 +1,10 @@
-# API availability monitoring
+# API availability and dbt failure monitoring
 
-The deployed resources are one dashboard, one HTTPS uptime check, one alert policy and
-one email channel for the existing `runwx-api` service. They were deployed on
-14 October 2026, and the follow-up Terraform plan reported no changes.
-It uses its own Terraform state and does not manage the API, IAM or warehouse.
+The deployed resources are one API dashboard, one HTTPS uptime check, two alert
+policies and one shared email channel. API monitoring was deployed on 14 October
+2026; the dbt failure alert was enabled on 26 October after its cloud test passed.
+The follow-up Terraform plans reported no changes.
+This root uses its own Terraform state and does not manage the API, IAM or warehouse.
 
 ## What it checks
 
@@ -30,7 +31,8 @@ as requests and can keep an instance warm. Comparison failures such as `503` are
 visible in the dashboard/logs but do not have a second alert policy here.
 
 Pipeline checks remain in the existing [dbt execution evidence](../../../docs/dbt-models.md).
-This does not add automatic pipeline monitoring or restart Composer.
+The separate [dbt failure alert](#dbt-failure-alert) covers caught Cloud Run dbt
+exceptions. It does not monitor every pipeline stage or restart Composer.
 
 ## Prepare and review
 
@@ -45,6 +47,8 @@ From the repository root:
 ```bash
 cp infra/gcp/monitoring/terraform.tfvars.example infra/gcp/monitoring/terraform.tfvars
 # Set the approved email in that ignored file.
+# After the dbt image and marked alert test are verified, set:
+# enable_dbt_failure_alert = true
 terraform -chdir=infra/gcp/monitoring init -lockfile=readonly
 terraform -chdir=infra/gcp/monitoring validate
 terraform -chdir=infra/gcp/monitoring test
@@ -52,8 +56,9 @@ terraform -chdir=infra/gcp/monitoring plan -out=monitoring.tfplan
 terraform -chdir=infra/gcp/monitoring show monitoring.tfplan
 ```
 
-The first saved plan should contain exactly four additions and no changes or
-deletions. Review it before approval to apply. The email is marked sensitive, but
+A fresh setup has five managed resources, including a dbt alert that defaults to
+disabled. Review the actual saved plan before approval to apply. The email is
+marked sensitive, but
 Terraform still stores it in local plans and state. Keep those files and any plan
 JSON private. The ignored state belongs to this root; preserve it for updates and
 removal. Do not copy state from the API root.
@@ -80,7 +85,7 @@ independently confirmed absent. The production check and policy were unchanged,
 public health returned 200, and the saved Terraform plan showed no changes.
 Private plans, state and logs are retained locally; they are not published here.
 
-## When an alert arrives
+## When an API availability alert arrives
 
 1. Open the incident and check which locations failed and when. Open `/health`
    and the comparison page to see what is currently affected.
@@ -116,8 +121,8 @@ terraform -chdir=infra/gcp/monitoring show monitoring-destroy.tfplan
 ```
 
 Only after removal approval, apply that saved destroy plan. It should delete these
-four monitoring resources and leave the API and data alone. Terraform removes the
-dependent alert policy before its check/channel; the channel refuses forced
+five monitoring resources and leave the API and data alone. Terraform removes the
+dependent alert policies before their check/channel; the channel refuses forced
 deletion if another policy has started using it.
 
 ## Documentation checked
@@ -132,10 +137,15 @@ and [uptime alerting](https://docs.cloud.google.com/monitoring/uptime-checks/upt
 Its [response validation guidance](https://docs.cloud.google.com/monitoring/uptime-checks/response-validation)
 explains the JSON value encoding.
 
-## Prepared dbt failure alert
+## Dbt failure alert
 
-`pipeline.tf` adds a disabled-by-default log alert for the existing dbt job's
-structured failure event. It reuses the email channel; it adds no metric or IAM
-grant. Set `enable_dbt_failure_alert` only after image deployment and an approved
-alert test. This is not yet live pipeline monitoring. See
-[scope, tests and response steps](../../../docs/pipeline-alerts.md).
+`pipeline.tf` manages an enabled log alert for the existing dbt job's structured
+failure event. It reuses the email channel and adds no metric or IAM grant.
+The deployed local settings explicitly set `enable_dbt_failure_alert = true`;
+new setups default to disabled until reviewed and tested.
+
+The marked Cloud Run test on 26 October produced an incident and a confirmed email.
+The temporary test policy was removed before the operational policy was enabled.
+Caught dbt exceptions are covered; export, loading and process kills are not.
+The policy excludes exercises and limits notifications to once per 15 minutes.
+See [the test record, limits and response steps](../../../docs/pipeline-alerts.md).

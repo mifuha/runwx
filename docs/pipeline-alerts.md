@@ -1,16 +1,16 @@
 # A failed dbt job should be visible
 
-This addition is prepared and tested offline. It is not deployed, and no pipeline
-alert email has been demonstrated yet. The existing API availability alert is
-separate and remains unchanged.
+The Cloud Run dbt failure alert is enabled. A marked real-job test on 26 October
+2026 produced an incident and an email confirmed received. The API availability
+alert is separate: it checks whether the site responds.
 
 ```mermaid
 flowchart TD
-    job[Cloud Run dbt job] --> runner[Existing edition, comparison and reconciliation checks]
-    runner -->|failure| evidence[Retain failure evidence when storage is available]
-    evidence --> event[One structured failure event; job exits unsuccessfully]
+    job[Cloud Run dbt wrapper] --> runner[Existing edition, comparison and reconciliation checks]
+    runner --> evidence[Retain success/failure evidence when available]
+    job -->|caught failure| event[Structured error; job exits unsuccessfully]
     event --> logging[Cloud Logging]
-    logging --> policy[GCP log alert: disabled until deployment approval]
+    logging --> policy[Enabled GCP log alert]
     policy --> email[Existing email channel]
 ```
 
@@ -27,7 +27,8 @@ failure may prevent evidence publication; use execution logs in that case.
 
 Cloud Run collects stdout; no Logging SDK, extra runtime grant or counter is needed.
 The policy matches only this versioned event from `runwx-dbt` in `europe-west1`.
-It reuses the existing email channel and defaults to disabled. No per-execution
+It reuses the existing email channel. Terraform defaults new setups to disabled;
+the deployed configuration explicitly enables it. No per-execution
 metric or alert labels are created. Notifications are limited to once per 15
 minutes; multiple failures can share an incident, so inspect the entire window.
 An incident auto-closes after a day without matching events; that is not proof
@@ -56,25 +57,35 @@ that a later run succeeded.
    or upload. Check what already completed before approving a rerun.
 4. Confirm the later execution reconciles. Incident closure alone is insufficient.
 
-## Verification and next deployment gate
+## Verified cloud test
 
-Offline tests cover a successful run without a failure event, runner rejection
-with retained evidence, malformed configuration before any runner/upload,
-upload failure, exercise marking and preservation of the original error when
-logging fails. Existing stage-runner tests check downstream work stops. Mocked
-Terraform tests check the scope, disabled default and notification limit.
-These tests do not demonstrate GCP log ingestion or email delivery.
+On 26 October 2026, execution `runwx-dbt-nlcjr` ran once with deliberately invalid
+JSON and an exercise marker. One task failed with exit code 1, with zero retries.
+It stopped before client creation, dbt builds or BigQuery work. Cloud Logging
+captured the configuration error; Monitoring opened an incident and the email
+arrived. The recipient confirmed receipt.
 
-After PR/CI and approval, prepare an immutable dbt image and saved Terraform
-plans. Review the image-only job update and separate monitoring policy addition
-before apply. Keep retries at zero. No API image change is needed for this slice.
+The temporary test policy used the operational filter with the purpose changed
+to `exercise`. Its incident was retained before the policy was deleted. The stored
+job was unchanged. The operational alert was then enabled through a saved plan;
+readback and the full monitoring follow-up plan confirmed the setting. See the
+[compact test record](evidence/dbt-failure-alert-validation.json).
 
-A separately approved live check should run one deliberately invalid configuration
-that fails before any warehouse work. Mark it as an exercise and temporarily use
-a narrowly scoped exercise policy, then remove that policy. Check receipt of the
-email, execution logs and absence of downstream work. Record actual results before
-adding this to the website as a demonstrated capability. Do not infer an email
-success from an offline test or enable operational alerts for unmarked exercises.
+An earlier attempt did not verify notification delivery. An isolated routing test
+and the later dbt test passed; the original cause remains unconfirmed. This is
+not a claim that every failure type was exercised live.
+
+Offline tests additionally cover runner rejection with retained evidence,
+malformed configuration before any runner/upload, upload failure, exercise marking
+and preservation of the original error when logging fails. Existing runner tests
+check that failed stages block later work. Mocked Terraform tests check the
+policy's scope, disabled default and notification limit.
+
+For a new setup, deploy the immutable image and review the disabled policy first.
+Use a separately approved, marked exercise to verify the event, incident and email
+before enabling operational alerts. Retain incident evidence before cleanup and
+follow log-search continuation tokens. Never infer delivery from a job failure
+alone or retry a submission with an unknown outcome.
 
 ## Documentation checked
 
