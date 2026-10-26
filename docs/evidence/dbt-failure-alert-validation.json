@@ -1,0 +1,42 @@
+{
+  "checked_on": "2026-10-26",
+  "scope": "Cloud Run dbt configuration-failure notification; marked exercise",
+  "source_revision": "362687dbb8ff24776cd4dac0733fc44a05d1f484",
+  "execution": {
+    "name": "runwx-dbt-nlcjr",
+    "tasks": 1,
+    "failed_tasks": 1,
+    "exit_code": 1,
+    "retries": 0,
+    "timeout_seconds": 60,
+    "reason": "JSONDecodeError",
+    "stage": "configuration",
+    "event_at_utc": "2026-10-26T18:06:55.077258Z",
+    "dbt_or_warehouse_stages_started": false
+  },
+  "notification": {
+    "incident": "projects/runwx-learning-mifuha/alerts/0.oea4xahu1x6p",
+    "opened_at_utc": "2026-10-26T18:07:36Z",
+    "email_observed_in_inbox": true,
+    "recipient_confirmed_receipt": true,
+    "test_filter": "Operational event filter with purpose=exercise instead of operational",
+    "test_rate_limit_seconds": 300
+  },
+  "cleanup": {
+    "temporary_policy_deleted_404": true,
+    "persistent_job_unchanged": true,
+    "monitoring_plan_no_changes": true
+  },
+  "operational": {
+    "enabled": true,
+    "enabled_on": "2026-10-26",
+    "notification_rate_limit_seconds": 900,
+    "exercises_excluded": true,
+    "full_monitoring_plan_no_changes": true
+  },
+  "limits": [
+    "Early configuration rejection was exercised live; other exception paths have offline tests.",
+    "Export, loading, scheduler failures and process kills before logging are outside this policy.",
+    "The cause of an earlier missing notification remains unconfirmed."
+  ]
+}

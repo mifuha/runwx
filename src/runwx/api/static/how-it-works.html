@@ -343,7 +343,19 @@
             failure and recovery. Its dashboard shows requests, errors and latency.
             Data correctness comes from dbt tests and reconciliation; this page
             does not show live pipeline status.</p>
-          <p><a href="https://github.com/mifuha/runwx/blob/master/infra/gcp/monitoring/README.md#verified-alert-test">See the verified alert test and troubleshooting guide</a></p>
+          <p>Caught failures in the Cloud Run dbt job also trigger email alerts.
+            Export and loading failures are outside this alert's scope.</p>
+          <details class="failure-example">
+            <summary>Follow a dbt failure to an email</summary>
+            <p>In a marked test on 26 October 2026, invalid configuration stopped
+              one dbt job before any build or BigQuery work.</p>
+            <p>Configuration rejected → error log → Monitoring incident → email.</p>
+            <p>The email arrived and was confirmed received. The temporary test
+              policy was removed; the operational alert is enabled and excludes
+              marked exercises. Refreshes are still manual.</p>
+            <a href="https://github.com/mifuha/runwx/blob/master/docs/pipeline-alerts.md#verified-cloud-test">See the test record and alert limits</a>
+          </details>
+          <p><a href="https://github.com/mifuha/runwx/blob/master/infra/gcp/monitoring/README.md#verified-alert-test">See the API availability test and troubleshooting guide</a></p>
         </article>
       </section>
 

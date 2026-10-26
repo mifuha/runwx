@@ -70,7 +70,9 @@ flowchart TD
     output --> api["Read-only Cloud Run API"]
     api --> page["Trends, scatter plots + tables<br/>How it works page"]
     runner --> evidence["Success/failure evidence"]
-    api -. "HTTPS /health" .-> monitoring["Cloud Monitoring<br/>availability checks + email alerts"]
+    api -. "HTTPS /health" .-> monitoring["Cloud Monitoring<br/>API availability + dbt failure alerts"]
+    runner -. "Cloud Run dbt failure" .-> logs["Cloud Logging"]
+    logs --> monitoring
 ```
 
 The shared stage runner works locally and inside the Cloud Run dbt job. It runs
@@ -107,8 +109,9 @@ comparison page. Its responses match the saved results for five Lydd, three
 Folkestone, 19 sampled Great North Run, 18 full-field Battersea and 16 Berlin
 research editions; see the [deployment checks](docs/api.md).
 [Cloud Monitoring](infra/gcp/monitoring/README.md) checks API availability and
-emails on sustained failure and recovery. Data correctness is checked separately
-by dbt tests and reconciliation.
+emails on sustained failure and recovery. It also emails on caught failures in
+the Cloud Run dbt job; see the [verified failure example](docs/pipeline-alerts.md#verified-cloud-test).
+Data correctness is checked separately by dbt tests and reconciliation.
 The [Airflow DAG](docs/airflow.md) also coordinated a verified Folkestone run in
 Composer. That environment was removed after the check; historical runs are started
 manually. See the [architecture](docs/architecture.md) for how the parts fit together.
