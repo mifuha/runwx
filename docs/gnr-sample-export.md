@@ -51,6 +51,7 @@ bibs or athlete IDs enter the export. A sample rank is not an official race plac
 ## Weather context
 
 The exporter reuses the existing weather validation and translation functions.
+Measurements must be JSON numbers; booleans and numeric strings are rejected.
 It requires all 24 hourly UTC observations on the race date. Each row carries the
 same labelled `weather_context`: hourly medians at 10:00–14:00 Europe/London for
 temperature, wind and humidity. Rain is the sum of preceding-hour amounts ending
