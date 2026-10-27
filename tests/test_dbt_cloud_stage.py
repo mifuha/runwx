@@ -229,9 +229,21 @@ def test_entrypoint_uses_runtime_identity_and_embedded_revision(
     assert len(saved) == 2
 
 
+@pytest.mark.parametrize("change, error", [
+    ({"top_n": 0}, "top_n"),
+    ({"location": "US"}, "location"),
+    ({"location": "europe-west2"}, "location"),
+    ({"location": "europe-weest1"}, "location"),
+])
 def test_invalid_entrypoint_configuration_creates_no_client(
-        config, expectations, execution, monkeypatch):
-    config["top_n"] = 0
+        config, expectations, execution, monkeypatch, change, error):
+    from google.cloud import storage
+
+    config.update(change)
+    client_factory = Mock(side_effect=AssertionError("invalid config created a client"))
+    runner = Mock(side_effect=AssertionError("invalid config invoked the runner"))
+    monkeypatch.setattr(storage, "Client", client_factory)
+    monkeypatch.setattr(cloud_stage.stage_runner, "execute", runner)
     environment = {
         "RUNWX_DBT_CONFIG": json.dumps(config),
         "RUNWX_DBT_EXPECTATIONS": json.dumps(expectations),
@@ -245,8 +257,10 @@ def test_invalid_entrypoint_configuration_creates_no_client(
     }
     for key, value in environment.items():
         monkeypatch.setenv(key, value)
-    with pytest.raises(ValueError, match="top_n"):
+    with pytest.raises(ValueError, match=error):
         cloud_stage.main(client=None)
+    client_factory.assert_not_called()
+    runner.assert_not_called()
 
 
 def test_folkestone_validation_case_matches_runner_contract():

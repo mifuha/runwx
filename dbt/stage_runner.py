@@ -38,9 +38,8 @@ def validate_config(config):
     project = config['project']
     if not isinstance(project, str) or not re.fullmatch(r'[a-z][a-z0-9-]{4,28}[a-z0-9]', project):
         raise ValueError('Invalid project ID')
-    if not isinstance(config['location'], str) or not re.fullmatch(
-            r'[A-Za-z][A-Za-z0-9-]{0,63}', config['location']):
-        raise ValueError('Invalid BigQuery location')
+    if config['location'] != 'europe-west1':
+        raise ValueError('BigQuery location must be europe-west1 to match the dbt profile')
     datasets = config['comparison_datasets']
     if not isinstance(datasets, list) or len(datasets) < 2:
         raise ValueError('comparison_datasets must list at least two explicit editions')

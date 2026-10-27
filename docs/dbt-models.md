@@ -242,6 +242,9 @@ The [example expectations](../dbt/stage-expectations.example.json) show the requ
 shape only; they are not real analytical values. Replace both files with reviewed
 resources and frozen expected rows before execution.
 
+The runner accepts only `europe-west1`, matching the dbt profile. Other locations
+are rejected before a build or cloud client starts.
+
 Preview validates configuration and prints both commands without invoking dbt,
 requesting credentials or creating an execution directory:
 
