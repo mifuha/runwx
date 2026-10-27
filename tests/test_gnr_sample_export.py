@@ -193,6 +193,35 @@ def test_invalid_weather_fails_before_cli_output(inputs, capsys, case):
     assert capsys.readouterr().out == ""
 
 
+@pytest.mark.parametrize("field", [
+    "temperature_2m", "wind_speed_10m", "relative_humidity_2m", "precipitation",
+])
+@pytest.mark.parametrize("value", [True, False, "1.5"])
+def test_non_numeric_weather_tokens_fail_before_cli_output(inputs, capsys, field, value):
+    _, _, weather, _, write = inputs
+    weather["hourly"][field][12] = value
+    # Refresh the recorded hashes so this checks the measurement, not byte identity.
+    options = write()
+    with pytest.raises(ValueError, match=field):
+        main(cli(options))
+    assert capsys.readouterr().out == ""
+
+
+def test_weather_accepts_integer_float_and_negative_measurements(inputs):
+    _, _, weather, _, write = inputs
+    weather["hourly"].update({
+        "temperature_2m": [-2.5] * 24,
+        "wind_speed_10m": [2] * 24,
+        "relative_humidity_2m": [65.0] * 24,
+        "precipitation": [0] * 24,
+    })
+    context = build_gnr_sample_rows(**write())[0]["weather_context"]
+    assert context["median_temp_c"] == -2.5
+    assert context["median_wind_mps"] == 2.0
+    assert context["median_humidity_pct"] == 65.0
+    assert context["precipitation_mm"] == 0.0
+
+
 @pytest.mark.parametrize("source", ["race", "categories", "weather"])
 def test_hash_mismatch_rejected(inputs, source):
     *_, write = inputs

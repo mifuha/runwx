@@ -76,6 +76,13 @@ def _weather_context(raw: bytes, request_raw: bytes, day: date) -> dict:
             raise ValueError("invalid weather grid location")
         if abs(value - LOCATION[key]) > 0.5:
             raise ValueError("weather grid is not near the requested Newcastle start area")
+    hourly = payload.get("hourly")
+    if not isinstance(hourly, dict):
+        raise ValueError("weather hourly data missing")
+    for field in ("temperature_2m", "wind_speed_10m", "relative_humidity_2m", "precipitation"):
+        values = hourly.get(field)
+        if not isinstance(values, list) or any(type(value) not in (int, float) for value in values):
+            raise ValueError(f"weather {field} must contain numeric measurements")
     observations = to_weather_obs(OpenMeteoArchiveResponse.model_validate(payload))
     midnight = datetime.combine(day, time(), tzinfo=timezone.utc)
     if [o.observed_at for o in observations] != [midnight + timedelta(hours=h) for h in range(24)]:
