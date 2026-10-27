@@ -130,6 +130,8 @@ def test_preview_has_no_execution_or_files(config, expectations, tmp_path, monke
 
 @pytest.mark.parametrize('change', [
     {'project': None}, {'project': 'bad;command'}, {'location': 'bad/location'},
+    {'location': 'US'}, {'location': 'EU'}, {'location': 'europe-west2'},
+    {'location': 'europe-weest1'},
     {'top_n': True}, {'top_n': 0},
     {'comparison_datasets': 'edition_a'}, {'comparison_datasets': ['edition_a', 'edition_a']},
     {'comparison_baseline': 'missing'}, {'edition_dataset': 'missing'},
