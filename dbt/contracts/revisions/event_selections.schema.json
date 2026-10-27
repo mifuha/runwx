@@ -1,0 +1,17 @@
+[
+  {
+    "name": "event_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "revision_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "successful_attempt_id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  }
+]
