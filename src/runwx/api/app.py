@@ -43,6 +43,14 @@ HOW_IT_WORKS_HTML = STATIC.joinpath("how-it-works.html").read_text(
 )
 
 
+BERLIN_CASE_STUDY_HTML = STATIC.joinpath("berlin-case-study.html").read_text(
+    encoding="utf-8"
+).replace(
+    'href="/assets/styles.css"',
+    f'href="/assets/styles.css?v={sha256(STYLESHEET.encode()).hexdigest()}"'
+)
+
+
 class ComparisonService:
     """Keep the synchronous BigQuery client off the ASGI event loop."""
 
@@ -92,6 +100,11 @@ async def how_it_works() -> HTMLResponse:
         HOW_IT_WORKS_HTML,
         headers={"Cache-Control": "no-cache"},
     )
+
+
+@app.get("/case-studies/berlin", include_in_schema=False, response_class=HTMLResponse)
+async def berlin_case_study() -> HTMLResponse:
+    return HTMLResponse(BERLIN_CASE_STUDY_HTML, headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/assets/styles.css", include_in_schema=False)

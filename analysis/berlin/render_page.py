@@ -125,5 +125,5 @@ def build():
 
 if __name__ == '__main__':
     output = ROOT / 'src/runwx/api/static/berlin-case-study.html'
-    output.write_text(build(), encoding='utf-8')
+    output.write_bytes(build().replace('\r\n', '\n').encode('utf-8'))
     print('Generated the case study from independently verified aggregates.')

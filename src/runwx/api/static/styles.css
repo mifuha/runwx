@@ -1246,3 +1246,43 @@ footer {
     scroll-behavior: auto !important;
   }
 }
+
+/* Static Berlin case study; scoped to keep comparison charts unchanged. */
+.berlin-study { max-width: 1120px; margin: 0 auto; }
+.berlin-study > section { margin-bottom: 3rem; }
+.berlin-study .intro h1 { max-width: 22ch; font-size: clamp(2.1rem, 4.5vw, 3.8rem); }
+.berlin-study p, .berlin-study li { line-height: 1.65; }
+.berlin-study .study-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; margin: 2rem 0; }
+.berlin-study .study-card { margin: 0; padding: 1.4rem; background: #fff; border: 1px solid #dce4dc; border-radius: 12px; min-width: 0; }
+.berlin-study .study-card h3 { font-size: 1.05rem; margin: 0; }
+.berlin-study .study-plot { width: 100%; height: auto; display: block; }
+.berlin-study figcaption, .berlin-study .study-note { color: #53675d; font-size: .94rem; }
+.berlin-study .study-disclosure { border-top: 1px solid #cad8cf; padding: 1.2rem 0; }
+.berlin-study summary { cursor: pointer; font-weight: 600; padding: .5rem 0; }
+.berlin-study .study-table { overflow-x: auto; margin: 1.5rem 0; }
+.berlin-study caption { text-align: left; padding: .6rem 0; }
+.berlin-study .study-limits { border-left: 3px solid #648573; padding: .2rem 1.3rem; margin: 2rem 0; }
+.study-entry { margin: 2rem 0; }
+@media (max-width: 700px) {
+  .berlin-study .study-grid { grid-template-columns: 1fr; }
+  .berlin-study .study-card { padding: .8rem; }
+}
+
+.berlin-study a:focus-visible, .berlin-study summary:focus-visible { outline: 3px solid #315c45; outline-offset: 4px; }
+
+.berlin-study .study-overview table { min-width: 0; width: 100%; }
+.berlin-study .study-overview th, .berlin-study .study-overview td { white-space: normal; padding: .8rem .5rem; }
+.berlin-study .study-table:focus-visible { outline: 3px solid #315c45; outline-offset: 4px; }
+
+.berlin-study .study-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; list-style: none; padding: 0; margin: 1.5rem 0 0; }
+.berlin-study .study-steps li { border-top: 2px solid var(--line-strong); padding-top: 1rem; }
+.berlin-study .study-steps strong { display: block; margin-block: .6rem .35rem; }
+.berlin-study .study-steps p { margin: 0; }
+.berlin-study .study-card .study-group-label { margin: 0 0 .35rem; color: var(--accent); font-size: .8rem; font-weight: 650; }
+.berlin-study .study-card .study-population { margin: .35rem 0 .7rem; color: #53675d; font-size: .87rem; }
+.berlin-study .study-sensitivity { margin: 2rem 0 1.2rem; }
+@media (max-width: 700px) {
+  .berlin-study .study-steps { grid-template-columns: 1fr; gap: 1rem; }
+  .berlin-study .study-steps li { padding-top: .7rem; }
+  .berlin-study .study-steps strong { margin-top: .3rem; }
+}
