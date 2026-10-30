@@ -1,0 +1,65 @@
+{
+  "checked_on": "2026-10-30",
+  "source_commit": "ae0463f9b60484b99332d0ebf119df04fd68768d",
+  "case_study_url": "https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin",
+  "image": "europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx-api@sha256:6f21bad94a46cd64f96fa65dd8e1e207b77535449d5c172fc0351669e61a63ca",
+  "cloud_build_id": "a5035a4f-755c-4c98-94e7-a5c090c8cad3",
+  "cloud_run": {
+    "service": "runwx-api",
+    "region": "europe-west1",
+    "ready_revision": "runwx-api-00015-4fj",
+    "traffic_percent": 100
+  },
+  "terraform": {
+    "saved_plan_sha256": "6785157ad786372063426a79a8a64eedd3be8b5e9bf6668cab376ed9b5a3639a",
+    "changes": {
+      "add": 0,
+      "update": 1,
+      "destroy": 0
+    },
+    "changed_resource": "google_cloud_run_v2_service.api",
+    "changed_field": "existing service container image only",
+    "iam_and_other_settings_unchanged": true,
+    "post_apply_plan": "no-op, exit 0"
+  },
+  "http_checks": {
+    "/health": 200,
+    "/": 200,
+    "/how-it-works": 200,
+    "/case-studies/berlin": 200,
+    "/assets/app.js": 200,
+    "/assets/styles.css": 200,
+    "/api/courses/lydd-half/comparison": 200,
+    "/api/courses/folkestone-half/comparison": 200,
+    "/api/courses/great-north-run/comparison": 200,
+    "/api/courses/battersea-park-10k/comparison": 200,
+    "/api/courses/berlin-marathon/comparison": 200
+  },
+  "case_study_html_sha256": "f70af0b9a2a257759b2ff304765375bed2e7116a7dd1ea585de666a966512c35",
+  "pages_assets_and_cache_checks": "passed",
+  "course_editions": {
+    "lydd-half": 5,
+    "folkestone-half": 3,
+    "great-north-run": 19,
+    "battersea-park-10k": 18,
+    "berlin-marathon": 16
+  },
+  "comparison_check": "Every public field matched retained verified values: Lydd, Folkestone, GNR and Battersea matched successful pre-apply responses; Berlin matched the frozen independently reconciled response.",
+  "browser_checks": {
+    "widths_px": [
+      1440,
+      390,
+      320
+    ],
+    "layout": "no page overflow; four primary charts, with four fastest-50 charts inside a disclosure",
+    "keyboard": "native disclosures and visible focus passed",
+    "javascript_errors": 0
+  },
+  "public_evidence_links_checked": 9,
+  "retained_deployment_record_sha256": "4b8d076c681409c26b44fc9404cf8324b300e689a3af5ee720672a11df06284c",
+  "limits": [
+    "This records the 30 October deployment checks, not continuous monitoring.",
+    "No warehouse load or dbt build was repeated. This deployment changed no IAM, monitoring or orchestration resources.",
+    "The case study uses static checked aggregates. Research completeness and individual-exposure limits remain in its method."
+  ]
+}

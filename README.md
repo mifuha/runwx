@@ -22,8 +22,10 @@ research cohort (2003–2018, 541,730 accepted records). Choose median, mean or
 fastest-20 median pace; explore trends, a temperature–pace scatter plot and the
 edition table. Each scatter dot is one edition of the selected course.
 [Source limits and checks](docs/berlin-statistics.md) stay explicit.
-The [Berlin case study](analysis/berlin/README.md) checks whether the temperature–pace
-pattern survives grouping and leaving out individual editions.
+The live [Berlin case study](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin)
+checks the pattern within different runner groups and after leaving out one year
+at a time.
+Its [method, code and aggregate checks](analysis/berlin/README.md) are also available.
 
 ## Real historical comparison
 
@@ -89,6 +91,9 @@ research snapshots, followed by independent reconciliation.
 Battersea also stores its final 18-row comparison as a table; its edition models
 remain views. This reduces repeated query work for fixed historical data. Rebuild
 and check the summary after changing inputs. [Measured trade-off](docs/battersea-serving.md).
+
+The Berlin case study runs offline over the saved inputs. Its checked charts and
+tables are packaged with the site; opening the study makes no warehouse query.
 
 The Lydd 2025 addition passed **28 native dbt tests**: 21 for the new edition and
 seven for the five-edition comparison. Full result readbacks matched the saved
