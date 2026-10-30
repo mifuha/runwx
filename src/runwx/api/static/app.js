@@ -461,6 +461,7 @@ function updateUrl() {
 
 function render(data) {
   comparison = data;
+  document.querySelector("#berlin-study-link").hidden = data.course_slug !== "berlin-marathon";
   elements.courseName.textContent = data.course_name;
   if (isResearch(data)) {
     elements.courseMeta.textContent = `${data.editions.length} editions · ${(data.distance_m / 1000).toFixed(3)} km · Research capture`;
