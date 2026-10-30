@@ -143,6 +143,24 @@ separates cached fixture tests, uncached data checks and query usage; the
 CI runs offline Python, container, Terraform and dbt parse checks; it does not
 execute warehouse SQL.
 
+## Offline Berlin case study
+
+The [Berlin case study](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin)
+checks the pattern within recorded female and male groups, compares the fastest
+captured results with the rest, and leaves out each edition in turn.
+
+```mermaid
+flowchart TD
+    inputs["Saved Berlin + ERA5 inputs"] --> study["Offline Python analysis<br/>+ independent checks"]
+    study --> aggregates["Checked aggregate CSV + JSON"]
+    aggregates --> page["Static charts + tables<br/>served by the existing Cloud Run API"]
+```
+
+The [method and code](../analysis/berlin/README.md) reuse the existing parser and
+weather validation. The page is built from checked aggregates and packaged with
+the service. It makes no warehouse query or calculation when opened. These are
+edition-level associations, not evidence of individual heat effects.
+
 <a id="planned--next-milestone-warehouse-analysis"></a>
 ## Cloud Run validation/export path
 

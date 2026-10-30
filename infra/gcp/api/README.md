@@ -51,15 +51,17 @@ were unchanged, and the post-apply Terraform plan was no-op.
 
 ## Current deployment
 
-Berlin and all five course scatter plots are live. Berlin's materialized summary
+The Berlin case study and all five course comparisons are live. Berlin's stored summary
 `runwx_dbt_berlin_research_v1.mart_berlin_edition_summary` has one table-level Data
 Viewer grant; the API has no Berlin raw-snapshot access. There are 111 explicit
 table grants. Berlin keeps its 64 MiB query cap.
 
-The latest deployment on 21 October 2026 changed only the existing service image:
-**0 additions, 1 update, 0 deletions**. Revision `runwx-api-00012-hft` receives all
-traffic and uses the verified image digest
-`sha256:50daa1ae680b2b3f6cfea2a62e3facee49179d5f3ea8b3294d5f0c01f9497ffc`.
-IAM and other service settings were unchanged. Live health, pages, assets and all
-five course responses passed checks; desktop/mobile scatter checks passed and the
-final Terraform plan was no-op. No source data or dbt models were rebuilt.
+The latest deployment on 30 October 2026 added `/case-studies/berlin` and changed
+only the existing service image: **0 additions, 1 update, 0 deletions**.
+Revision `runwx-api-00015-4fj` receives all traffic and uses the verified image digest
+`sha256:6f21bad94a46cd64f96fa65dd8e1e207b77535449d5c172fc0351669e61a63ca`.
+The study is a packaged static page; it adds no warehouse query or data access.
+IAM and other service settings were unchanged. Live health, pages, assets, cache
+headers and all five course responses passed checks, as did desktop/mobile layout
+and keyboard checks. The full post-apply Terraform plan was no-op. No source data
+or dbt models were rebuilt. See the [deployment check](../../../docs/evidence/berlin-case-study-api-validation.json).

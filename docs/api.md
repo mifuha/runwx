@@ -8,8 +8,14 @@ The service root (`/`) serves the small comparison page. The live
 [How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
 explains the path from fixed inputs to the chart, using Folkestone 2019 as one
 example.
-The pages link to each other. The comparison page uses the endpoint below to
-populate course, pace and weather selectors, two aligned accessible SVG trend
+
+The [Berlin case study](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin)
+is served at `/case-studies/berlin`, linked from the Berlin comparison and How it
+works. Its charts and tables are built offline from checked aggregates; opening
+it makes no BigQuery query or new calculation. See the [method and code](../analysis/berlin/README.md).
+
+The comparison page uses the endpoint below to populate course, pace and weather
+selectors, two aligned accessible SVG trend
 plots, a temperature–pace scatter and a compact edition table. Pace stays visible beside the selected weather
 measure. The HTML, CSS and JavaScript are packaged with the API; the page has no
 external frontend or chart dependency.
@@ -122,7 +128,7 @@ emails on 15 October. See the [test and troubleshooting guide](../infra/gcp/moni
 
 ## API container
 
-`Dockerfile.api` packages the same FastAPI application and page as a dedicated
+`Dockerfile.api` packages the same FastAPI application and pages as a dedicated
 non-root image. It does not reuse or change the validation/export job image.
 
 ```bash
@@ -135,8 +141,8 @@ docker run --rm --name runwx-api-local --read-only -p 8080:8080 \
 
 Open `http://127.0.0.1:8080/`. `/health` checks only that the HTTP process is ready;
 it deliberately does not query BigQuery. A successful comparison response is
-publicly cacheable for five minutes, the packaged assets for one hour, and the page
-itself is revalidated. The page uses content-hashed asset URLs, so a new deployment
+publicly cacheable for five minutes, the packaged assets for one hour, and the HTML
+pages are revalidated. The pages use content-hashed asset URLs, so a new deployment
 does not pair its HTML with an older cached script. Query submission uses a
 10-second RPC timeout and result
 waiting uses a 30-second timeout; client retries can extend the total request time.
@@ -160,8 +166,8 @@ Exact version pins improve repeatability, while the immutable registry digest re
 the deployment identity.
 
 The offline smoke check starts the real Uvicorn entrypoint and verifies `/health`,
-both pages and the packaged assets with container networking disabled. It cannot call
-a configured comparison mart because the offline container deliberately has neither
+all three pages and the packaged assets with container networking disabled. It
+cannot call a configured comparison mart because the offline container has neither
 Application Default Credentials nor BigQuery access. Repository tests cover those
 success and failure cases. The GNR deployment check called its three then-public
 course endpoints and reconciled them with saved results. The later Battersea
@@ -172,3 +178,8 @@ with `/how-it-works`. The saved Terraform plan changed only the image. The live 
 health route, stylesheet and all four comparison endpoints returned `200`; the
 edition and result counts matched their saved expectations. A fresh Terraform plan
 was no-op. See the [deployment check](evidence/pipeline-explainer-api-validation.json).
+
+On 30 October 2026, an image-only deployment added the Berlin case study. All
+five comparison responses kept their verified values. Page, asset, cache and
+desktop/mobile keyboard checks passed; the full Terraform plan then reported
+no changes. See the [deployment check](evidence/berlin-case-study-api-validation.json).
