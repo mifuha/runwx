@@ -22,6 +22,8 @@ research cohort (2003–2018, 541,730 accepted records). Choose median, mean or
 fastest-20 median pace; explore trends, a temperature–pace scatter plot and the
 edition table. Each scatter dot is one edition of the selected course.
 [Source limits and checks](docs/berlin-statistics.md) stay explicit.
+The [Berlin case study](analysis/berlin/README.md) checks whether the temperature–pace
+pattern survives grouping and leaving out individual editions.
 
 ## Real historical comparison
 
