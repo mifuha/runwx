@@ -1,0 +1,34 @@
+{
+  "accepted_records": 541730,
+  "age_eligible_records": 541659,
+  "analysis_code": {
+    "check_fixed_mix.py": "5ea35ef6bbdcf1bf6806e45619801a6aed97bae181b3c6f51fd57447f551f26b",
+    "fixed_mix.py": "75085230866da22b91b714c3caa00cb03484e81fb5b8fe171bdbca275c8f7b51",
+    "fixed_mix_page.py": "3f954db0e5d6e372e37503a9638bc6f01ed1f3b5a1fb0e3cf4607165c1bfe93f",
+    "plot_fixed_mix.py": "4982d8d62c9f6c925d3a061bd8fcfdf52c95118422992ee42744e066072ea119",
+    "render_fixed_mix_page.py": "99801024b31655e7f975ac324f9552fd07395e4ca51beeb8edc92838e59a7542"
+  },
+  "edition_weather_contexts": 16,
+  "files": {
+    "age-audit.csv": "e682c2812e14c0184c46cae2101c4c290edd721c6e7a3c85acc33ee8cba21c51",
+    "associations.json": "b085c0adf5b94d16e622a2d61d3f1c9c15be4739e4acedd65c606d1fc44eada2",
+    "groups.csv": "a265441d0c6f796f5fa1dd4b5eec1e712e15828c942f37dad0536a60f0534e00",
+    "reconciliation.json": "ae4cc2a6ad671f9fe109854a1de73bc79d642dfbb5427069b88ae28a69d0145c",
+    "reference-mix.json": "e20a3abb80b7d7240f40fa6890d426d00ec281ece1bdf52b9e957b3e92c01c90",
+    "scatter.svg": "812dc6f3acd9f727a8bb3e1df78937561627233fa3322a26e69fbd2c16357f35",
+    "summaries.csv": "9dc38fbfebf1bbb36064f5cf99e5a2f93cce3b62ac05e3aafc69efb5b73895d2"
+  },
+  "frozen_pilot": "The five analytical CSV/JSON files and retained reconciliation record preserve the frozen pilot bytes. The SVG preserves its content with CRLF normalised to LF. Private manifests and runner records are not published.",
+  "independent_user_practice": false,
+  "input_provenance": "../berlin-case-study/manifest.json",
+  "input_provenance_sha256": "77438ae45ce581fc4a371e8b2c915c7c206421d96ec71ff97f45196a3afe87cb",
+  "limitations": "16 edition contexts; broad recorded categories, unknown ability/training, capture completeness and individual exposure remain unresolved. No causal heat-effect claim.",
+  "method_file": "analysis/berlin/fixed-mix.json",
+  "method_sha256": "bc894f9872c55398148623ff79e6c6f1b31ada182ab31fee49f0c52583d701fd",
+  "race_sha256": "bcc454bb7382cc34acc0d1fd359b55258bf25eea48323fd7fcb6d3053396c7f2",
+  "replay": "Portable replay reproduced five analytical CSV/JSON files byte for byte. Reconciliation values match; only its checker module-name description changed. Figure content matches after LF normalisation. Original pilot evidence is preserved.",
+  "source_reference": "4948195c19f9419ad6f4c71b1e7f1900937a7da8",
+  "study": "Exploratory Berlin four-band participant-mix follow-up",
+  "unmapped_age_records": 71,
+  "verification": "Counts, reference mix and all 204 correlations plus three year sensitivities are independently reproducible from aggregates. Raw quantiles require retained inputs."
+}

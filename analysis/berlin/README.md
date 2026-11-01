@@ -38,7 +38,9 @@ Fastest captured does not establish elite status; remaining does not mean amateu
 Outcome-based selection, changing field strength, age mix, equipment and year
 trends remain unresolved. The fixed weather window can poorly represent faster
 runners' actual conditions. Different coefficients do not establish different
-heat sensitivity. No age/year adjustment, p-values, predictions or causal claims.
+heat sensitivity. This original study has no age/year adjustment, p-values,
+predictions or causal claims. A separate [participant-mix follow-up](FIXED_MIX.md)
+adds four recorded age bands and a linear-year sensitivity; its median pattern remains.
 Research captures have completeness gaps, unknown timing and individual starts;
 2008 has 79 extra records against the published count, and 2013 has no confirmed
 published total. See [source and warehouse checks](../../docs/berlin-statistics.md).
@@ -85,7 +87,8 @@ new runs remain local. Independent user practice has not yet been recorded.
 ## Build the static page
 
 Plotting is isolated from the application: install `requirements-plot.txt` in an
-analysis-only environment, then run `python analysis/berlin/render_page.py`.
+analysis-only environment, then run `python analysis/berlin/render_fixed_mix_page.py`
+to include both studies. `render_page.py` retains the original study alone.
 ReportLab generates the scientific scatter plots; the service serves packaged
 HTML with inline SVGs and makes no query for this study. The generator first
 checks the aggregate correlations. The generated HTML is committed with the page.
