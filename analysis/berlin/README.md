@@ -87,9 +87,9 @@ new runs remain local. Independent user practice has not yet been recorded.
 ## Build the static page
 
 Plotting is isolated from the application: install `requirements-plot.txt` in an
-analysis-only environment, then run `python analysis/berlin/render_page.py`.
-Use `render_fixed_mix_page.py` to include the participant-mix follow-up;
-`render_page.py` retains the original study alone. ReportLab generates the scientific scatter plots; the service serves packaged
+analysis-only environment, then run `python analysis/berlin/render_fixed_mix_page.py`
+to include both studies. `render_page.py` retains the original study alone.
+ReportLab generates the scientific scatter plots; the service serves packaged
 HTML with inline SVGs and makes no query for this study. The generator first
 checks the aggregate correlations. The generated HTML is committed with the page.
 
