@@ -31,7 +31,7 @@ def test_static_page_does_not_construct_a_warehouse_client():
     soup = BeautifulSoup(response.text, 'html.parser')
     css = request('/assets/styles.css')
     assert soup.find('link',rel='stylesheet')['href'] == '/assets/styles.css?v='+sha256(css.content).hexdigest()
-    assert len(soup.select('figure svg[role="img"]')) == 8
+    assert len(soup.select('figure svg[role="img"]')) == 9
     assert all('2006' in s.get_text() for s in soup.select('figure svg'))
     assert soup.find('a',href='#main')
     assert soup.find('main',id='main')
@@ -67,3 +67,35 @@ def test_navigation_and_published_hashes():
         assert sha256((ROOT/'analysis/berlin'/filename).read_bytes()).hexdigest() == expected
     assert '/home/' not in json.dumps(manifest)
     assert '/mnt/' not in json.dumps(manifest)
+
+
+def test_participant_mix_section_matches_checked_aggregates():
+    response=request('/case-studies/berlin')
+    soup=BeautifulSoup(response.text,'html.parser')
+    section=soup.select_one('#fixed-mix')
+    assert section is not None
+    assert '541,659' in section.get_text()
+    assert '16 edition-level weather observations' in section.get_text()
+    assert 'does not establish a causal heat effect' in section.get_text()
+    folder=ROOT/'docs/evidence/berlin-fixed-mix'
+    associations=json.loads((folder/'associations.json').read_bytes())
+    before_after=section.select('.study-overview tbody td')
+    assert [cell.get_text() for cell in before_after]==[
+        f"{associations['series'][view+':median']['pearson_r']['value']:+.3f}"
+        for view in ('eligible_unweighted','fixed_mix')]
+    source=list(csv.DictReader((folder/'summaries.csv').open()))
+    expected=[r for r in source if r['view']!='whole_capture']
+    displayed=section.select('[aria-label="Participant-mix chart values"] tbody tr')
+    assert len(displayed)==len(expected)==32
+    for row,value in zip(displayed,expected):
+        cells=[cell.get_text() for cell in row.find_all(['th','td'])]
+        assert cells[0]==value['year']
+        assert cells[1]==('Recorded' if value['view']=='eligible_unweighted' else 'Fixed mix')
+        assert float(cells[2])==float(value['median_temp_c'])
+        for index,metric in enumerate(('p25','median','p75'),3):
+            minutes,seconds=cells[index].split(':')
+            assert abs(int(minutes)*60+float(seconds)-float(value[metric+'_pace_s_per_km']))<=.051
+        assert abs(float(cells[6])-float(value['iqr_pace_s_per_km']))<=.051
+    assert all(tag.find_parent('details') for tag in section.select('figure, [aria-label="Participant-mix chart values"]'))
+    assert section.select_one('svg[role="img"]')
+    assert not section.find('script')

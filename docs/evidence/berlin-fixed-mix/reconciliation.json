@@ -1,0 +1,10 @@
+{
+  "basis": "Independent NDJSON/time/category reader; prefix-count CDF queries and binary-search quantiles; covariance correlation and partial-correlation formula. No study.py calculation helpers.",
+  "edition_exports": 16,
+  "full_duration_histograms": "identical for whole capture and every age/gender group",
+  "independent_correlations": 204,
+  "independent_distribution_measure_checks": 192,
+  "independent_year_sensitivities": 3,
+  "raw_category_cells_checked": 417,
+  "status": "matched"
+}

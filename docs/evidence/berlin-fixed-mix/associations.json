@@ -1,0 +1,1304 @@
+{
+  "edition_weather_contexts": 16,
+  "median_linear_year_sensitivity": {
+    "eligible_unweighted": {
+      "reason": null,
+      "value": 0.8895021198010286
+    },
+    "fixed_mix": {
+      "reason": null,
+      "value": 0.9117711628005366
+    },
+    "whole_capture": {
+      "reason": null,
+      "value": 0.8896286627884226
+    }
+  },
+  "reference_mix_frozen_for_omissions": true,
+  "series": {
+    "eligible_unweighted:iqr": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.5322082684828642
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.46520393241463553
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.5642951179209988
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.5834380389998362
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.5266234122395532
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.5291438514553538
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.5688397247648579
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.4990840704065894
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.5388886234116829
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.5240293345814312
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.5144912165654674
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.5325520099887486
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.5603838765900133
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.5045322340141503
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.5955207795309748
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.5449242835911933
+        }
+      ],
+      "leave_one_out_max": 0.5955207795309748,
+      "leave_one_out_min": 0.46520393241463553,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.5346449201536558
+      }
+    },
+    "eligible_unweighted:median": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.8829626809115965
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.8713671842127032
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.877425349951792
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.8395212149808203
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.8805129313063748
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.8814547445637759
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.8688976850712185
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.8774237776555089
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.8854295119352156
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.8778884453954199
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.8707995518511117
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.9088846209789374
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.8811088536937081
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.8806290766446881
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.9146917931532129
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.9098821311001558
+        }
+      ],
+      "leave_one_out_max": 0.9146917931532129,
+      "leave_one_out_min": 0.8395212149808203,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.8820617439376588
+      }
+    },
+    "eligible_unweighted:p25": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.8831030567554325
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.8821007961443957
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.8774244715506742
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.8291960275080972
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.88509557265551
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.88248681630218
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.8666095840296122
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.8859767412527663
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.8856877099882189
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.8793683846471598
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.8749760519507501
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.9209868771480111
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.8949282928072022
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.8927198245276825
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.8957960365286974
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.8817589102392922
+        }
+      ],
+      "leave_one_out_max": 0.9209868771480111,
+      "leave_one_out_min": 0.8291960275080972,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.8832842197496215
+      }
+    },
+    "eligible_unweighted:p75": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.7833725066110023
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.7441807509734557
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.7879584779120294
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.7510591532778957
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.7767958830169303
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.7772901917519103
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.7778608089246047
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.7633200623974529
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.78285356772332
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.7711702376561811
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.7642059079511494
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.7870559366968819
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.7792799885046686
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.7675509254909633
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.828258585472588
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.8535663111475198
+        }
+      ],
+      "leave_one_out_max": 0.8535663111475198,
+      "leave_one_out_min": 0.7441807509734557,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.7790619804552908
+      }
+    },
+    "fixed_mix:iqr": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.5526109123502909
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.4874764085812306
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.5845803773551864
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.5965796737942388
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.5477629520093887
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.5500168835457907
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.5854671755604501
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.5205274300892224
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.5599415006591287
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.5450677761990016
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.5350396098631603
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.5540648800669147
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.5777635087306956
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.5273339447727576
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.6112862868359438
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.5850129200138217
+        }
+      ],
+      "leave_one_out_max": 0.6112862868359438,
+      "leave_one_out_min": 0.4874764085812306,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.5550962987960545
+      }
+    },
+    "fixed_mix:median": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.8876405052690375
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.8989142090142382
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.8772847710339203
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.8310246126786114
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.8845188625899928
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.8834156334442098
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.8671979305732563
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.8813427609746025
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.8879329897117056
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.880344368955666
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.870258545786223
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.9296778201688373
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.8895530739167878
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.8965176546324294
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.8879915544333716
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.8783337727611024
+        }
+      ],
+      "leave_one_out_max": 0.9296778201688373,
+      "leave_one_out_min": 0.8310246126786114,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.8840742096455282
+      }
+    },
+    "fixed_mix:p25": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.7762535529254894
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.8151018415813135
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.7552980736279831
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.6553349647082178
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.7841667282430085
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.772597150772688
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.7349466801226922
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.7765521919634617
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.7726898868689012
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.7618045238755198
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.7454587235489524
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.8159161266895014
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.7832623623293639
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.8024843067117602
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.7667137052435584
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.7781108671500673
+        }
+      ],
+      "leave_one_out_max": 0.8159161266895014,
+      "leave_one_out_min": 0.6553349647082178,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.7705505392667821
+      }
+    },
+    "fixed_mix:p75": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.870613534223347
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.8645956146748425
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.8681097520454668
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.8326288451912823
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.8686216996321391
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.8691574561919247
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.8619246962639479
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.8607563027665187
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.8749626570476351
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.8658872769457151
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.8558048609157901
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.8877710620355178
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.8680338360454738
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.8653658608580159
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.8937231941244002
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.9288479048312857
+        }
+      ],
+      "leave_one_out_max": 0.9288479048312857,
+      "leave_one_out_min": 0.8326288451912823,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.8702553372340688
+      }
+    },
+    "whole_capture:iqr": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.5321849397199169
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.46517853568815704
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.5642648473456328
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.5833865056885127
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.5266001755194072
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.5291214775694472
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.5688039786823176
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.49906151795871523
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.5388622149577783
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.5238894329410897
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.5147379587681544
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.5325279059758216
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.560263556453164
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.5045048949024006
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.5955161402758289
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.5449391725123881
+        }
+      ],
+      "leave_one_out_max": 0.5955161402758289,
+      "leave_one_out_min": 0.46517853568815704,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.5346227975824546
+      }
+    },
+    "whole_capture:median": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.883068304588475
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.8715245387275
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.8775629145224494
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.8397042692315392
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.880645900350916
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.8815872237713308
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.8690450459948126
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.877460112401932
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.885561547088651
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.8780243927666661
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.8709443665608788
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.9090164906963168
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.8812212635680206
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.8807647791104156
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.91482386845622
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.9100319778352607
+        }
+      ],
+      "leave_one_out_max": 0.91482386845622,
+      "leave_one_out_min": 0.8397042692315392,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.8821926100346034
+      }
+    },
+    "whole_capture:p25": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.8832774328023457
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.8823922874382639
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.8776097327945075
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.829468915851654
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.8852938733271313
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.8826735723982785
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.8668158814266775
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.8859686438156523
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.8858550678268373
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.8795511079482787
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.8750414020212834
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.9215140876264608
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.894803800803123
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.8928780279975014
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.8960057620092554
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.8819616175437677
+        }
+      ],
+      "leave_one_out_max": 0.9215140876264608,
+      "leave_one_out_min": 0.829468915851654,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.8834650753119678
+      }
+    },
+    "whole_capture:p75": {
+      "direction_change_omissions": [],
+      "leave_one_out": [
+        {
+          "edition_count": 15,
+          "omitted_year": 2003,
+          "reason": null,
+          "value": 0.7833232259371898
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2004,
+          "reason": null,
+          "value": 0.7442000815452228
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2005,
+          "reason": null,
+          "value": 0.787910158320936
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2006,
+          "reason": null,
+          "value": 0.7510199087931312
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2007,
+          "reason": null,
+          "value": 0.7767585311406786
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2008,
+          "reason": null,
+          "value": 0.7772566209325589
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2009,
+          "reason": null,
+          "value": 0.7778153708025088
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2010,
+          "reason": null,
+          "value": 0.7632327189467111
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2011,
+          "reason": null,
+          "value": 0.782812113280593
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2012,
+          "reason": null,
+          "value": 0.771123717925599
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2013,
+          "reason": null,
+          "value": 0.7642027434171688
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2014,
+          "reason": null,
+          "value": 0.7870984506449291
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2015,
+          "reason": null,
+          "value": 0.7792906425696543
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2016,
+          "reason": null,
+          "value": 0.7675186324201067
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2017,
+          "reason": null,
+          "value": 0.8282422776661676
+        },
+        {
+          "edition_count": 15,
+          "omitted_year": 2018,
+          "reason": null,
+          "value": 0.8534663539731302
+        }
+      ],
+      "leave_one_out_max": 0.8534663539731302,
+      "leave_one_out_min": 0.7442000815452228,
+      "pearson_r": {
+        "reason": null,
+        "value": 0.77903237327229
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "berlin_fixed_mix_pilot_v1",
+  "reference_commit": "4948195c19f9419ad6f4c71b1e7f1900937a7da8",
+  "parent_configuration": "inputs.json",
+  "parent_configuration_sha256": "a2e50eb5d1144e665d72ba9193c9e68491e31da2ec6fc2647ec49e5cf071968e",
+  "years": [
+    2003,
+    2004,
+    2005,
+    2006,
+    2007,
+    2008,
+    2009,
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018
+  ],
+  "age_bands": {
+    "under40": [
+      "18",
+      "20",
+      "30",
+      "35"
+    ],
+    "40-49": [
+      "40",
+      "45"
+    ],
+    "50-59": [
+      "50",
+      "55"
+    ],
+    "60+": [
+      "60",
+      "65",
+      "70",
+      "75",
+      "80"
+    ]
+  },
+  "recorded_genders": [
+    "female",
+    "male"
+  ],
+  "unmapped_age_codes": [
+    "",
+    "M",
+    "M<"
+  ],
+  "expected_accepted": 541730,
+  "expected_eligible": 541659,
+  "expected_unmapped": 71,
+  "reference_mix": "Arithmetic mean of within-edition eligible age/gender proportions; equal edition influence. Freeze for all omissions.",
+  "quantiles": "Cumulative mass inversion; exact boundary averages current and next distinct duration. Same rule for raw and adjusted distributions; different from warehouse linear quartiles.",
+  "weather": "Existing seven ERA5 hourly observations, 09:00-15:00 Europe/Berlin; median temperature at 52.5163,13.3777.",
+  "outcomes": [
+    "p25",
+    "median",
+    "p75",
+    "iqr"
+  ],
+  "distance_km": 42.195,
+  "association": "Pearson over 16 edition contexts; every whole-edition omission. Fixed reference mix.",
+  "year_sensitivity": "Median pace only: Pearson of temperature and pace residuals after separate linear year fits over all 16 editions. Independently checked by partial-correlation formula.",
+  "age_definition_url": "https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2021.654544/full",
+  "limits": "Exploratory research captures; broad bands retain within-band variation. No adjustment for training/ability, timing, capture completeness or all historical changes. No causal interpretation, p-values or predictions."
+}

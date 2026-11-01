@@ -1281,6 +1281,9 @@ footer {
 .berlin-study .study-card .study-group-label { margin: 0 0 .35rem; color: var(--accent); font-size: .8rem; font-weight: 650; }
 .berlin-study .study-card .study-population { margin: .35rem 0 .7rem; color: #53675d; font-size: .87rem; }
 .berlin-study .study-sensitivity { margin: 2rem 0 1.2rem; }
+.berlin-study #fixed-mix { padding-top: 24px; }
+.berlin-study .fixed-mix-figure { margin: 24px 0; }
+.berlin-study .fixed-mix-plot { display: block; width: 100%; height: auto; }
 @media (max-width: 700px) {
   .berlin-study .study-steps { grid-template-columns: 1fr; gap: 1rem; }
   .berlin-study .study-steps li { padding-top: .7rem; }
