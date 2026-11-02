@@ -1,0 +1,65 @@
+{
+  "checked_on": "2026-11-01",
+  "source_commit": "a5bb731f5891ff59f963207c1c25a6b6b297ef48",
+  "case_study_url": "https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin#fixed-mix",
+  "image": "europe-west1-docker.pkg.dev/runwx-learning-mifuha/runwx/runwx-api@sha256:f843a49182b4beba38101da0c621fe72e5d4c90273cc6e944d4aa36762ff9edc",
+  "cloud_build_id": "32b7c22c-c5e8-4859-972f-606511114c83",
+  "cloud_run": {
+    "service": "runwx-api",
+    "region": "europe-west1",
+    "ready_revision": "runwx-api-00016-wf4",
+    "traffic_percent": 100
+  },
+  "terraform": {
+    "saved_plan_sha256": "1d4eb3e27378160e346e06cdc907bd58fb8c6ffaea92fd9ae380c4efa653bc1a",
+    "changes": {
+      "add": 0,
+      "update": 1,
+      "destroy": 0
+    },
+    "changed_resource": "google_cloud_run_v2_service.api",
+    "changed_field": "existing service container image only",
+    "iam_and_other_settings_unchanged": true,
+    "post_apply_plan": "no-op, exit 0"
+  },
+  "http_checks": {
+    "/health": 200,
+    "/": 200,
+    "/how-it-works": 200,
+    "/case-studies/berlin": 200,
+    "/assets/app.js": 200,
+    "/assets/styles.css": 200,
+    "/api/courses/lydd-half/comparison": 200,
+    "/api/courses/folkestone-half/comparison": 200,
+    "/api/courses/great-north-run/comparison": 200,
+    "/api/courses/battersea-park-10k/comparison": 200,
+    "/api/courses/berlin-marathon/comparison": 200
+  },
+  "case_study_html_sha256": "5a9b95d75791c16f2e9a01db4778443414d384b819d5ba85b31869a41806e5d6",
+  "pages_assets_and_cache_checks": "passed",
+  "course_editions": {
+    "lydd-half": 5,
+    "folkestone-half": 3,
+    "great-north-run": 19,
+    "battersea-park-10k": 18,
+    "berlin-marathon": 16
+  },
+  "comparison_check": "Every public field matched the predeployment verified responses; Berlin also matched the frozen independently reconciled response.",
+  "browser_checks": {
+    "widths_px": [
+      1440,
+      390,
+      320
+    ],
+    "layout": "no overflow with disclosures closed or open; nine SVGs, four primary charts and 32 follow-up table rows",
+    "keyboard": "native disclosures and visible focus passed",
+    "javascript_errors": 0
+  },
+  "public_evidence_links_checked": 18,
+  "retained_deployment_record_sha256": "fad70d6f27faffc059989b54ac8f20e1d1a638ac77844da9c1ef6509a5b4c416",
+  "limits": [
+    "This records the 1 November deployment checks, not continuous monitoring.",
+    "The validation made bounded public API reads; it repeated no warehouse load or dbt build. IAM, monitoring and orchestration were unchanged.",
+    "The participant-mix study is static. Its 16 edition weather contexts, broad age bands and research-source limits remain explicit."
+  ]
+}

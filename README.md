@@ -26,8 +26,9 @@ The live [Berlin case study](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-stud
 checks the pattern within different runner groups and after leaving out one year
 at a time.
 Its [method, code and aggregate checks](analysis/berlin/README.md) are also available.
-The [participant-mix follow-up](analysis/berlin/FIXED_MIX.md) checks the pattern with
-four age bands and a fixed gender mix. It is prepared for the next website deployment.
+The live [participant-mix follow-up](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin#fixed-mix)
+checks the pattern using four age bands within each recorded gender.
+Its [method and aggregate checks](analysis/berlin/FIXED_MIX.md) are also available.
 
 ## Real historical comparison
 

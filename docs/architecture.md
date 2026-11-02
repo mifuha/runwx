@@ -161,6 +161,10 @@ weather validation. The page is built from checked aggregates and packaged with
 the service. It makes no warehouse query or calculation when opened. These are
 edition-level associations, not evidence of individual heat effects.
 
+The live [participant-mix follow-up](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin#fixed-mix)
+uses the same offline path to compare editions with a fixed recorded age/gender
+mix. Its [method and checks](../analysis/berlin/FIXED_MIX.md) explain the four age bands.
+
 <a id="planned--next-milestone-warehouse-analysis"></a>
 ## Cloud Run validation/export path
 
