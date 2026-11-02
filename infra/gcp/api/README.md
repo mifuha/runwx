@@ -56,12 +56,13 @@ The Berlin case study and all five course comparisons are live. Berlin's stored 
 Viewer grant; the API has no Berlin raw-snapshot access. There are 111 explicit
 table grants. Berlin keeps its 64 MiB query cap.
 
-The latest deployment on 30 October 2026 added `/case-studies/berlin` and changed
-only the existing service image: **0 additions, 1 update, 0 deletions**.
-Revision `runwx-api-00015-4fj` receives all traffic and uses the verified image digest
-`sha256:6f21bad94a46cd64f96fa65dd8e1e207b77535449d5c172fc0351669e61a63ca`.
+The latest deployment on 1 November 2026 added the participant-mix follow-up to
+`/case-studies/berlin` and changed only the existing service image:
+**0 additions, 1 update, 0 deletions**.
+Revision `runwx-api-00016-wf4` receives all traffic and uses the verified image digest
+`sha256:f843a49182b4beba38101da0c621fe72e5d4c90273cc6e944d4aa36762ff9edc`.
 The study is a packaged static page; it adds no warehouse query or data access.
 IAM and other service settings were unchanged. Live health, pages, assets, cache
 headers and all five course responses passed checks, as did desktop/mobile layout
 and keyboard checks. The full post-apply Terraform plan was no-op. No source data
-or dbt models were rebuilt. See the [deployment check](../../../docs/evidence/berlin-case-study-api-validation.json).
+or dbt models were rebuilt. See the [deployment check](../../../docs/evidence/berlin-fixed-mix-api-validation.json).

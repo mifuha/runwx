@@ -183,3 +183,9 @@ On 30 October 2026, an image-only deployment added the Berlin case study. All
 five comparison responses kept their verified values. Page, asset, cache and
 desktop/mobile keyboard checks passed; the full Terraform plan then reported
 no changes. See the [deployment check](evidence/berlin-case-study-api-validation.json).
+
+On 1 November 2026, another image-only update added the participant-mix follow-up
+to the same static Berlin page. All five course responses retained their verified
+values. Page, asset, cache, evidence-link and desktop/mobile keyboard checks passed;
+the full Terraform plan was no-op. See the
+[deployment check](evidence/berlin-fixed-mix-api-validation.json).

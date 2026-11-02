@@ -95,5 +95,8 @@ python analysis/berlin/render_fixed_mix_page.py
 ```
 
 The application serves that generated static HTML and performs no study
-calculations or warehouse queries at request time. This extension is prepared for
-deployment; its code publication does not mean the live service has been updated.
+calculations or warehouse queries at request time. The follow-up is
+[live on the existing service](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin#fixed-mix).
+The 1 November 2026 image-only deployment passed page, asset, comparison-response
+and browser checks; the full Terraform plan then reported no remaining changes.
+See the [deployment record](../../docs/evidence/berlin-fixed-mix-api-validation.json).
