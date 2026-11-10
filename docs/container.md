@@ -25,6 +25,20 @@ by another build and output comparison.
 
 ## Run and compare
 
+Run the same installed-image check used in CI:
+
+```bash
+python3 scripts/check_report_container.py --image runwx:offline
+```
+
+Use `sudo python3` if your Docker setup requires it. The helper needs only Python's
+standard library and an already-built image. It checks the recorded Lydd counts,
+median and fastest-20 median, settings and input hashes; runs twice to check identical
+output; and verifies that a malformed weather timestamp fails without a report.
+Only copies of the public fixtures are mounted. The image keeps its non-root user,
+with no network and read-only inputs/filesystem. Temporary files are removed.
+The weather remains synthetic. This checks the packaged report, not warehouse SQL.
+
 Activate the existing Python environment as in the [quickstart](../README.md#quickstart).
 These commands use bash and create a new temporary folder for the outputs.
 

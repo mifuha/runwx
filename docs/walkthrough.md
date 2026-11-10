@@ -52,3 +52,8 @@ and rerun without duplicating data. It does not provide automatic rollback.
 [See the failure and recovery guide](failure-and-recovery.md) for the recorded
 cloud runs and offline tests. API availability also has a dashboard and
 [tested email alerts](../infra/gcp/monitoring/README.md#verified-alert-test).
+
+To try a small example yourself, run the [container check](container.md#run-and-compare).
+It verifies the saved Lydd report with synthetic weather, an identical rerun and a
+deliberately invalid timestamp. Then try the [Berlin aggregate checker](../analysis/berlin/README.md#reproduce-the-public-aggregate-checks):
+it checks published calculations without requiring the private runner inputs or cloud access.
