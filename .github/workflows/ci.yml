@@ -70,7 +70,7 @@ jobs:
         run: docker build --tag runwx-report-ci .
 
       - name: Check report command offline
-        run: docker run --rm --network none --read-only runwx-report-ci --help
+        run: python3 scripts/check_report_container.py --image runwx-report-ci
 
   api-container:
     runs-on: ubuntu-latest
