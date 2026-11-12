@@ -427,6 +427,21 @@ select:focus-visible {
   overflow: hidden;
 }
 
+.data-download {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid currentColor;
+  border-radius: 0.35rem;
+  color: #235b43;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.data-download:hover { background: #edf3ed; }
+.data-download:focus-visible { outline: 3px solid #235b43; outline-offset: 3px; }
+.data-download:disabled { opacity: 0.5; cursor: default; }
+
 .table-panel .panel-heading {
   margin: 0;
   padding: 24px 28px 18px;

@@ -20,6 +20,12 @@ plots, a temperature–pace scatter and a compact edition table. Pace stays visi
 measure. The HTML, CSS and JavaScript are packaged with the API; the page has no
 external frontend or chart dependency.
 
+The comparison table includes “Download data (JSON)”. It saves the loaded API
+response, including unrounded values, nulls and source/weather notes, without
+another request. The download covers every edition returned for the selected
+course, regardless of the chart's selected metric. It is unavailable while loading
+or after a failed request.
+
 ```text
 GET /api/courses/{course_slug}/comparison
 ```
