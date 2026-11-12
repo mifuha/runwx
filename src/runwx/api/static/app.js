@@ -58,6 +58,7 @@ const weatherMetrics = {
 };
 
 const elements = {
+  download: document.querySelector("#download-comparison"),
   controls: document.querySelector("#comparison-controls"),
   course: document.querySelector("#course-select"),
   paceMetric: document.querySelector("#pace-metric-select"),
@@ -461,6 +462,7 @@ function updateUrl() {
 
 function render(data) {
   comparison = data;
+  elements.download.disabled = false;
   document.querySelector("#berlin-study-link").hidden = data.course_slug !== "berlin-marathon";
   elements.courseName.textContent = data.course_name;
   if (isResearch(data)) {
@@ -488,6 +490,8 @@ function render(data) {
 
 async function loadCourse() {
   const sequence = ++loadSequence;
+  comparison = null;
+  elements.download.disabled = true;
   updateUrl();
   elements.status.textContent = "Loading comparison…";
   elements.status.classList.remove("error");
@@ -528,7 +532,27 @@ function useInitialSelection() {
   if (Object.hasOwn(weatherMetrics, weatherMetric)) elements.weatherMetric.value = weatherMetric;
 }
 
+function downloadComparison() {
+  if (!comparison || elements.download.disabled) return;
+  const blob = new Blob([JSON.stringify(comparison, null, 2) + "\n"], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `runwx-${comparison.course_slug}-comparison.json`;
+  document.body.append(link);
+  try {
+    link.click();
+  } finally {
+    link.remove();
+    // Give the browser time to start consuming the download before releasing it.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
 elements.course.addEventListener("change", loadCourse);
+elements.download.addEventListener("click", downloadComparison);
 elements.paceMetric.addEventListener("change", () => {
   updateUrl();
   if (comparison) renderCharts(comparison);

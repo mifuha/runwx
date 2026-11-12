@@ -265,3 +265,57 @@ scatter(research);
 assert.match(renderedElements.scatterCaption.textContent, /09:00–15:00 Europe\/Berlin/);
 assert.equal(renderedElements.scatterCaption.textContent.includes('Few editions'), false);
 console.log('All-course scatter preserves paired values, labels and accessible details across metrics and screen widths.');
+
+// Downloads preserve the loaded contract; no request or analytical conversion.
+const downloads = [];
+const released = [];
+const timers = [];
+let savedBlob;
+context.Blob = class {
+  constructor(parts, options) { this.text = parts.join(''); this.type = options.type; }
+};
+context.URL = class extends URL {
+  static createObjectURL(blob) { savedBlob = blob; return 'blob:test'; }
+  static revokeObjectURL(url) { released.push(url); }
+};
+context.setTimeout = (callback) => timers.push(callback);
+context.document.body = { append() {} };
+context.document.createElement = () => ({
+  click() { downloads.push({filename: this.download, blob: savedBlob}); },
+  remove() {},
+});
+context.fetch = () => { throw new Error('Download must not fetch'); };
+for (const data of [
+  {course_slug: 'lydd-half', editions: [{finishers: 189, pace: 329.612345, change: null}]},
+  {course_slug: 'great-north-run', scope: 'sampled', sample_note: 'Top 1000 only',
+    editions: [{sample_size: 1000, timing: {chip: 990, gun: 0, unknown: 10}}]},
+  {course_slug: 'berlin-marathon', scope: 'research_capture', population_note: 'Research capture',
+    editions: [{published_count: null, weather: {window: '09:00–15:00'}}]},
+]) {
+  context.downloadData = data;
+  vm.runInContext('comparison = downloadData; elements.download.disabled = false; downloadComparison();', context);
+  const saved = downloads.at(-1);
+  assert.deepEqual(JSON.parse(saved.blob.text), data);
+  assert.equal(saved.blob.type, 'application/json');
+  assert.equal(saved.filename, `runwx-${data.course_slug}-comparison.json`);
+}
+vm.runInContext('elements.download.disabled = true; downloadComparison(); comparison = null; elements.download.disabled = false; downloadComparison();', context);
+assert.equal(downloads.length, 3);
+timers.forEach(callback => callback());
+assert.deepEqual(released, ['blob:test', 'blob:test', 'blob:test']);
+
+async function checkLoadingDownload() {
+  let rejectRequest;
+  context.window = { location: { href: 'https://example.invalid/' }, history: { replaceState() {} } };
+  context.console = { error() {} };
+  context.fetch = () => new Promise((_resolve, reject) => { rejectRequest = reject; });
+  const loading = vm.runInContext('comparison = downloadData; elements.download.disabled = false; loadCourse();', context);
+  assert.equal(vm.runInContext('elements.download.disabled && comparison === null', context), true);
+  vm.runInContext('downloadComparison()', context);
+  assert.equal(downloads.length, 3);
+  rejectRequest(new Error('offline failure'));
+  await loading;
+  assert.equal(vm.runInContext('elements.download.disabled && comparison === null', context), true);
+  console.log('JSON downloads preserve response scopes and values; loading/failure cannot download stale data.');
+}
+checkLoadingDownload().catch(error => { console.error(error); process.exitCode = 1; });
