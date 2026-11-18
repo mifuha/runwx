@@ -1,59 +1,36 @@
 # runwx in two minutes
 
-A simple chart sits on top of a data pipeline: saved race results and historical
-weather become checked, repeatable comparisons.
+## Berlin · Does the pattern hold?
 
-## 1. Start with the result
+Warmer Berlin Marathons tended to have slower median paces. Could a change in who
+entered explain it? I gave each edition the same mix of four age bands within
+each recorded gender. The correlation barely moved, from +0.882 to +0.884.
+The fastest groups showed a less consistent pattern.
 
-[Open Battersea Park 10K](https://runwx-api-f6n35ol7sa-ew.a.run.app/?course=battersea-park-10k&pace=median-pace&weather=temperature).
-There are **18 race dates and 2,725 finishers**. Follow median pace alongside
-temperature, then switch the weather measure to wind. The table gives the numbers
-behind the chart. Scroll down to the temperature–pace scatter: each dot is one
-race date. For a larger race, switch to Berlin: 16 research editions and 541,730
-accepted records. Across all five courses, the site now shows 61 editions.
+There are 541,730 captured results across 16 editions. The age comparison uses
+the 541,659 with a usable age category. Each dot is one race day, so this tells
+us about editions rather than how an individual runner responds to heat.
+[Explore the Berlin study and its checks](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin#fixed-mix).
 
-Different runners enter each race. This is a way to explore historical patterns,
-not proof that weather caused a pace change.
+## Battersea · Why store 18 rows?
 
-## 2. Follow the data
+The results rarely change. Instead of asking BigQuery to calculate the comparison
+each time the API needed an uncached result, I used dbt to store one summary row
+per edition. All 18 editions returned the same values.
 
-```mermaid
-flowchart TD
-    inputs["Saved race results + historical weather"] --> python["Python: validate and export"]
-    python --> warehouse["BigQuery + dbt: store and calculate"]
-    warehouse --> api["Read-only API"]
-    api --> chart["Trends + scatter + table"]
-```
+In three uncached reads per version, billed data fell from 180 to 10 MiB per
+read. The median local API response time against BigQuery fell from 2.56 to
+0.29 seconds. The trade-off is simple: when the inputs change, I have to rebuild
+and check the summary. [See the serving experiment](battersea-serving.md).
 
-Three choices keep the output explainable:
+## Folkestone · What if the input is wrong?
 
-- **Keep the inputs.** File hashes identify the exact snapshots used. An identical
-  rerun verifies existing rows instead of loading duplicates.
-- **Calculate in one place.** dbt owns the statistics. The API serves those results
-  without recalculating them in Python.
-- **Check the answer.** Independent reconciliation compares warehouse results with
-  saved expectations before a run is reported as successful.
+In a Cloud Composer run, a missing timing setting changed the exported results.
+The file’s hash differed from the expected one, and Airflow stopped the run
+before the BigQuery load. After I corrected the setting, the pipeline passed.
+An identical rerun checked the 459 rows already in BigQuery and skipped the upload.
+[Follow the failure and recovery](failure-and-recovery.md).
 
-The [visual pipeline tour](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
-follows Folkestone 2019: **459 accepted results and 459 weather matches**.
-Separate Cloud Run jobs handle export and dbt. Airflow coordinated a verified
-Composer run; that environment was removed, and historical refreshes are manual.
-
-## 3. See what happens when it fails
-
-In a real Composer run, a missing timing setting changed the exported data.
-The expected hash check caught it and stopped the pipeline **before BigQuery and
-dbt**. After the setting was corrected, the run passed. An identical rerun verified
-all 459 existing rows without submitting another load.
-
-That is the engineering behind the chart: catch a mismatch, keep the evidence,
-and rerun without duplicating data. It does not provide automatic rollback.
-
-[See the failure and recovery guide](failure-and-recovery.md) for the recorded
-cloud runs and offline tests. API availability also has a dashboard and
-[tested email alerts](../infra/gcp/monitoring/README.md#verified-alert-test).
-
-To try a small example yourself, run the [container check](container.md#run-and-compare).
-It verifies the saved Lydd report with synthetic weather, an identical rerun and a
-deliberately invalid timestamp. Then try the [Berlin aggregate checker](../analysis/berlin/README.md#reproduce-the-public-aggregate-checks):
-it checks published calculations without requiring the private runner inputs or cloud access.
+**Try the chart.** In [Lydd 2022](https://runwx-api-f6n35ol7sa-ew.a.run.app/?course=lydd-half&pace=median-pace&weather=temperature),
+the dot shows the median pace (5:30/km). The line shows the middle half of
+finishers (4:43–6:16/km).

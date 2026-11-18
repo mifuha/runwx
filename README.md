@@ -1,34 +1,17 @@
 # runwx
 
-runwx compares historical race pace and weather across editions of the same course.
-Saved race results and hourly ERA5 reanalysis pass through Python
-validation, BigQuery and dbt into a comparison view with explicit snapshot provenance.
+How does race pace vary with the weather? runwx compares **61 editions across five courses**.
+I built it to explore a sport I care about and to make the numbers behind each chart easy to check.
 
-I'm building it to practise data engineering using something I care about: running.
+**[Explore the Berlin finding](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin)** · **[Take the two-minute engineering tour](docs/walkthrough.md)**
 
-Try the [live comparison](https://runwx-api-f6n35ol7sa-ew.a.run.app/): choose Lydd,
-Folkestone, Great North Run, Battersea Park 10K or Berlin Marathon. View pace
-beside the weather for each edition. Great North Run covers 19 editions, using the fastest 1,000
-available running results per edition, with a fixed start-area weather window.
-Battersea covers 18 full-field editions from 2019 and 2022–2024. The live
-[How it works page](https://runwx-api-f6n35ol7sa-ew.a.run.app/how-it-works)
-follows Folkestone 2019 from saved inputs to the chart.
+Warmer Berlin Marathons tended to have slower median paces. The pattern held when
+each edition was given the same recorded age and gender mix. The study draws on
+541,730 results, but each race day supplies just one weather observation: 16 in all.
 
-Short on time? [Take the two-minute tour](docs/walkthrough.md): the live result,
-the main design choices, and one real failure and recovery.
-
-The live site covers **five courses and 61 editions**, including Berlin's 16-edition
-research cohort (2003–2018, 541,730 accepted records). Choose median, mean or
-fastest-20 median pace; explore trends, a temperature–pace scatter plot and the
-edition table. Each scatter dot is one edition of the selected course.
-[Source limits and checks](docs/berlin-statistics.md) stay explicit.
-The live [Berlin case study](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin)
-checks the pattern within different runner groups and after leaving out one year
-at a time.
-Its [method, code and aggregate checks](analysis/berlin/README.md) are also available.
-The live [participant-mix follow-up](https://runwx-api-f6n35ol7sa-ew.a.run.app/case-studies/berlin#fixed-mix)
-checks the pattern using four age bands within each recorded gender.
-Its [method and aggregate checks](analysis/berlin/FIXED_MIX.md) are also available.
+[Compare the five courses](https://runwx-api-f6n35ol7sa-ew.a.run.app/) to explore pace and weather yourself.
+Python validates the saved results and ERA5 weather, BigQuery and dbt build the
+edition summaries, and FastAPI serves them to the charts.
 
 ## Real historical comparison
 
