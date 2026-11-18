@@ -213,6 +213,9 @@ def test_unknown_course_never_queries_bigquery():
         [comparison_row(course_id="other-course")],
         [comparison_row(), comparison_row()],
         [comparison_row(median_pace_s_per_km=float("nan"))],
+        [comparison_row(pace_p25_s_per_km=350.0)],
+        [comparison_row(pace_p75_s_per_km=310.0)],
+        [comparison_row(pace_p25_s_per_km=390.0, median_pace_s_per_km=None)],
         [comparison_row(started_at_utc=datetime(2022, 3, 6, 10))],
         [{key: value for key, value in comparison_row().items() if key != "finisher_count"}],
     ],
@@ -222,6 +225,21 @@ def test_invalid_mart_rows_are_reported_as_unavailable(rows):
 
     with pytest.raises(ComparisonUnavailableError, match="example-half"):
         repo.get_course_comparison(SOURCE.slug)
+
+
+@pytest.mark.parametrize("bounds", [
+    (300.0, 300.0, 300.0),
+    (None, 300.0, 350.0),
+    (250.0, 300.0, None),
+    (None, None, None),
+])
+def test_tied_and_unavailable_quartiles_are_preserved(bounds):
+    p25, median, p75 = bounds
+    repo, _, _ = repository([comparison_row(
+        pace_p25_s_per_km=p25, median_pace_s_per_km=median, pace_p75_s_per_km=p75,
+    )])
+    pace = repo.get_course_comparison(SOURCE.slug).editions[0].pace
+    assert (pace.p25_s_per_km, pace.median_s_per_km, pace.p75_s_per_km) == bounds
 
 
 def test_known_course_with_no_rows_has_an_empty_edition_list():

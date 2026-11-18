@@ -376,6 +376,11 @@ select:focus-visible {
   font-size: 12px;
 }
 
+.pace-range {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
 .chart-path {
   fill: none;
   stroke: var(--accent);

@@ -39,14 +39,14 @@ const data = {
   })),
 };
 
-function chart(metric) {
+function chart(metric, course = data) {
   const target = {
     chart: element('div'), title: element('h4'),
     direction: element('p'), caption: element('p'),
   };
   context.chartTarget = target;
   context.chartMetric = metric;
-  context.chartData = data;
+  context.chartData = course;
   vm.runInContext('renderChart(chartData, chartMetric, chartTarget)', context);
   const svg = target.chart.children[0];
   return {
@@ -76,6 +76,27 @@ for (const rendered of [pace, weather]) {
 assert.deepEqual(pace.labels.map((label) => label.textContent), weather.labels.map((label) => label.textContent));
 assert.notEqual(pace.points[0].attributes.cx, pace.points[1].attributes.cx);
 console.log('Battersea chart dates are readable; both plots retain all dated points.');
+
+// An incomplete range leaves its median visible; tied quartiles share one position.
+const spreadCourse = { ...data, editions: data.editions.slice(0, 3).map((edition, i) => ({
+  ...edition, pace: { median_s_per_km: 300, p25_s_per_km: [240, 300, null][i],
+    p75_s_per_km: [360, 300, 800][i], mean_s_per_km: 310, fastest_n_median_s_per_km: 220 },
+})) };
+const spread = chart(vm.runInContext("paceMetrics['median-pace']", context), spreadCourse);
+const ranges = rendered => rendered.svg.children.filter(node => node.attributes.class === 'pace-range');
+const [full, tied] = ranges(spread);
+assert.equal(ranges(spread).length, 2);
+assert.equal(spread.points.length, 3);
+assert.ok(full.attributes.y1 >= 18 && full.attributes.y2 <= 188);
+const medianY = Number(spread.points[0].attributes.cy);
+assert.ok(Number(full.attributes.y1) < medianY && medianY < Number(full.attributes.y2));
+assert.equal(full.attributes.x1, spread.points[0].attributes.cx);
+assert.equal(tied.attributes.y1, tied.attributes.y2);
+assert.match(spread.points[0].attributes['aria-label'], /Middle 50%: 4:00\/km to 6:00\/km/);
+assert.doesNotMatch(spread.points[2].attributes['aria-label'], /Middle 50%/);
+for (const key of ['mean-pace', 'fastest-pace']) {
+  assert.equal(ranges(chart(vm.runInContext(`paceMetrics['${key}']`, context), spreadCourse)).length, 0);
+}
 
 // Research captures have no baseline, individual start or matched-runner fields.
 const research = {
