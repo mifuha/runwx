@@ -3,7 +3,7 @@
 from datetime import date
 from typing import Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 
 class ApiModel(BaseModel):
@@ -17,6 +17,14 @@ class PaceSummary(ApiModel):
     p75_s_per_km: float | None
     fastest_n: int = Field(ge=0)
     fastest_n_median_s_per_km: float | None
+
+    @model_validator(mode="after")
+    def check_quartile_order(self) -> "PaceSummary":
+        quartiles = (self.p25_s_per_km, self.median_s_per_km, self.p75_s_per_km)
+        available = [value for value in quartiles if value is not None]
+        if available != sorted(available):
+            raise ValueError("Pace quartiles must be ordered p25 <= median <= p75")
+        return self
 
 
 class WeatherSummary(ApiModel):

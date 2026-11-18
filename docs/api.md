@@ -20,6 +20,10 @@ plots, a temperature–pace scatter and a compact edition table. Pace stays visi
 measure. The HTML, CSS and JavaScript are packaged with the API; the page has no
 external frontend or chart dependency.
 
+On the median pace chart, a vertical line spans the middle 50% of each edition’s
+results. Its ends use the same pace quartiles shown in the table. The API checks
+that the available quartiles and median are in order.
+
 The comparison table includes “Download data (JSON)”. It saves the loaded API
 response, including unrounded values, nulls and source/weather notes, without
 another request. The download covers every edition returned for the selected

@@ -6,6 +6,10 @@ const paceMetrics = {
   "median-pace": {
     label: "Median pace",
     value: (edition) => edition.pace.median_s_per_km,
+    range: ({ pace }) => {
+      const bounds = [pace.p25_s_per_km, pace.p75_s_per_km];
+      return bounds.every(Number.isFinite) ? bounds : [];
+    },
     format: formatPace,
     axis: formatPace,
     lowerIsBetter: true,
@@ -227,7 +231,7 @@ function svgElement(name, attributes = {}) {
 
 function renderChart(data, metric, target) {
   const points = data.editions
-    .map((edition) => ({ edition, value: metric.value(edition) }))
+    .map((edition) => ({ edition, value: metric.value(edition), range: metric.range?.(edition) ?? [] }))
     .filter((point) => Number.isFinite(point.value));
 
   target.chart.replaceChildren();
@@ -249,7 +253,7 @@ function renderChart(data, metric, target) {
   const margin = { top: 18, right: showDates ? 62 : 28, bottom: 42, left: 62 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const values = points.map((point) => point.value);
+  const values = points.flatMap((point) => [point.value, ...point.range]);
   const rawMin = Math.min(...values);
   const rawMax = Math.max(...values);
   const spread = rawMax - rawMin || Math.max(Math.abs(rawMin) * 0.08, 1);
@@ -268,7 +272,7 @@ function renderChart(data, metric, target) {
 
   const svg = svgElement("svg", {
     viewBox: `0 0 ${width} ${height}`,
-    role: "img",
+    role: "group",
     "aria-label": `${metric.label} across ${data.editions.length} ${data.course_name} editions`,
   });
 
@@ -294,6 +298,16 @@ function renderChart(data, metric, target) {
     svg.append(label);
   }
 
+  for (const point of points) {
+    if (point.range.length) {
+      const pointX = x(point.edition);
+      svg.append(svgElement("line", {
+        x1: pointX, x2: pointX, y1: y(point.range[0]), y2: y(point.range[1]),
+        class: "pace-range", "aria-hidden": "true",
+      }));
+    }
+  }
+
   const path = points
     .map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.edition)} ${y(point.value)}`)
     .join(" ");
@@ -317,6 +331,10 @@ function renderChart(data, metric, target) {
       previousLabelX = pointX;
     }
 
+    let description = `${editionLabel(point.edition, showDates)}: ${metric.format(point.value)}`;
+    if (point.range.length) {
+      description += ` · Middle 50%: ${point.range.map(metric.format).join(" to ")}`;
+    }
     const circle = svgElement("circle", {
       cx: pointX,
       cy: y(point.value),
@@ -324,10 +342,10 @@ function renderChart(data, metric, target) {
       class: "chart-point",
       tabindex: 0,
       role: "img",
-      "aria-label": `${editionLabel(point.edition, showDates)}: ${metric.format(point.value)}`,
+      "aria-label": description,
     });
     const title = svgElement("title");
-    title.textContent = `${editionLabel(point.edition, showDates)}: ${metric.format(point.value)}`;
+    title.textContent = description;
     circle.append(title);
     svg.append(circle);
   });
@@ -335,6 +353,11 @@ function renderChart(data, metric, target) {
   target.chart.append(svg);
   target.caption.textContent = `${points.length} of ${data.editions.length} editions have this value.` +
     (showDates ? " The table lists every race date." : "");
+  if (metric.range) {
+    const population = isResearch(data) ? "accepted research records"
+      : isSampled(data) ? "fastest 1,000 available results" : "finishers";
+    target.caption.textContent += ` Dots show the median and vertical lines span the middle 50% of ${population} in each edition where both quartiles are available.`;
+  }
 }
 
 function renderScatter(data) {
