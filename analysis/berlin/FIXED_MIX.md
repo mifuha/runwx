@@ -45,6 +45,33 @@ explicitly undefined. No p-values or predictions.
 
 ## Inspect and reproduce
 
+### How large was the difference?
+
+A straight line fitted to the 16 adjusted edition medians gives **5.5 minutes
+longer in median finish time per 5°C warmer** using 09:00–15:00 temperatures.
+Leaving out each edition in turn gives 5.0–6.1 minutes. Restricting the weather
+to 09:00–12:00 gives **7.3 minutes**. The direction holds across both windows,
+while the size depends on which hours are included. These are comparisons
+between editions during the study's observed conditions.
+
+Both fits give every edition equal weight and use the same adjusted finish
+times and ERA5 location. Each temperature is the median of the hourly readings,
+including both endpoints. That gives seven readings in the original window
+and four in the earlier one. The [hourly values](../../docs/evidence/berlin-fixed-mix/temperature-hours.csv)
+are from the weather responses pinned in the [original study manifest](../../docs/evidence/berlin-case-study/manifest.json).
+
+Recompute both estimates and every omitted-edition result from public data:
+
+```bash
+python3 analysis/berlin/finish_time.py
+```
+
+With the existing project installed and the saved ERA5 responses available,
+add `--saved-weather analysis/berlin/inputs.json` to verify every published
+hourly value against the hash-checked source bytes.
+
+### Participant-mix checks
+
 [Public aggregates](../../docs/evidence/berlin-fixed-mix/) contain 48 summaries,
 128 cell counts/proportions, raw age-category counts, reference weights, all
 coefficients, source provenance and the checked figure. No runner-level records

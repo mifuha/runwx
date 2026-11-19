@@ -99,3 +99,8 @@ def test_participant_mix_section_matches_checked_aggregates():
     assert all(tag.find_parent('details') for tag in section.select('figure, [aria-label="Participant-mix chart values"]'))
     assert section.select_one('svg[role="img"]')
     assert not section.find('script')
+    estimate = section.select_one('#finish-time-estimate')
+    assert estimate.find_previous('figure') == section.find('figure')
+    assert [tag.get_text() for tag in estimate.find_all('strong')] == ['5.5 minutes longer', '7.3 minutes']
+    assert '09:00–15:00' in estimate.get_text()
+    assert '09:00–12:00' in estimate.get_text()
