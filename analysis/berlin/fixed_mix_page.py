@@ -4,6 +4,7 @@ from html import escape
 import json
 from pathlib import Path
 from check_fixed_mix import check_public
+from finish_time import estimate
 
 ROOT=Path(__file__).resolve().parents[2]
 EVIDENCE=ROOT/'docs/evidence/berlin-fixed-mix'
@@ -20,6 +21,8 @@ def build_section():
     associations=json.loads((EVIDENCE/'associations.json').read_bytes())
     with (EVIDENCE/'summaries.csv').open(newline='',encoding='utf-8') as f:
         rows=list(csv.DictReader(f))
+    finish_time = estimate(EVIDENCE, rows)
+    finish_time_omissions = finish_time['omit_one_edition_09:00–15:00'].values()
     raw=associations['series']['eligible_unweighted:median']['pearson_r']['value']
     fixed=associations['series']['fixed_mix:median']['pearson_r']['value']
     omitted=next(r['value'] for r in associations['series']['fixed_mix:median']['leave_one_out'] if r['omitted_year']==2006)
@@ -49,12 +52,14 @@ def build_section():
 <p>The {checked['unmapped_age']} records with unclear ages remain in the original whole-capture results. They are excluded from both comparisons above, so that exclusion is not mistaken for an adjustment effect.</p>
 <p>Leaving out 2006 kept the adjusted median correlation positive ({omitted:+.3f}). After separately removing a linear calendar-year trend from temperature and median pace, their residual correlation was {year:+.3f}. This addresses only a straight-line trend.</p>
 <p>The calculation reused saved inputs, the existing parser and fixed 09:00–15:00 Europe/Berlin ERA5 context. Independent export reading and weighted-quantile checks agreed. A separate calculation verified {checked['independent_correlations']} correlation values and {checked['independent_year_sensitivities']} year-sensitivity values. Offline replays reproduced the frozen analytical outputs.</p>
+<p>For the finish-time estimate, we fitted a straight line to the 16 adjusted edition medians. Refitting after leaving each edition out in turn gave {min(finish_time_omissions):.1f}–{max(finish_time_omissions):.1f} minutes per 5°C for the original weather window. <a href="{PUBLIC}docs/evidence/berlin-fixed-mix/temperature-hours.csv">Hourly temperatures used in the check</a></p>
 <p>The public checker reproduces counts, reference proportions and coefficients from aggregates. Reproducing weighted quantiles from source records requires the retained private inputs. The two readers share a research source; agreement does not authenticate that source.</p>
 <p>{evidence}</p><p><a href="{PUBLIC}analysis/berlin/FIXED_MIX.md">Method and reproduction instructions</a> · <a href="{PUBLIC}analysis/berlin/fixed_mix.py">Analysis code</a> · <a href="{PUBLIC}analysis/berlin/check_fixed_mix.py">Independent checker</a></p>
 </details>
-<details class="study-disclosure"><summary>Explore the other parts of the distribution</summary>
+<details class="study-disclosure"><summary>See the pace charts and finish-time estimate</summary>
 <p>P25 describes the faster quarter, the median the middle, and P75 the slower quarter. P75 minus P25 measures the width of the middle half. These positions describe each year's captured field; they are not fixed ability groups.</p>
 <figure class="fixed-mix-figure">{svg}<figcaption>Grey outlines show recorded results with interpretable ages; green dots show the same records with a fixed mix. Different correlations do not measure different individual heat effects. Pace scales differ between panels.</figcaption></figure>
+<p id="finish-time-estimate">Across these 16 editions, 5°C warmer went with a median finish time about <strong>{finish_time['09:00–15:00']:.1f} minutes longer</strong> on the fitted line using 09:00–15:00 temperatures. Using only 09:00–12:00 raised the estimate to <strong>{finish_time['09:00–12:00']:.1f} minutes</strong>, so the size depends on which hours we use.</p>
 <p>The same cumulative-weight quantile rule is used before and after adjustment: at an exact boundary, average that duration and the next distinct duration. These pilot quartiles differ from the warehouse's linear interpolation.</p>
 <div class="study-table" tabindex="0" role="region" aria-label="Participant-mix chart values"><table><caption>All 32 plotted edition/comparison summaries. Pace is min/km; spread is seconds/km.</caption><thead><tr><th scope="col">Year</th><th scope="col">Comparison</th><th scope="col">Temperature °C</th><th scope="col">P25</th><th scope="col">Median</th><th scope="col">P75</th><th scope="col">Spread</th></tr></thead><tbody>{table}</tbody></table></div>
 </details></section>'''
